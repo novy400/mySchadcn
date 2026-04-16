@@ -1,0 +1,1 @@
+export { contacts } from './contact.resource';

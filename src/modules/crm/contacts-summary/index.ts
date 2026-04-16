@@ -1,0 +1,1 @@
+export { contactsSummary } from './contactSummary.resource';

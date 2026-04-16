@@ -23,7 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
    "verbatimModuleSyntax": false,
-   "baseUrl": ".",
    "paths": {
      "@/*": [ "./src/*" ]
    },
