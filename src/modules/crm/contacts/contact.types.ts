@@ -1,7 +1,7 @@
-import type { RaRecord } from 'ra-core';
+import type { Identifier, RaRecord } from 'ra-core';
 
 export type Contact = {
-  client_id: number;
+  client_id: Identifier;
   prenom: string;
   nom: string;
   email: string;

@@ -59,7 +59,8 @@ contacts/
 ### Type Definitions (Critical)
 - **Always `type`, never `interface`** for entity types
 - **Always `Pick<RaRecord, 'id'>`** instead of `id: number` — aligns with react-admin's `Identifier`
-- **Extract union types** as named exports (e.g. `ClientStatut`)
+- **Always `Identifier`** (from `ra-core`) for foreign keys (`client_id`, `contact_id`), never `number`
+- **Extract union types** as named exports (e.g. `ClientStatut`) — values always in **SCREAMING_SNAKE_CASE** (e.g. `'ACTIF'`, `'OPEN'`, `'DONE'`)
 - Each module owns its `*.types.ts`; `buildSummaries.ts` **imports** from modules, never redeclares locally
 
 ```ts
@@ -73,6 +74,19 @@ export type Client = {
   nom: string;
   ville: string;
   statut: ClientStatut;
+} & Pick<RaRecord, 'id'>;
+```
+
+```ts
+// src/modules/crm/contacts/contact.types.ts
+import type { Identifier, RaRecord } from 'ra-core';
+
+export type Contact = {
+  client_id: Identifier;   // Identifier, not number
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
 } & Pick<RaRecord, 'id'>;
 ```
 
@@ -113,6 +127,14 @@ export const ContactList = () => (
 
 ### Cross-Resource Navigation
 For summary views, use custom rowClick: `rowClick={(_, __, record) => \`/contacts/${record.id}\`}`
+
+### When to Create a `*-summary` Projection
+Create a `xxx_summary` resource (read-only list) instead of using the raw resource list when:
+- The list needs **data from multiple collections** (e.g. contact + client name + task count)
+- Computed/aggregated fields are needed (e.g. `open_tasks`, `last_note_date`)
+- The raw resource's list would require N+1 fetches
+
+Pattern: raw resource (`contacts`) handles edit/create; projection (`contacts_summary`) handles the main list view and redirects to the raw resource for editing via custom `rowClick`.
 
 ## Key Dependencies
 
