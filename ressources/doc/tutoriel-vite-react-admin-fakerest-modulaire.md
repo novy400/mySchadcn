@@ -110,11 +110,43 @@ export const ContactSummaryList = () => (
 );
 ```
 
-## 8) Convention utile
+## 8. Convention utile
 
 - Import UI/admin: `@/components/admin`
 - Definition des ressources: `ResourceProps` depuis `ra-core`
 - Mapping des champs relationnels: `client_id`, `contact_id` (snake_case)
+- **Types par module**: chaque ressource possede son fichier `*.types.ts` dans son dossier module
+- **Convention de type**: utiliser `type` (pas `interface`) + `Pick<RaRecord, 'id'>` pour l'identifiant
+- **Pipeline de types**: `buildSummaries.ts` importe les types depuis les modules, ne les redeclare pas localement
+
+Exemple de structure de types par module:
+
+```text
+src/modules/crm/
+├─ clients/
+│  └─ client.types.ts   → type Client, type ClientStatut
+├─ contacts/
+│  └─ contact.types.ts  → type Contact
+├─ tasks/
+│  └─ task.types.ts     → type Task, type TaskStatus
+└─ notes/
+   └─ note.types.ts     → type Note
+```
+
+Exemple de fichier `*.types.ts`:
+
+```ts
+import type { RaRecord } from 'ra-core';
+
+export type ClientStatut = 'ACTIF' | 'PROSPECT' | 'SUSPENDU';
+
+export type Client = {
+  code: string;
+  nom: string;
+  ville: string;
+  statut: ClientStatut;
+} & Pick<RaRecord, 'id'>;
+```
 
 ## 9) Etape suivante IBM i
 

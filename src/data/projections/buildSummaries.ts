@@ -1,34 +1,7 @@
-type Client = {
-  id: number;
-  code: string;
-  nom: string;
-  ville: string;
-  statut: string;
-};
-
-type Contact = {
-  id: number;
-  client_id: number;
-  prenom: string;
-  nom: string;
-  email: string;
-  telephone: string;
-};
-
-type Task = {
-  id: number;
-  contact_id: number;
-  titre: string;
-  status: 'OPEN' | 'DONE';
-  due_date: string;
-};
-
-type Note = {
-  id: number;
-  contact_id: number;
-  contenu: string;
-  date: string;
-};
+import type { Client } from '@/modules/crm/clients/client.types';
+import type { Contact } from '@/modules/crm/contacts/contact.types';
+import type { Task } from '@/modules/crm/tasks/task.types';
+import type { Note } from '@/modules/crm/notes/note.types';
 
 export type BaseData = {
   clients: Client[];

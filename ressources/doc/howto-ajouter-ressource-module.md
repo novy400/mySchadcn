@@ -12,7 +12,27 @@ Creer un dossier:
 src/modules/crm/deals/
 ```
 
-## 2. Creer les ecrans CRUD du module
+## 2. Creer le fichier de types du module
+
+Chaque module possede son propre fichier `*.types.ts`. Les types utilisent `type` (pas `interface`) et `Pick<RaRecord, 'id'>` pour l'identifiant, conformement aux conventions react-admin.
+
+Creer `src/modules/crm/deals/deal.types.ts`:
+
+```ts
+import type { RaRecord } from 'ra-core';
+
+export type DealStatus = 'OPEN' | 'WON' | 'LOST';
+
+export type Deal = {
+  titre: string;
+  status: DealStatus;
+  contact_id: number;
+} & Pick<RaRecord, 'id'>;
+```
+
+> **Pourquoi `Pick<RaRecord, 'id'>` ?** Cela aligne le type sur le contrat react-admin (`Identifier`) plutot que de fixer `id: number` en dur, ce qui facilite la migration vers un backend IBM i.
+
+## 3. Creer les ecrans CRUD du module
 
 Ajouter les fichiers:
 
@@ -73,22 +93,15 @@ export { deals } from './deal.resource';
 
 Ajouter `deals` dans:
 
-- `src/data/projections/buildSummaries.ts` (type `BaseData`)
+- `src/modules/crm/deals/deal.types.ts` (deja fait a l'etape 2)
+- `src/data/projections/buildSummaries.ts` (import du type + ajout dans `BaseData`)
 - `src/data/raw/baseData.ts` (dataset initial)
 
-Exemple de type a ajouter dans `buildSummaries.ts`:
+Dans `buildSummaries.ts`, importer le type depuis le module (ne pas redeclarer localement):
 
 ```ts
-type Deal = {
-  id: number;
-  titre: string;
-  status: 'OPEN' | 'WON' | 'LOST';
-};
-```
+import type { Deal } from '@/modules/crm/deals/deal.types';
 
-Puis dans `BaseData`:
-
-```ts
 export type BaseData = {
   clients: Client[];
   contacts: Contact[];
@@ -102,7 +115,7 @@ Et ajouter des donnees dans `baseData.ts`:
 
 ```ts
 deals: [
-  { id: 1, titre: 'Migration IBM i', status: 'OPEN' },
+  { id: 1, contact_id: 1, titre: 'Migration IBM i', status: 'OPEN' },
 ],
 ```
 
@@ -140,10 +153,12 @@ Verifier:
 ## 6. Checklist rapide
 
 - dossier module cree
+- `*.types.ts` cree avec `type` + `Pick<RaRecord, 'id'>` (pas `interface`, pas `id: number`)
 - fichiers `List`, `Edit`, `Create` crees
 - `*.resource.tsx` exporte un `ResourceProps`
 - `index.ts` exporte la ressource
-- type `BaseData` mis a jour
+- type importe dans `buildSummaries.ts` (pas redeclare localement)
+- `BaseData` mis a jour
 - collection ajoutee dans `baseData.ts`
 - ressource ajoutee dans `src/app/App.tsx`
 

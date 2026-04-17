@@ -8,24 +8,36 @@ Exemple utilise: `deals_summary`.
 
 Utilise une projection quand une liste doit afficher des donnees agregees provenant de plusieurs collections (ex: compteur, dernier evenement, statut calcule).
 
-## 1. Etendre les types dans le pipeline de donnees
+## 1. Creer le fichier de types du module source
 
-Dans `src/data/projections/buildSummaries.ts`:
+Avant toute chose, le type de l'entite source doit etre declare dans son propre module, pas dans `buildSummaries.ts`.
 
-1. Ajouter le type source manquant (si besoin), par exemple `Deal`.
-2. Ajouter la collection source dans `BaseData`.
-3. Calculer `deals_summary` dans `buildSummaries`.
-4. Retourner la projection dans l'objet final.
-
-Exemple simplifie:
+Creer `src/modules/crm/deals/deal.types.ts`:
 
 ```ts
-type Deal = {
-  id: number;
+import type { RaRecord } from 'ra-core';
+
+export type DealStatus = 'OPEN' | 'WON' | 'LOST';
+
+export type Deal = {
   contact_id: number;
   titre: string;
-  status: 'OPEN' | 'WON' | 'LOST';
-};
+  status: DealStatus;
+} & Pick<RaRecord, 'id'>;
+```
+
+> **Regle** : chaque module possede son fichier `*.types.ts`. Les types utilisent `type` (pas `interface`) et `Pick<RaRecord, 'id'>` pour l'identifiant.
+
+## 2. Etendre les types dans le pipeline de donnees
+
+Dans `src/data/projections/buildSummaries.ts`, importer le type depuis le module (ne pas le redeclarer localement) :
+
+```ts
+import type { Client } from '@/modules/crm/clients/client.types';
+import type { Contact } from '@/modules/crm/contacts/contact.types';
+import type { Task } from '@/modules/crm/tasks/task.types';
+import type { Note } from '@/modules/crm/notes/note.types';
+import type { Deal } from '@/modules/crm/deals/deal.types';
 
 export type BaseData = {
   clients: Client[];
@@ -56,7 +68,7 @@ export const buildSummaries = (data: BaseData) => {
 };
 ```
 
-## 2. Alimenter les donnees brutes
+## 3. Alimenter les donnees brutes
 
 Dans `src/data/raw/baseData.ts`, ajouter la collection source (`deals`) avec des donnees de test.
 
@@ -69,7 +81,7 @@ deals: [
 ],
 ```
 
-## 3. Creer le module de projection
+## 4. Creer le module de projection
 
 Creer `src/modules/crm/deals-summary/` avec:
 
@@ -126,14 +138,14 @@ Exemple `index.ts`:
 export { dealsSummary } from './dealSummary.resource';
 ```
 
-## 4. Brancher la ressource dans App
+## 5. Brancher la ressource dans App
 
 Dans `src/app/App.tsx`:
 
 - importer `dealsSummary`
 - ajouter `<Resource {...dealsSummary} />`
 
-## 5. Verifier
+## 6. Verifier
 
 ```bash
 npm run dev
@@ -147,7 +159,8 @@ Verifier:
 
 ## Checklist
 
-- type source ajoute dans `buildSummaries.ts`
+- `*.types.ts` cree dans le module source avec `type` + `Pick<RaRecord, 'id'>` (pas `interface`)
+- type importe dans `buildSummaries.ts` depuis le module (pas redeclare localement)
 - `BaseData` etendu
 - source ajoutee dans `baseData.ts`
 - projection `xxx_summary` calculee et retournee
