@@ -1,6 +1,5 @@
 import { Show } from '@/components/admin/show';
-import { SimpleShowLayout } from '@/components/admin/simple-show-layout';
-import { TextField } from '@/components/admin/text-field';
+import { RecordField } from '@/components/admin/record-field';
 import { DateField } from '@/components/admin/date-field';
 import { NumberField } from '@/components/admin/number-field';
 import { EmailField } from '@/components/admin/email-field';
@@ -26,11 +25,11 @@ export const CustomerShow = () => (
               <CardDescription>Données de base de l'entité de référence.</CardDescription>
             </CardHeader>
             <CardContent>
-              <SimpleShowLayout>
-                <TextField source="id" />
-                <TextField source="name" label="Raison Sociale" />
-                <TextField source="type" label="Forme Juridique" />
-              </SimpleShowLayout>
+              <div className="flex flex-col gap-4">
+                <RecordField source="id" />
+                <RecordField source="name" label="Raison Sociale" />
+                <RecordField source="type" label="Forme Juridique" />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -43,16 +42,17 @@ export const CustomerShow = () => (
             </CardHeader>
             <CardContent>
               <ReferenceField 
-                label="" 
                 source="id" 
                 reference="customerSignalietiques" 
                 link={false}
               >
-                <SimpleShowLayout>
-                  <TextField source="adresse" label="Adresse" />
-                  <TextField source="phone" label="Téléphone" />
-                  <EmailField source="email" label="E-mail" />
-                </SimpleShowLayout>
+                <div className="flex flex-col gap-4">
+                  <RecordField source="adresse" label="Adresse" />
+                  <RecordField source="phone" label="Téléphone" />
+                  <RecordField source="email" label="E-mail">
+                    <EmailField source="email" />
+                  </RecordField>
+                </div>
               </ReferenceField>
             </CardContent>
           </Card>
@@ -66,16 +66,19 @@ export const CustomerShow = () => (
             </CardHeader>
             <CardContent>
               <ReferenceField 
-                label="" 
                 source="id" 
                 reference="customerRisques" 
                 link={false}
               >
-                <SimpleShowLayout>
-                  <NumberField source="score" label="Score de solvabilité" />
-                  <TextField source="statut" label="Statut" />
-                  <DateField source="lastReview" label="Dernière révision" />
-                </SimpleShowLayout>
+                <div className="flex flex-col gap-4">
+                  <RecordField source="score" label="Score de solvabilité">
+                    <NumberField source="score" />
+                  </RecordField>
+                  <RecordField source="statut" label="Statut" />
+                  <RecordField source="lastReview" label="Dernière révision">
+                    <DateField source="lastReview" />
+                  </RecordField>
+                </div>
               </ReferenceField>
             </CardContent>
           </Card>

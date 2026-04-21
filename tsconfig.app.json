@@ -22,10 +22,11 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-   "verbatimModuleSyntax": false,
-   "paths": {
-     "@/*": [ "./src/*" ]
-   },
+    "verbatimModuleSyntax": false,
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": [ "./src/*" ]
+    }
   },
   "include": ["src"]
 }

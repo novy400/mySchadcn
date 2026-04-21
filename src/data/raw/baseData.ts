@@ -18,7 +18,8 @@ const baseData: BaseData = {
   notes: [
     { id: 1, contact_id: 1, contenu: 'Intéressé par une refonte de l’application.', date: '2026-03-27' },
     { id: 2, contact_id: 3, contenu: 'Souhaite un rappel début avril.', date: '2026-03-29' },
-  ],  customers: [
+  ], 
+  customers: [
     { id: 1, name: "Aviation Corp", type: "Sarl" },
     { id: 2, name: "Global Logistics", type: "SA" }
   ],

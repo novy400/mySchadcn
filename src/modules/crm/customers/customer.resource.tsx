@@ -1,5 +1,5 @@
 import { Building } from 'lucide-react';
-import type { ResourceProps } from 'react-admin';
+import type { ResourceProps } from 'ra-core';
 import { CustomerList } from './CustomerList';
 import { CustomerShow } from './CustomerShow';
 
