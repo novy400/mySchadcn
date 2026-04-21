@@ -2,12 +2,16 @@ import type { Client } from '@/modules/crm/clients/client.types';
 import type { Contact } from '@/modules/crm/contacts/contact.types';
 import type { Task } from '@/modules/crm/tasks/task.types';
 import type { Note } from '@/modules/crm/notes/note.types';
+import type { Customer, CustomerSignalietique, CustomerRisque } from '@/modules/crm/customers/customer.types';
 
 export type BaseData = {
   clients: Client[];
   contacts: Contact[];
   tasks: Task[];
   notes: Note[];
+  customers: Customer[];
+  customerSignalietiques: CustomerSignalietique[];
+  customerRisques: CustomerRisque[];
 };
 
 export const buildSummaries = (data: BaseData) => {

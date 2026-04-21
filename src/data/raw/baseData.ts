@@ -18,7 +18,17 @@ const baseData: BaseData = {
   notes: [
     { id: 1, contact_id: 1, contenu: 'Intéressé par une refonte de l’application.', date: '2026-03-27' },
     { id: 2, contact_id: 3, contenu: 'Souhaite un rappel début avril.', date: '2026-03-29' },
+  ],  customers: [
+    { id: 1, name: "Aviation Corp", type: "Sarl" },
+    { id: 2, name: "Global Logistics", type: "SA" }
   ],
-};
+  customerSignalietiques: [
+    { id: 1, adresse: "123 Rue de l'Air, Paris", phone: "0102030405", email: "contact@aviation.fr" },
+    { id: 2, adresse: "45 Ave du Port, Marseille", phone: "0405060708", email: "info@globallog.com" }
+  ],
+  customerRisques: [
+    { id: 1, score: 85, statut: "OK", lastReview: "2024-12-01" },
+    { id: 2, score: 40, statut: "SURVEILLANCE", lastReview: "2024-12-20" }
+  ],};
 
 export default baseData;
