@@ -33,6 +33,8 @@ Scripts utiles:
 - `npm run dev`: lancement local
 - `npm run build`: verifie TypeScript puis build Vite
 - `npm run lint`: lint ESLint
+- `npm run test`: execute les tests Vitest
+- `npm run test:watch`: lance Vitest en mode watch
 - `npm run preview`: previsualisation du build
 
 ## Configuration TypeScript
@@ -104,6 +106,49 @@ Ce pattern permet de separer:
 - `tasks`: list, edit, create
 - `notes`: list, edit, create
 - `contacts_summary`: list uniquement (navigue vers l'edition de `contacts`)
+
+## Tests
+
+Le projet dispose maintenant d'un setup Vitest minimal pour verifier :
+
+- le pipeline de projection des donnees (`buildSummaries`)
+- le rendu du dashboard CRM
+
+Lancer les tests :
+
+```bash
+npm run test
+```
+
+Mode watch :
+
+```bash
+npm run test:watch
+```
+
+Les anciens fichiers `*.spec.ts(x)` presents dans le repo ne font pas encore partie de la suite active. Ils sont exclus du lint et de Vitest tant que leur outillage n'est pas complet (stories, packages Tiptap, etc.).
+
+## Recette manuelle rapide
+
+1. Installer les dependances
+2. Lancer l'app
+3. Verifier lint, tests et build
+
+```bash
+npm install
+npm run dev
+npm run lint
+npm run test
+npm run build
+```
+
+Checklist fonctionnelle minimale :
+
+- dashboard visible
+- listes `clients`, `contacts`, `tasks`, `notes`
+- vue `contacts_summary`
+- vue `customers` avec onglets
+- creation / edition sur au moins une ressource CRUD
 
 ## Documentation projet
 

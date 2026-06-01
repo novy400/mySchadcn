@@ -1,133 +1,225 @@
-# Project Instructions
+# AGENTS.md
 
-## Rules for Using shadcn MCP server
+Ce fichier decrit les regles et le contexte de travail pour les agents qui interviennent sur ce projet.
 
-1. **Always Check Registry First**
-   - Before creating custom components, search the registries for existing solutions
-   - Use `mcp_shadcn_search_items_in_registries` to find relevant components
-   - Check `mcp_shadcn_list_items_in_registries` to see all available options
+## 1. But du projet
 
-2. **Component Discovery Workflow**
-   - Start with semantic search using `mcp_shadcn_search_items_in_registries`
-   - View detailed component info with `mcp_shadcn_view_items_in_registries`
-   - Get usage examples with `mcp_shadcn_get_item_examples_from_registries`
-   - Use `mcp_shadcn_get_add_command_for_items` to get installation commands
+`mySchadcn` est un **mini CRM d'administration** construit avec :
 
-3. **Component Installation**
-   - Use the provided add commands from the registry
-   - Ensure components are properly imported and configured
-   - Do not install example- components directly, use them as reference to create your components.
-   - Follow the component's usage examples for proper implementation
-   - Do not overwrite ui or registry/ui components unless the user has specifically asked for it
+- Vite
+- React 19
+- TypeScript 5
+- `ra-core`
+- `ra-data-fakerest`
+- Tailwind CSS 4
 
-## Rules for using the shadcn-admin-kit registry
+Le projet sert a :
 
-- The shadcn-admin-kit registry mainly consists of a single block component called `admin`, which will install the `<Admin>` component along with all the necessary components to create an admin (such as `<List>`, `<Edit>`, `<DataTable>`, `<TextField>`, `<TextInput>`, etc.).
-- The shadcn-admin-kit registry contains only the UI components, and relies on `ra-core`, a headless admin framework for React, to provide the logic and data fetching capabilities. For instance, the `<Resource>` component comes from `ra-core`.
-- If asked to bootstrap a new Admin, you can use the `example-admin` component from the shadcn-admin-kit registry to get a working example, configured with a sample dataProvider, which you can use as basis.
-- Shadcn Admin Kit requires a specific TS config to work: the `verbatimModuleSyntax` option must be set to `false`. See below for more details.
+- prototyper rapidement des ecrans CRUD metier
+- travailler avec un jeu de donnees local sans backend HTTP reel
+- organiser le code par domaines CRM
+- preparer une future migration vers un vrai data provider
 
-### Fixing the TS config
+## 2. Etat actuel attendu
 
-When you initialize a new Admin:
+A la date actuelle, les commandes suivantes doivent rester operationnelles :
 
-Set the `verbatimModuleSyntax` option to `false` in the `tsconfig.app.json` file.
+```bash
+npm run dev
+npm run lint
+npm run test
+npm run build
+```
+
+Un changement qui casse l'une de ces commandes doit etre corrige ou explicite avant d'etre considere comme termine.
+
+## 3. Architecture fonctionnelle
+
+### Point d'entree
+- `src/main.tsx`
+- `src/app/App.tsx`
+
+### Provider de donnees
+- `src/app/providers/dataProvider.ts`
+
+### Pipeline de donnees
+- `src/data/raw/baseData.ts` : donnees brutes
+- `src/data/projections/buildSummaries.ts` : projections enrichies
+- `src/data/fakerestData.ts` : dataset final
+
+### Modules CRM
+- `src/modules/crm/clients`
+- `src/modules/crm/contacts`
+- `src/modules/crm/tasks`
+- `src/modules/crm/notes`
+- `src/modules/crm/contacts-summary`
+- `src/modules/crm/customers`
+- `src/modules/crm/dashboard`
+
+### Composants partages
+- `src/components/admin` : composants admin reutilisables
+- `src/components/ui` : primitives UI
+- `src/components/rich-text-input` : zone technique plus sensible, a modifier avec prudence
+
+## 4. Ressources actuellement exposees
+
+Dans `src/app/App.tsx`, l'admin utilise actuellement :
+
+- `clients`
+- `contacts`
+- `tasks`
+- `notes`
+- `contacts_summary`
+- `customers`
+- `customerSignalietiques`
+- `customerRisques`
+
+## 5. Regles de modification
+
+### 5.1 Regles generales
+- Faire des changements **cibles et minimaux**.
+- Preserver le style et l'organisation existants.
+- Ne pas introduire de refactor massif sans demande explicite.
+- Si une modification touche l'architecture, documenter l'impact.
+
+### 5.2 Donnees et logique metier
+- Toute nouvelle vue de synthese doit preferablement passer par `src/data/projections`.
+- Eviter de melanger logique de projection et logique de rendu.
+- Si une nouvelle ressource CRM est ajoutee, garder la structure modulaire :
+  - types
+  - composant list
+  - composant create/edit/show si necessaire
+  - resource exportee par le module
+
+### 5.3 Composants admin / ui
+- Ne pas reecrire largement `src/components/admin` ou `src/components/ui` sans besoin clair.
+- Si un correctif local suffit, preferer un correctif local.
+- `src/components/rich-text-input` contient des zones plus fragiles : eviter d'y intervenir sauf besoin reel.
+
+### 5.4 Tests et qualite
+Apres une modification significative, verifier au minimum :
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+Pour un changement purement UI mineur, `lint` peut suffire pendant l'iteration, mais avant finalisation il faut viser les 3 commandes.
+
+## 6. Strategie de test actuelle
+
+Le projet dispose d'un setup Vitest minimal.
+
+### Tests actifs
+- `src/data/projections/buildSummaries.test.ts`
+- `src/modules/crm/dashboard/Dashboard.test.tsx`
+
+### Convention actuelle
+- Les tests actifs utilisent `*.test.ts` et `*.test.tsx`
+- Les anciens `*.spec.ts(x)` ne font pas partie de la suite active pour l'instant
+
+### Pourquoi
+Les anciens `*.spec.ts(x)` reposent sur un outillage incomplet ou non installe :
+- stories manquantes
+- dependances de test specifiques
+- dependances rich-text / Tiptap non completes
+
+Ne pas rebrancher ces anciens tests sans remettre en place leur stack complete.
+
+## 7. Documentation utile
+
+A consulter avant toute evolution structurante :
+
+- `README.md`
+- `ressources/doc/etat-du-projet.md`
+- `ressources/doc/recette-fonctionnelle.md`
+- `ressources/doc/0_cadrage.md`
+- `ressources/doc/tutoriel-vite-react-admin-fakerest-modulaire.md`
+- `ressources/doc/howto-ajouter-ressource-module.md`
+- `ressources/doc/howto-ajouter-ressource-projection-summary.md`
+- `ressources/doc/howto-migrer-fakerest-vers-rest-ibmi.md`
+
+## 8. Workflow recommande pour une nouvelle fonctionnalite
+
+### Ajouter une nouvelle ressource CRUD
+1. Ajouter les types du domaine si necessaire
+2. Ajouter les composants `List`, `Create`, `Edit`, `Show` selon le besoin
+3. Exporter la resource depuis le module
+4. Brancher la resource dans `src/app/App.tsx`
+5. Ajouter les donnees dans `baseData.ts` si FakeRest est utilise
+6. Ajouter ou adapter une projection si la vue l'exige
+7. Ajouter au moins un test si la logique n'est pas triviale
+8. Verifier `lint`, `test`, `build`
+
+### Ajouter une projection
+1. Ajouter ou modifier la logique dans `src/data/projections`
+2. Garder la fonction pure et testable
+3. Ajouter un test Vitest cible
+4. Verifier que `fakerestData.ts` expose bien le resultat
+
+## 9. Regles pour shadcn / registry
+
+### Toujours verifier le registry avant de creer un composant custom
+- utiliser la recherche semantique du registry d'abord
+- consulter le detail des composants
+- regarder les exemples d'usage
+- recuperer la commande d'installation adaptee
+
+### Installation de composants
+- utiliser les commandes fournies par le registry
+- ne pas installer directement les composants `example-*` comme composants finaux
+- s'en servir comme reference seulement
+- ne pas ecraser les composants `ui` ou `registry/ui` sauf demande explicite
+
+## 10. Regles pour shadcn-admin-kit
+
+### A propos du registry
+- le registry `shadcn-admin-kit` tourne autour du bloc `admin`
+- il fournit surtout l'UI admin
+- la logique applicative repose sur `ra-core`
+
+### Configuration TypeScript obligatoire
+Le projet doit conserver :
 
 ```json
 {
-  // ...
   "compilerOptions": {
-    // ...
-    // (keep the other options)
-    // ...
     "verbatimModuleSyntax": false
   }
 }
 ```
 
-## Rules for using the `<Admin>` component from shadcn-admin-kit
+### Utilisation de `<Admin>`
+- `<Admin>` est un composant client-side
+- dans ce projet Vite SPA, il est utilise comme racine de l'admin
+- les ressources sont declarees via `<Resource>` de `ra-core`
 
-### `<Admin>` Is A Client-Side Component
+## 11. Bonnes pratiques de livraison
 
-The `<Admin>` component from `shadcn-admin-kit` is a client-side component. Therefore, it must be either:
+Quand une tache est terminee, l'agent doit idealement indiquer :
 
-- Used in a Single Page Application (SPA), for instance created with Vite
-- Marked with the `"use client"` directive if used in a Server-Side Rendered (SSR) application, for instance a Next.js app.
+- les fichiers modifies
+- ce qui a ete change
+- les commandes de verification executees
+- les limites eventuelles ou suites recommandees
 
-### Use `<Admin>` As Root Component For the Admin Page
+## 12. A eviter
 
-The entry point of the admin page is the `<Admin>` component.
+- casser le pipeline FakeRest sans le remplacer proprement
+- modifier lourdement `src/components/admin` pour regler un besoin metier local
+- reintroduire les anciens tests `*.spec.ts(x)` sans outillage adapte
+- faire des changements non testes sur les projections de donnees
+- ignorer une regression `lint`, `test` ou `build`
 
-You'll need to specify a Data Provider to let the Admin know how to fetch data from the API.
-
-If no Data Provider was specified, simply use `ra-data-json-server`, and typicode's JSONPlaceholder as endpoint: https://jsonplaceholder.typicode.com/.
-
-You will need to install the `ra-data-json-server` package first:
+## 13. Commandes de reference
 
 ```bash
-npm install ra-data-json-server
+npm install
+npm run dev
+npm run lint
+npm run test
+npm run test:watch
+npm run build
+npm run preview
 ```
-
-Here is an example showing how to use it:
-
-```tsx
-"use client";
-
-import { Admin } from "@/components/admin/admin";
-import jsonServerProvider from "ra-data-json-server";
-
-const dataProvider = jsonServerProvider(
-  "https://jsonplaceholder.typicode.com/",
-);
-
-export const App = () => (
-  <Admin dataProvider={dataProvider}>{/* Resources go here */}</Admin>
-);
-```
-
-### Declare Resources
-
-Then, you'll need to declare the routes of the application. `<Admin>` allows to define CRUD routes (list, edit, create, show) for each resource. Use the `<Resource>` component from `ra-core` (which was automatically added to your dependencies) to define CRUD routes.
-
-For each resource, you have to specify a `name` (which will map to the resources exposed by the API endpoint) and the `list`, `edit`, `create` and `show` components to use.
-
-If you used JSONPlaceholder at the previous step, you can pick among the following 6 resources:
-
-- posts
-- comments
-- albums
-- photos
-- todos
-- users
-
-If no instruction was given on what component to use for the CRUD routes, you can use the built-in guessers for the list, show and edit views. The guessers will automatically generate code based on the data returned by the API.
-
-Here is an example of how to use the guessers with a resource named `posts`:
-
-```tsx
-"use client";
-
-import { Resource } from "ra-core";
-import jsonServerProvider from "ra-data-json-server";
-import { Admin } from "@/components/admin/admin";
-import { ListGuesser } from "@/components/admin/list-guesser";
-import { ShowGuesser } from "@/components/admin/show-guesser";
-import { EditGuesser } from "@/components/admin/edit-guesser";
-
-const dataProvider = jsonServerProvider(
-  "https://jsonplaceholder.typicode.com/",
-);
-
-export const App = () => (
-  <Admin dataProvider={dataProvider}>
-    <Resource
-      name="posts"
-      list={ListGuesser}
-      edit={EditGuesser}
-      show={ShowGuesser}
-    />
-  </Admin>
-);
-```
-
-Use the example above to generate the component code and adapt the resources to your needs.

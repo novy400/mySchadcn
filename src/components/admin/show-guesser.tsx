@@ -81,7 +81,6 @@ const ShowViewGuesser = (props: ShowGuesserProps) => {
         )
         .sort();
 
-      // eslint-disable-next-line no-console
       console.log(
         `Guessed Show:
 
