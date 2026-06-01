@@ -1,51 +1,47 @@
 # AGENTS.md
 
-Ce fichier decrit les regles et le contexte de travail pour les agents qui interviennent sur ce projet.
+Guide court pour les agents IA travaillant sur ce repo.
 
-## 1. But du projet
+## Mission
 
-`mySchadcn` est un **mini CRM d'administration** construit avec :
+Maintenir et faire evoluer `mySchadcn`, un mini CRM admin en :
 
 - Vite
 - React 19
-- TypeScript 5
+- TypeScript
 - `ra-core`
 - `ra-data-fakerest`
-- Tailwind CSS 4
+- Tailwind CSS
 
-Le projet sert a :
+Le projet est un **prototype fonctionnel** base sur un dataset local et des projections.
 
-- prototyper rapidement des ecrans CRUD metier
-- travailler avec un jeu de donnees local sans backend HTTP reel
-- organiser le code par domaines CRM
-- preparer une future migration vers un vrai data provider
+## Etat cible a preserver
 
-## 2. Etat actuel attendu
-
-A la date actuelle, les commandes suivantes doivent rester operationnelles :
+Ces commandes doivent rester vertes apres toute modification significative :
 
 ```bash
-npm run dev
 npm run lint
 npm run test
 npm run build
 ```
 
-Un changement qui casse l'une de ces commandes doit etre corrige ou explicite avant d'etre considere comme termine.
+L'app doit aussi demarrer avec :
 
-## 3. Architecture fonctionnelle
+```bash
+npm run dev
+```
 
-### Point d'entree
+## Architecture a connaitre
+
+### Entree app
 - `src/main.tsx`
 - `src/app/App.tsx`
 
-### Provider de donnees
-- `src/app/providers/dataProvider.ts`
-
-### Pipeline de donnees
+### Donnees
 - `src/data/raw/baseData.ts` : donnees brutes
-- `src/data/projections/buildSummaries.ts` : projections enrichies
+- `src/data/projections/buildSummaries.ts` : projections
 - `src/data/fakerestData.ts` : dataset final
+- `src/app/providers/dataProvider.ts` : branchement FakeRest
 
 ### Modules CRM
 - `src/modules/crm/clients`
@@ -57,13 +53,11 @@ Un changement qui casse l'une de ces commandes doit etre corrige ou explicite av
 - `src/modules/crm/dashboard`
 
 ### Composants partages
-- `src/components/admin` : composants admin reutilisables
-- `src/components/ui` : primitives UI
-- `src/components/rich-text-input` : zone technique plus sensible, a modifier avec prudence
+- `src/components/admin`
+- `src/components/ui`
+- `src/components/rich-text-input` ← zone plus fragile, modifier avec prudence
 
-## 4. Ressources actuellement exposees
-
-Dans `src/app/App.tsx`, l'admin utilise actuellement :
+## Ressources actuelles
 
 - `clients`
 - `contacts`
@@ -74,152 +68,78 @@ Dans `src/app/App.tsx`, l'admin utilise actuellement :
 - `customerSignalietiques`
 - `customerRisques`
 
-## 5. Regles de modification
+## Regles de travail
 
-### 5.1 Regles generales
-- Faire des changements **cibles et minimaux**.
-- Preserver le style et l'organisation existants.
-- Ne pas introduire de refactor massif sans demande explicite.
-- Si une modification touche l'architecture, documenter l'impact.
+### Do
+- Faire des changements **petits, cibles, explicables**
+- Preserver la structure modulaire du projet
+- Mettre la logique de transformation de donnees dans `src/data/projections`
+- Ajouter un test si la logique ajoutee n'est pas triviale
+- Mettre a jour la doc si l'architecture ou le workflow change
 
-### 5.2 Donnees et logique metier
-- Toute nouvelle vue de synthese doit preferablement passer par `src/data/projections`.
-- Eviter de melanger logique de projection et logique de rendu.
-- Si une nouvelle ressource CRM est ajoutee, garder la structure modulaire :
-  - types
-  - composant list
-  - composant create/edit/show si necessaire
-  - resource exportee par le module
+### Don't
+- Ne pas faire de refactor massif sans demande explicite
+- Ne pas casser `lint`, `test` ou `build`
+- Ne pas melanger logique metier et logique de rendu si une projection convient mieux
+- Ne pas rebrancher les anciens `*.spec.ts(x)` sans remettre leur outillage complet
+- Ne pas modifier lourdement `src/components/rich-text-input` sauf besoin clair
 
-### 5.3 Composants admin / ui
-- Ne pas reecrire largement `src/components/admin` ou `src/components/ui` sans besoin clair.
-- Si un correctif local suffit, preferer un correctif local.
-- `src/components/rich-text-input` contient des zones plus fragiles : eviter d'y intervenir sauf besoin reel.
+## Regles de tests
 
-### 5.4 Tests et qualite
-Apres une modification significative, verifier au minimum :
+### Suite active
+- `*.test.ts`
+- `*.test.tsx`
+- Vitest + Testing Library
 
-```bash
-npm run lint
-npm run test
-npm run build
-```
-
-Pour un changement purement UI mineur, `lint` peut suffire pendant l'iteration, mais avant finalisation il faut viser les 3 commandes.
-
-## 6. Strategie de test actuelle
-
-Le projet dispose d'un setup Vitest minimal.
-
-### Tests actifs
+### Tests existants utiles
 - `src/data/projections/buildSummaries.test.ts`
 - `src/modules/crm/dashboard/Dashboard.test.tsx`
 
-### Convention actuelle
-- Les tests actifs utilisent `*.test.ts` et `*.test.tsx`
-- Les anciens `*.spec.ts(x)` ne font pas partie de la suite active pour l'instant
+### Important
+Les anciens `*.spec.ts(x)` sont exclus de la suite active. Ils dependent d'outils incomplets ou non installes.
 
-### Pourquoi
-Les anciens `*.spec.ts(x)` reposent sur un outillage incomplet ou non installe :
-- stories manquantes
-- dependances de test specifiques
-- dependances rich-text / Tiptap non completes
+## Workflow recommande
 
-Ne pas rebrancher ces anciens tests sans remettre en place leur stack complete.
+### Ajouter une ressource CRM
+1. Creer ou ajuster les types
+2. Creer les composants `List` / `Create` / `Edit` / `Show` si necessaire
+3. Exporter la resource depuis le module
+4. Declarer la resource dans `src/app/App.tsx`
+5. Ajouter les donnees dans `baseData.ts` si besoin
+6. Ajouter un test si logique non triviale
+7. Verifier `lint`, `test`, `build`
 
-## 7. Documentation utile
+### Ajouter une projection
+1. Modifier `src/data/projections/*`
+2. Garder la fonction pure
+3. Ajouter un test cible
+4. Verifier l'exposition via `fakerestData.ts`
 
-A consulter avant toute evolution structurante :
+## Shadcn / admin-kit
+
+### Avant de creer un composant custom
+Verifier d'abord le registry / MCP shadcn.
+
+### Regles importantes
+- ne pas installer directement les composants `example-*` comme composants finaux
+- ne pas ecraser les composants `ui` sauf demande explicite
+- conserver `verbatimModuleSyntax: false` dans `tsconfig.app.json`
+- `<Admin>` est utilise comme racine de l'application admin
+
+## Checklist avant de terminer
+
+- [ ] changement limite au besoin
+- [ ] fichiers modifies identifies
+- [ ] `npm run lint`
+- [ ] `npm run test`
+- [ ] `npm run build`
+- [ ] doc mise a jour si necessaire
+
+## Docs utiles
 
 - `README.md`
 - `ressources/doc/etat-du-projet.md`
 - `ressources/doc/recette-fonctionnelle.md`
-- `ressources/doc/0_cadrage.md`
-- `ressources/doc/tutoriel-vite-react-admin-fakerest-modulaire.md`
 - `ressources/doc/howto-ajouter-ressource-module.md`
 - `ressources/doc/howto-ajouter-ressource-projection-summary.md`
 - `ressources/doc/howto-migrer-fakerest-vers-rest-ibmi.md`
-
-## 8. Workflow recommande pour une nouvelle fonctionnalite
-
-### Ajouter une nouvelle ressource CRUD
-1. Ajouter les types du domaine si necessaire
-2. Ajouter les composants `List`, `Create`, `Edit`, `Show` selon le besoin
-3. Exporter la resource depuis le module
-4. Brancher la resource dans `src/app/App.tsx`
-5. Ajouter les donnees dans `baseData.ts` si FakeRest est utilise
-6. Ajouter ou adapter une projection si la vue l'exige
-7. Ajouter au moins un test si la logique n'est pas triviale
-8. Verifier `lint`, `test`, `build`
-
-### Ajouter une projection
-1. Ajouter ou modifier la logique dans `src/data/projections`
-2. Garder la fonction pure et testable
-3. Ajouter un test Vitest cible
-4. Verifier que `fakerestData.ts` expose bien le resultat
-
-## 9. Regles pour shadcn / registry
-
-### Toujours verifier le registry avant de creer un composant custom
-- utiliser la recherche semantique du registry d'abord
-- consulter le detail des composants
-- regarder les exemples d'usage
-- recuperer la commande d'installation adaptee
-
-### Installation de composants
-- utiliser les commandes fournies par le registry
-- ne pas installer directement les composants `example-*` comme composants finaux
-- s'en servir comme reference seulement
-- ne pas ecraser les composants `ui` ou `registry/ui` sauf demande explicite
-
-## 10. Regles pour shadcn-admin-kit
-
-### A propos du registry
-- le registry `shadcn-admin-kit` tourne autour du bloc `admin`
-- il fournit surtout l'UI admin
-- la logique applicative repose sur `ra-core`
-
-### Configuration TypeScript obligatoire
-Le projet doit conserver :
-
-```json
-{
-  "compilerOptions": {
-    "verbatimModuleSyntax": false
-  }
-}
-```
-
-### Utilisation de `<Admin>`
-- `<Admin>` est un composant client-side
-- dans ce projet Vite SPA, il est utilise comme racine de l'admin
-- les ressources sont declarees via `<Resource>` de `ra-core`
-
-## 11. Bonnes pratiques de livraison
-
-Quand une tache est terminee, l'agent doit idealement indiquer :
-
-- les fichiers modifies
-- ce qui a ete change
-- les commandes de verification executees
-- les limites eventuelles ou suites recommandees
-
-## 12. A eviter
-
-- casser le pipeline FakeRest sans le remplacer proprement
-- modifier lourdement `src/components/admin` pour regler un besoin metier local
-- reintroduire les anciens tests `*.spec.ts(x)` sans outillage adapte
-- faire des changements non testes sur les projections de donnees
-- ignorer une regression `lint`, `test` ou `build`
-
-## 13. Commandes de reference
-
-```bash
-npm install
-npm run dev
-npm run lint
-npm run test
-npm run test:watch
-npm run build
-npm run preview
-```
