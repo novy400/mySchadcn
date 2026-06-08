@@ -9,6 +9,7 @@ import { contacts } from '../modules/crm/contacts';
 import { tasks } from '../modules/crm/tasks';
 import { notes } from '../modules/crm/notes';
 import { contactsSummary } from '../modules/crm/contacts-summary';
+import { fournisseurs } from '../modules/crm/fournisseurs';
 import { customerResource, customerSignalietiqueResource, customerRisqueResource } from '../modules/crm/customers';
 
 function App() {
@@ -22,7 +23,8 @@ function App() {
       <Resource {...tasks} />
       <Resource {...notes} />
       <Resource {...contactsSummary} />
-      
+      <Resource {...fournisseurs} />
+
       {/* Ressources de détail avec Tabs */}
       <Resource {...customerResource} />
       <Resource {...customerSignalietiqueResource} />

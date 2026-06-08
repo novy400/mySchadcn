@@ -3,6 +3,7 @@ import type { Contact } from '@/modules/crm/contacts/contact.types';
 import type { Task } from '@/modules/crm/tasks/task.types';
 import type { Note } from '@/modules/crm/notes/note.types';
 import type { Customer, CustomerSignalietique, CustomerRisque } from '@/modules/crm/customers/customer.types';
+import type { Fournisseur } from '@/modules/crm/fournisseurs/fournisseur.types';
 
 export type BaseData = {
   clients: Client[];
@@ -12,6 +13,7 @@ export type BaseData = {
   customers: Customer[];
   customerSignalietiques: CustomerSignalietique[];
   customerRisques: CustomerRisque[];
+  fournisseurs: Fournisseur[];
 };
 
 export const buildSummaries = (data: BaseData) => {

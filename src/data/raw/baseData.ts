@@ -30,6 +30,11 @@ const baseData: BaseData = {
   customerRisques: [
     { id: 1, score: 85, statut: "OK", lastReview: "2024-12-01" },
     { id: 2, score: 40, statut: "SURVEILLANCE", lastReview: "2024-12-20" }
-  ],};
+  ],
+  fournisseurs: [
+    { id: 1, nom: 'Fournitures Pro', adresse: '12 rue des Ateliers', ville: 'Lille', telephone: '0320123456', email: 'contact@fourniturespro.fr' },
+    { id: 2, nom: 'Logis Transport', adresse: '8 avenue du Port', ville: 'Marseille', telephone: '0491123456', email: 'info@logistransport.fr' },
+  ],
+};
 
 export default baseData;
