@@ -13,9 +13,10 @@ import { NotFound } from "@/components/admin/not-found";
 import { Ready } from "@/components/admin/ready";
 import { ThemeProvider } from "@/components/admin/theme-provider";
 import { AuthCallback } from "@/components/admin/authentication";
-import { useEffect } from "react";
 
+// Configuration par défaut
 const defaultStore = localStorageStore();
+const defaultTitle = "Shadcn Admin";
 
 /**
  * Context provider for the Admin component.
@@ -32,28 +33,12 @@ const AdminContext = (props: CoreAdminContextProps) => (
 /**
  * UI component for the Admin application.
  *
- * Wraps CoreAdminUI with theme provider and handles telemetry reporting.
+ * Wraps CoreAdminUI with theme provider.
  * Provides the main layout, login page, ready page, and authentication callback.
  *
  * @internal
  */
 const AdminUI = (props: CoreAdminUIProps) => {
-  const { disableTelemetry = false, ...rest } = props;
-
-  useEffect(() => {
-    if (
-      disableTelemetry ||
-      !import.meta.env.PROD ||
-      typeof window === "undefined" ||
-      typeof window.location === "undefined" ||
-      typeof Image === "undefined"
-    ) {
-      return;
-    }
-    const img = new Image();
-    img.src = `https://shadcn-admin-kit-telemetry.marmelab.com/shadcn-admin-kit-telemetry?domain=${window.location.hostname}`;
-  }, [disableTelemetry]);
-
   return (
     <ThemeProvider>
       <CoreAdminUI
@@ -61,12 +46,19 @@ const AdminUI = (props: CoreAdminUIProps) => {
         loginPage={LoginPage}
         ready={Ready}
         authCallbackPage={AuthCallback}
-        disableTelemetry // Disable telemetry in CoreAdminUI to avoid double logging
-        {...rest}
+        {...props}
       />
     </ThemeProvider>
   );
 };
+
+export interface AdminOptions {
+  /**
+   * Disable telemetry reporting
+   * @default false
+   */
+  disableTelemetry?: boolean;
+}
 
 /**
  * Root component of a shadcn-admin-kit application.
@@ -88,40 +80,38 @@ const AdminUI = (props: CoreAdminUIProps) => {
  *     <Resource name="posts" list={PostList} />
  *   </Admin>
  * );
- *
- * @example
- * // With authentication and i18n
- * <Admin
- *   dataProvider={dataProvider}
- *   authProvider={authProvider}
- *   i18nProvider={i18nProvider}
- * >
- *   <Resource name="posts" list={PostList} edit={PostEdit} />
- * </Admin>
  */
-export const Admin = (props: CoreAdminProps) => {
-  const {
-    accessDenied,
-    authCallbackPage = AuthCallback,
-    authenticationError,
-    authProvider,
-    basename,
-    catchAll = NotFound,
-    children,
-    dashboard,
-    dataProvider,
-    disableTelemetry,
-    error,
-    i18nProvider = defaultI18nProvider,
-    layout = Layout,
-    loading,
-    loginPage = LoginPage,
-    queryClient,
-    ready = Ready,
-    requireAuth,
-    store = defaultStore,
-    title = "Shadcn Admin",
-  } = props;
+export const Admin = ({
+  accessDenied,
+  authCallbackPage = AuthCallback,
+  authenticationError,
+  authProvider,
+  basename,
+  catchAll = NotFound,
+  children,
+  dashboard,
+  dataProvider,
+  disableTelemetry = false,
+  error,
+  i18nProvider = defaultI18nProvider,
+  layout = Layout,
+  loading,
+  loginPage = LoginPage,
+  queryClient,
+  ready = Ready,
+  requireAuth,
+  store = defaultStore,
+  title = defaultTitle,
+}: CoreAdminProps & AdminOptions) => {
+  // Gestion de la télémétrie simplifiée
+  if (!disableTelemetry && import.meta.env.PROD) {
+    // En production, on envoie une requête de télémétrie
+    fetch(`https://shadcn-admin-kit-telemetry.marmelab.com/shadcn-admin-kit-telemetry?domain=${window.location.hostname}`)
+      .catch(() => {
+        // Silencieux en cas d'erreur de télémétrie
+      });
+  }
+
   return (
     <AdminContext
       authProvider={authProvider}
@@ -137,7 +127,6 @@ export const Admin = (props: CoreAdminProps) => {
         authenticationError={authenticationError}
         catchAll={catchAll}
         dashboard={dashboard}
-        disableTelemetry={disableTelemetry}
         error={error}
         layout={layout}
         loading={loading}
