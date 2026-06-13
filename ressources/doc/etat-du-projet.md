@@ -250,31 +250,37 @@ Voir aussi :
 
 ## Priorites recommandees
 
-### Priorite 1 - Etendre les tests
-Ajouter des tests sur :
+### Priorite 1 - Renforcer la couverture de tests
+**Objectif :** Etendre les tests existants pour couvrir toutes les ressources
 
-- `clients`
-- `contacts`
-- `tasks`
-- `notes`
-- `customers`
-- `dataProvider`
+**Actions :**
+1. Ajouter des tests pour chaque module CRM (`clients`, `contacts`, `tasks`, `notes`)
+2. Tester le `dataProvider` et la navigation
+3. Ajouter des tests d'integration pour les onglets `customers`
 
 ### Priorite 2 - Refactor progressif des composants techniques
-Nettoyer progressivement :
+**Objectif :** Ameliorer la qualite et la maintenabilite des composants partages
 
-- `src/components/admin`
-- `src/components/rich-text-input`
-- certaines parties de `src/components/ui`
+**Actions :**
+1. Nettoyer `src/components/admin` (composants personnalises)
+2. Reviser `src/components/rich-text-input` (zone fragile)
+3. Reduire les exceptions ESLint dans les composants UI
 
-Objectif : reduire les exceptions ESLint et fiabiliser les composants partages.
+### Priorite 3 - Preparer la migration vers un backend reel
+**Objectif :** Rendre l'application prete pour un vrai data provider REST
 
-### Priorite 3 - Evoluer vers un vrai backend
-Une fois la couche ecran stabilisee :
+**Actions :**
+1. Conserver les ecrans existants tout en remplacant FakeRest
+2. Implementer un data provider REST compatible IBM i
+3. Tester la connectivite avec un backend reel
 
-- remplacer FakeRest par un vrai provider REST
-- conserver autant que possible les ecrans existants
-- brancher la logique cible IBM i / backend reel
+### Priorite 4 - Ameliorations fonctionnelles
+**Objectif :** Ajouter des fonctionnalites utiles pour l'experience utilisateur
+
+**Actions :**
+1. Ajouter des "guesser" pour generer automatiquement les champs
+2. Mettre en place un systeme d'authentification/roles
+3. Ajouter des filtres et tris avances sur les listes
 
 ---
 
