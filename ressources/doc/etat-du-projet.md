@@ -264,6 +264,9 @@ Voir aussi :
 **Actions :**
 1. Nettoyer `src/components/admin` (composants personnalises)
 2. Reviser `src/components/rich-text-input` (zone fragile)
+   - Créer une version simplifiée `SimpleRichTextInput`
+   - Réduire les dépendances inutiles
+   - Améliorer la documentation
 3. Reduire les exceptions ESLint dans les composants UI
 
 ### Priorite 3 - Preparer la migration vers un backend reel
