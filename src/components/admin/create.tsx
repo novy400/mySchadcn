@@ -1,21 +1,12 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbPage,
-} from "@/components/admin/breadcrumb";
 import type { CreateBaseProps } from "ra-core";
 import {
   CreateBase,
-  Translate,
   useCreateContext,
-  useCreatePath,
-  useGetResourceLabel,
-  useHasDashboard,
   useResourceContext,
 } from "ra-core";
 import type { ReactNode } from "react";
-import { Link } from "react-router";
-import { cn } from "@/lib/utils";
+import { ResourcePage } from "./resource-page";
+import { Translate } from "ra-core";
 
 export type CreateProps = CreateViewProps & CreateBaseProps;
 
@@ -87,46 +78,25 @@ export const CreateView = ({
       "The CreateView component must be used within a ResourceContextProvider",
     );
   }
-  const getResourceLabel = useGetResourceLabel();
-  const listLabel = getResourceLabel(resource, 2);
-  const createPath = useCreatePath();
-  const listLink = createPath({
-    resource,
-    type: "list",
-  });
-  const hasDashboard = useHasDashboard();
 
   return (
-    <>
-      {!disableBreadcrumb && (
-        <Breadcrumb>
-          {hasDashboard && (
-            <BreadcrumbItem>
-              <Link to="/">
-                <Translate i18nKey="ra.page.dashboard">Home</Translate>
-              </Link>
-            </BreadcrumbItem>
-          )}
-          <BreadcrumbItem>
-            <Link to={listLink}>{listLabel}</Link>
-          </BreadcrumbItem>
-          <BreadcrumbPage>
-            <Translate i18nKey="ra.action.create">Create</Translate>
-          </BreadcrumbPage>
-        </Breadcrumb>
-      )}
-      <div
-        className={cn(
-          "flex justify-between items-start flex-wrap gap-2 my-2",
-          className,
-        )}
-      >
-        <h2 className="text-2xl font-bold tracking-tight">
-          {title !== undefined ? title : context.defaultTitle}
-        </h2>
-        {actions}
-      </div>
-      <div className="my-2">{children}</div>
-    </>
+    <ResourcePage
+      title={title !== undefined ? title : context.defaultTitle}
+      actions={actions}
+      disableBreadcrumb={disableBreadcrumb}
+      className={className}
+      breadcrumbItems={[
+        {
+          label: (
+            <Translate i18nKey="ra.page.create">
+              Create
+            </Translate>
+          ),
+          isCurrent: true,
+        },
+      ]}
+    >
+      {children}
+    </ResourcePage>
   );
 };

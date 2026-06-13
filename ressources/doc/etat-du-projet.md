@@ -266,6 +266,8 @@ Voir aussi :
    - Modulariser le composant `data-table` en sous-composants
    - Extraire `DataTableHead`, `DataTableBody`, `DataTableRow`, `DataTableCell`
    - Réduire la complexité du composant principal
+   - Créer un composant de base commun `ResourcePage` pour `Edit` et `Create`
+   - Réduire le code dupliqué entre `Edit` et `Create`
 2. Reviser `src/components/rich-text-input` (zone fragile)
    - Créer une version simplifiée `SimpleRichTextInput`
    - Réduire les dépendances inutiles

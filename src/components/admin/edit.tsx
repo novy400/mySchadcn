@@ -1,23 +1,13 @@
 import type { EditBaseProps } from "ra-core";
 import {
   EditBase,
-  Translate,
-  useCreatePath,
   useEditContext,
   useGetRecordRepresentation,
-  useGetResourceLabel,
-  useHasDashboard,
   useResourceContext,
   useResourceDefinition,
 } from "ra-core";
 import type { ReactNode } from "react";
-import { Link } from "react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbPage,
-} from "@/components/admin/breadcrumb";
-import { cn } from "@/lib/utils";
+import { ResourcePage } from "./resource-page";
 import { ShowButton } from "@/components/admin/show-button";
 import { DeleteButton } from "./delete-button";
 
@@ -95,58 +85,31 @@ export const EditView = ({
       "The EditView component must be used within a ResourceContextProvider",
     );
   }
-  const getResourceLabel = useGetResourceLabel();
-  const listLabel = getResourceLabel(resource, 2);
-  const createPath = useCreatePath();
-  const listLink = createPath({
-    resource,
-    type: "list",
-  });
 
   const getRecordRepresentation = useGetRecordRepresentation(resource);
   const recordRepresentation = getRecordRepresentation(context.record);
 
   const { hasShow } = useResourceDefinition({ resource });
-  const hasDashboard = useHasDashboard();
 
   if (context.isLoading || !context.record) {
     return null;
   }
 
-  return (
+  const defaultActions = (
     <>
-      {!disableBreadcrumb && (
-        <Breadcrumb>
-          {hasDashboard && (
-            <BreadcrumbItem>
-              <Link to="/">
-                <Translate i18nKey="ra.page.dashboard">Home</Translate>
-              </Link>
-            </BreadcrumbItem>
-          )}
-          <BreadcrumbItem>
-            <Link to={listLink}>{listLabel}</Link>
-          </BreadcrumbItem>
-          <BreadcrumbPage>{recordRepresentation}</BreadcrumbPage>
-        </Breadcrumb>
-      )}
-      <div
-        className={cn(
-          "flex justify-between items-start flex-wrap gap-2 my-2",
-          className,
-        )}
-      >
-        <h2 className="text-2xl font-bold tracking-tight">
-          {title !== undefined ? title : context.defaultTitle}
-        </h2>
-        {actions ?? (
-          <div className="flex justify-end items-center gap-2">
-            {hasShow ? <ShowButton /> : null}
-            <DeleteButton />
-          </div>
-        )}
-      </div>
-      <div className="my-2">{children}</div>
+      {hasShow ? <ShowButton /> : null}
+      <DeleteButton />
     </>
+  );
+
+  return (
+    <ResourcePage
+      title={title !== undefined ? title : context.defaultTitle}
+      actions={actions ?? defaultActions}
+      disableBreadcrumb={disableBreadcrumb}
+      className={className}
+    >
+      {children}
+    </ResourcePage>
   );
 };
