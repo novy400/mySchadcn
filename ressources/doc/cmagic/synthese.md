@@ -5,7 +5,7 @@
 
 ## 1. Vision et Philosophie
 
-La méthodologie **CMagic** vise à extraire la valeur métier des applications legacy IBM i (AS/400) pour les porter vers des architectures Web modernes et découplées (API REST + React Admin). L'objectif est de standardiser le développement, de faciliter la communication avec les utilisateurs finaux et de tirer parti de l'IA (Copilot) comme assistant de codage, tout en conservant la robustesse du backend Db2/RPG.
+La méthodologie **CMagic** vise à extraire la valeur métier des applications legacy IBM i (AS/400) pour les porter vers des architectures Web modernes et découplées (API REST + shadcn-admin-kit). L'objectif est de standardiser le développement, de faciliter la communication avec les utilisateurs finaux et de tirer parti de l'IA (Copilot) comme assistant de codage, tout en conservant la robustesse du backend Db2/RPG.
 
 ---
 
@@ -16,7 +16,7 @@ Toute application de gestion (ex: Flight400) est modélisée selon trois pattern
 ### A. L'Entité Catalogue (Données de Référence)
 
 * **Rôle :** Master data, données de base stables sans cycle de vie complexe.
-* **Cible React Admin :** Gestion de Ressources (CRUD). Utilisation des vues `<List>`, `<Edit>`, `<Create>` avec des grilles de données (Datagrid) et filtres.
+* **Cible shadcn-admin-kit :** Gestion de Ressources (CRUD). Utilisation des vues `<List>`, `<Edit>`, `<Create>` avec des grilles de données (Datagrid) et filtres.
 * **Exemple DSL Flight400 (Aéroports) :**
 
 ```jdl
@@ -48,7 +48,7 @@ operations for Airport {
 ### B. L'Entité Processus (Dossier & Workflow)
 
 * **Rôle :** Cas métier isolé évoluant dans le temps, régi par des statuts et des règles de transition.
-* **Cible React Admin :** Pattern *Workflow & State*. Le statut est visuel (`<ChipField>`). Les transitions se font via des *Actions Métier* (boutons spécifiques, ex: "Confirmer") qui remplacent l'édition libre.
+* **Cible shadcn-admin-kit :** Pattern *Workflow & State*. Le statut est visuel (`<ChipField>`). Les transitions se font via des *Actions Métier* (boutons spécifiques, ex: "Confirmer") qui remplacent l'édition libre.
 * **Exemple DSL Flight400 (Réservation) :**
 
 ```jdl
@@ -102,7 +102,7 @@ operations for Booking {
 ### C. L'Entité Saga (Orchestration Distribuée)
 
 * **Rôle :** Coordination de transactions longues ou distribuées avec exécution de **compensations** automatiques en cas d'échec d'une étape.
-* **Cible React Admin :** Gestion de l'asynchronisme. Utilisation d'indicateurs de progression et de composants *Timeline* pour afficher l'historique d'exécution et les compensations.
+* **Cible shadcn-admin-kit :** Gestion de l'asynchronisme. Utilisation d'indicateurs de progression et de composants *Timeline* pour afficher l'historique d'exécution et les compensations.
 * **Exemple DSL Flight400 (Parcours d'Achat) :**
 
 ```jdl
@@ -153,9 +153,9 @@ workflow BookingOrchestrator for CompleteBookingSaga {
 
 Avant d'écrire le code RPG backend, CMagic impose une phase de prototypage UX pour valider le langage ubiquitaire avec les métiers.
 
-1. **Le Socle `myschadcn` :** Utilisation d'une architecture modulaire par domaine métier (DDD), mariant la logique de **React Admin** avec la modernité esthétique de **Tailwind CSS / shadcn/ui**.
+1. **Le Socle `myschadcn` :** Utilisation d'une architecture modulaire par domaine métier (DDD), mariant la logique de **shadcn-admin-kit** avec la modernité esthétique de **Tailwind CSS / shadcn/ui**.
 2. **Simulation avec FakeRest :** Utilisation d'un fichier `data.json` centralisé qui simule instantanément une API REST complète. Cela permet de valider les IHM, les filtres et les boutons d'actions en conditions réelles, sans backend.
-3. **L'Assistant IA (Copilot Agent Skill) :** Intégration d'un fichier `.github/skills/cmagic-react-admin/SKILL.md`. Grâce au *Few-Shot Prompting*, cette compétence oblige GitHub Copilot à générer du code React Admin et des données FakeRest en respectant strictement la ségrégation Catalogue/Processus/Saga.
+3. **L'Assistant IA (Copilot Agent Skill) :** Intégration d'un fichier `.github/skills/cmagic-react-admin/SKILL.md`. Grâce au *Few-Shot Prompting*, cette compétence oblige GitHub Copilot à générer du code shadcn-admin-kit et des données FakeRest en respectant strictement la ségrégation Catalogue/Processus/Saga.
 
 ---
 
@@ -176,7 +176,7 @@ Plan d'action incrémental pour moderniser Flight400 en appliquant la méthode C
 ### 📍 Phase 1 : Prototypage UX & Validation Métier (Semaines 1-2)
 
 * **Objectif :** Maquetter l'interface avec `myschadcn` et valider l'ergonomie avec les métiers avant le développement backend.
-* **Actions :** Configurer `data.json` pour FakeRest (vols, réservations). Développer l'IHM React Admin. Coder les boutons d'Actions Métier pour simuler les changements d'état.
+* **Actions :** Configurer `data.json` pour FakeRest (vols, réservations). Développer l'IHM shadcn-admin-kit. Coder les boutons d'Actions Métier pour simuler les changements d'état.
 * **Livrable :** Prototype interactif validé par les utilisateurs finaux.
 
 ### 📍 Phase 2 : Modélisation DSL & Ingénierie des Données (Semaines 3-4)
@@ -194,9 +194,9 @@ Plan d'action incrémental pour moderniser Flight400 en appliquant la méthode C
 ### 📍 Phase 4 : Orchestration de la Saga & Résilience (Semaines 9-12)
 
 * **Objectif :** Gérer les parcours distribués complexes et l'intégration externe.
-* **Actions :** Développer l'orchestrateur de la Saga. Coder les procédures de compensation en RPG (`releaseSeat`). Mettre à jour l'IHM React Admin avec un composant *Timeline* pour l'asynchronisme.
+* **Actions :** Développer l'orchestrateur de la Saga. Coder les procédures de compensation en RPG (`releaseSeat`). Mettre à jour l'IHM shadcn-admin-kit avec un composant *Timeline* pour l'asynchronisme.
 * **Livrable :** Application Flight400 modernisée de bout en bout, résiliente et prête pour la production.
 
 ---
 
-Ce document complet vous servira de pilier central. Que diriez-vous de passer à la prochaine étape pratique, par exemple en demandant à Copilot de générer le code source React Admin pour l'entité *Booking* (Processus) basée sur ce nouveau document de référence ?
+Ce document complet vous servira de pilier central. Que diriez-vous de passer à la prochaine étape pratique, par exemple en demandant à Copilot de générer le code source shadcn-admin-kit pour l'entité *Booking* (Processus) basée sur ce nouveau document de référence ?
