@@ -1,7 +1,9 @@
-# Project Structure Scan Report
+# Scan Structure
 
-- **package.json**: present
-- **Root directories** (9):
+**Chemin du dépôt**: `C:\Users\yvonv\Documents\mesProjets\mySchadcn`
+
+- **package.json**: présent
+- **Dossiers racine** (9):
   - .git
   - .github
   - dist
@@ -12,12 +14,22 @@
   - scripts
   - src
 
-- **Important paths**:
+## Chemins importants détectés
 
-  - app: missing
-  - src: present (dir)
-  - components: missing
-  - lib: missing
-  - hooks: missing
-  - ressources/doc: present (dir)
-  - docs/wiki: present (dir)
+- app: absent
+- src: présent (dossier)
+- components: absent
+- lib: absent
+- hooks: absent
+- ressources/doc: présent (dossier)
+- docs/wiki: présent (dossier)
+
+## Hypothèses d’architecture
+
+- Le code principal se trouve dans `src` ou `app`.
+
+- Les composants réutilisables sont dans `components`.
+
+- Les hooks personnalisés sont dans `hooks`.
+
+- La documentation wiki sera générée sous `docs/wiki`.
