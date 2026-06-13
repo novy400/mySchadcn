@@ -263,6 +263,9 @@ Voir aussi :
 
 **Actions :**
 1. Nettoyer `src/components/admin` (composants personnalises)
+   - Modulariser le composant `data-table` en sous-composants
+   - Extraire `DataTableHead`, `DataTableBody`, `DataTableRow`, `DataTableCell`
+   - Réduire la complexité du composant principal
 2. Reviser `src/components/rich-text-input` (zone fragile)
    - Créer une version simplifiée `SimpleRichTextInput`
    - Réduire les dépendances inutiles
