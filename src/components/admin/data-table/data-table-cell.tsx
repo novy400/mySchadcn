@@ -186,5 +186,4 @@ export interface DataTableColumnProps<
 }
 
 // Type imports
-import type { NoInfer } from "ra-core";
 import { useRecordContext } from "ra-core";

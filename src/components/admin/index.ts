@@ -1,4 +1,5 @@
 export * from "./admin";
+export * from "./autocomplete-input";
 export * from "./create";
 export * from "./data-table";
 export * from "./edit";
@@ -6,6 +7,7 @@ export * from "./email-field";
 export * from "./list";
 export * from "./number-field";
 export * from "./number-input";
+export * from "./reference-input";
 export * from "./simple-form";
 export * from "./text-field";
 export * from "./text-input";

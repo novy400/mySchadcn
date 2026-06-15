@@ -57,7 +57,6 @@ import {
   BulkActionsToolbar,
   BulkActionsToolbarChildren,
 } from "@/components/admin/bulk-actions-toolbar";
-import { DataTableHeadCell, DataTableCell } from "./data-table/data-table-cell";
 
 const defaultBulkActionButtons = <BulkActionsToolbarChildren />;
 

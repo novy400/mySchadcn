@@ -2,7 +2,6 @@ import type { EditBaseProps } from "ra-core";
 import {
   EditBase,
   useEditContext,
-  useGetRecordRepresentation,
   useResourceContext,
   useResourceDefinition,
 } from "ra-core";
@@ -86,8 +85,8 @@ export const EditView = ({
     );
   }
 
-  const getRecordRepresentation = useGetRecordRepresentation(resource);
-  const recordRepresentation = getRecordRepresentation(context.record);
+  // const getRecordRepresentation = useGetRecordRepresentation(resource);
+  // const _recordRepresentation = getRecordRepresentation(context.record);
 
   const { hasShow } = useResourceDefinition({ resource });
 
