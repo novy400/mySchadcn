@@ -53,11 +53,13 @@ L'objectif n'est pas encore de fournir une application de production complete, m
 ## Fonctionnalites presentes
 
 ### Dashboard CRM
+
 - cartes de synthese
 - liste des contacts a suivre
 - statistiques calculees a partir du dataset local
 
 ### Ressources metier
+
 - `clients`
   - list
   - create
@@ -129,6 +131,7 @@ Ce decoupage est un point fort du projet : il facilite l'evolution vers d'autres
 ## Etat qualite / outillage
 
 ## Build
+
 Le build de production est operationnel.
 
 ```bash
@@ -136,6 +139,7 @@ npm run build
 ```
 
 ## Lint
+
 Le lint est au vert.
 
 ```bash
@@ -143,6 +147,7 @@ npm run lint
 ```
 
 ## Tests
+
 Un socle de tests a ete mis en place avec Vitest.
 
 Tests actifs actuellement :
@@ -163,6 +168,7 @@ npm run test:watch
 ```
 
 ### Note sur les anciens tests `*.spec.ts(x)`
+
 Le repo contient encore de nombreux fichiers `*.spec.ts(x)` herites ou incomplets.
 Ils ne sont pas integres a la suite active pour l'instant car ils dependent d'un outillage non finalise :
 
@@ -189,6 +195,7 @@ Ils sont pour le moment exclus du flux principal pour garder un socle fiable.
 ## Limites actuelles
 
 ### Donnees non persistantes
+
 Le projet utilise `ra-data-fakerest`.
 Les donnees sont donc :
 
@@ -197,6 +204,7 @@ Les donnees sont donc :
 - reinitialisees au rechargement complet de la page
 
 ### Couverture de test encore faible
+
 Le socle existe, mais la couverture est encore minimale.
 Il manque notamment :
 
@@ -206,6 +214,7 @@ Il manque notamment :
 - tests sur les onglets `customers`
 
 ### Quelques zones techniques encore fragiles
+
 Certaines parties de `src/components/admin` et `src/components/rich-text-input` ont ete stabilisees surtout par configuration ESLint ciblee, pas encore par refactoring complet.
 
 Cela signifie que :
@@ -251,17 +260,21 @@ Voir aussi :
 ## Priorites recommandees
 
 ### Priorite 1 - Renforcer la couverture de tests
+
 **Statut :** ✅ En cours / Terminée
 
 Nous avons ajouté des tests pour :
+
 - Tous les modules CRM (clients, contacts, tasks, notes)
 - Les composants principaux (data-table, edit, create, etc.)
 - La couverture est maintenant suffisante pour garantir la stabilité
 
 ### Priorite 2 - Refactor progressif des composants techniques
+
 **Statut :** ✅ Terminée
 
 Actions réalisées :
+
 1. Nettoyer `src/components/admin` (composants personnalises)
    - Modulariser le composant `data-table` en sous-composants
    - Extraire `DataTableHead`, `DataTableBody`, `DataTableRow`, `DataTableCell`
@@ -276,31 +289,38 @@ Actions réalisées :
 3. Reduire les exceptions ESLint dans les composants UI
 
 ### Priorite 3 - Preparer la migration vers un backend reel
+
 **Statut :** 🚀 Prête à démarrer
 
 L'application utilise toujours `ra-data-fakerest` comme data provider, ce qui facilite la migration.
 Les écrans sont stables et prêts pour un vrai backend.
 
 ### Priorite 4 - Ameliorations fonctionnelles
+
 **Statut :** 🎯 À venir
 
 Actions prévues :
+
 1. Ajouter des "guesser" pour générer automatiquement les champs
 2. Mettre en place un système d'authentification/roles
 3. Ajouter des filtres et tris avancés sur les listes
 
 ### Priorite 3 - Preparer la migration vers un backend reel
+
 **Objectif :** Rendre l'application prete pour un vrai data provider REST
 
 **Actions :**
+
 1. Conserver les ecrans existants tout en remplacant FakeRest
 2. Implementer un data provider REST compatible IBM i
 3. Tester la connectivite avec un backend reel
 
 ### Priorite 4 - Ameliorations fonctionnelles
+
 **Objectif :** Ajouter des fonctionnalites utiles pour l'experience utilisateur
 
 **Actions :**
+
 1. Ajouter des "guesser" pour generer automatiquement les champs
 2. Mettre en place un systeme d'authentification/roles
 3. Ajouter des filtres et tris avances sur les listes
@@ -329,11 +349,12 @@ Il est maintenant :
 ### Prochaines étapes
 
 1. **Améliorations fonctionnelles** (Priorité 4)
+
    - Ajout de composants "guesser"
    - Système d'authentification/roles
    - Filtres et tris avancés
-
 2. **Migration backend IBM i** (Priorité 3)
+
    - Remplacement de `ra-data-fakerest` par un data provider IBM i
    - Conservation des écrans existants
    - Intégration avec le backend réel

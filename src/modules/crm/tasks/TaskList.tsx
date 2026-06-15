@@ -1,14 +1,15 @@
-import { DataTable, List, TextField, TextInput, ReferenceInput, AutocompleteInput } from '@/components/admin';
+import { AutocompleteInput, DataTable, List, ReferenceInput, TextField, TextInput } from '@/components/admin';
+import { BadgeField } from '@/components/admin/badge-field';
 
 const filters = [
-  <TextInput source="q" placeholder="Search" label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Rechercher une tâche" label={false} alwaysOn />,
   <ReferenceInput
     source="contact_id"
     reference="contacts"
     sort={{ field: 'nom', order: 'ASC' }}
     alwaysOn
   >
-    <AutocompleteInput placeholder="Filter by contact" label={false} />
+    <AutocompleteInput placeholder="Filtrer par contact" label={false} />
   </ReferenceInput>,
   <ReferenceInput
     source="client_id"
@@ -16,14 +17,14 @@ const filters = [
     sort={{ field: 'nom', order: 'ASC' }}
     alwaysOn
   >
-    <AutocompleteInput placeholder="Filter by client" label={false} />
+    <AutocompleteInput placeholder="Filtrer par client" label={false} />
   </ReferenceInput>,
   <AutocompleteInput
     source="status"
-    placeholder="Filter by status"
+    placeholder="Filtrer par statut"
     choices={[
-      { id: 'OPEN', name: 'Open' },
-      { id: 'DONE', name: 'Done' },
+      { id: 'OPEN', name: 'Ouverte' },
+      { id: 'DONE', name: 'Terminée' },
     ]}
     label={false}
     alwaysOn
@@ -31,7 +32,7 @@ const filters = [
 ];
 
 export const TaskList = () => (
-  <List filters={filters}>
+  <List filters={filters} sort={{ field: 'due_date', order: 'ASC' }}>
     <DataTable rowClick="edit">
       <DataTable.Col source="id">
         <TextField source="id" />
@@ -46,7 +47,7 @@ export const TaskList = () => (
         <TextField source="titre" />
       </DataTable.Col>
       <DataTable.Col source="status">
-        <TextField source="status" />
+        <BadgeField source="status" variant="outline" />
       </DataTable.Col>
       <DataTable.Col source="due_date">
         <TextField source="due_date" />

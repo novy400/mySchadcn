@@ -1,7 +1,12 @@
-import { DataTable, EmailField, List, TextField } from '@/components/admin';
+import { DataTable, EmailField, List, TextField, TextInput } from '@/components/admin';
+
+const filters = [
+  <TextInput source="q" placeholder="Rechercher un fournisseur" label={false} alwaysOn />,
+  <TextInput source="ville" placeholder="Filtrer par ville" label="Ville" />,
+];
 
 export const FournisseurList = () => (
-  <List>
+  <List filters={filters} sort={{ field: 'nom', order: 'ASC' }}>
     <DataTable rowClick="edit">
       <DataTable.Col source="id">
         <TextField source="id" />

@@ -1,9 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ClientList } from './ClientList';
-import { AdminContext, defaultI18nProvider } from 'ra-core';
+import { CoreAdminContext, ResourceContextProvider } from 'ra-core';
 import { dataProvider } from '@/app/providers/dataProvider';
+import { i18nProvider } from '@/lib/i18nProvider';
 import { I18nextProvider } from 'react-i18next';
+import { MemoryRouter } from 'react-router';
 import i18n from 'i18next';
 
 // Configuration basique de i18n pour les tests
@@ -36,20 +38,23 @@ describe('<ClientList />', () => {
 
   it('renders client data in DataTable', async () => {
     render(
-      <AdminContext
-        dataProvider={dataProvider}
-        i18nProvider={defaultI18nProvider}
-        resource="clients"
-      >
-        <I18nextProvider i18n={i18n}>
-          <ClientList />
-        </I18nextProvider>
-      </AdminContext>
+      <MemoryRouter>
+        <CoreAdminContext
+          dataProvider={dataProvider}
+          i18nProvider={i18nProvider}
+        >
+          <I18nextProvider i18n={i18n}>
+            <ResourceContextProvider value="clients">
+              <ClientList />
+            </ResourceContextProvider>
+          </I18nextProvider>
+        </CoreAdminContext>
+      </MemoryRouter>
     );
 
     // Vérifie que le titre de la liste est présent
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'clients' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /clients/i })).toBeInTheDocument();
     });
   });
 });

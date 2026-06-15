@@ -1,7 +1,34 @@
-import { DataTable, EmailField, List, NumberField, TextField } from '@/components/admin';
+import {
+  AutocompleteInput,
+  DataTable,
+  EmailField,
+  List,
+  NumberField,
+  ReferenceInput,
+  TextField,
+  TextInput,
+} from '@/components/admin';
+import { SelectInput } from '@/components/admin/select-input';
+
+const filters = [
+  <TextInput source="q" placeholder="Rechercher" label={false} alwaysOn />,
+  <ReferenceInput source="client_id" reference="clients" sort={{ field: 'nom', order: 'ASC' }} alwaysOn>
+    <AutocompleteInput placeholder="Filtrer par client" label={false} />
+  </ReferenceInput>,
+  <SelectInput
+    source="client_status"
+    choices={[
+      { id: 'ACTIF', name: 'Actif' },
+      { id: 'PROSPECT', name: 'Prospect' },
+      { id: 'SUSPENDU', name: 'Suspendu' },
+    ]}
+    label="Statut client"
+  />,
+  <TextInput source="client_city" placeholder="Filtrer par ville" label="Ville" />,
+];
 
 export const ContactSummaryList = () => (
-  <List resource="contacts_summary">
+  <List resource="contacts_summary" filters={filters} sort={{ field: 'nom', order: 'ASC' }}>
     <DataTable rowClick={(_, __, record) => `/contacts/${record.id}`}>
       <DataTable.Col source="id">
         <TextField source="id" />

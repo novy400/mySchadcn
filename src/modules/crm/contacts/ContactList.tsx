@@ -1,7 +1,24 @@
-import { DataTable, EmailField, List, NumberField, TextField } from '@/components/admin';
+import {
+  AutocompleteInput,
+  DataTable,
+  EmailField,
+  List,
+  NumberField,
+  ReferenceInput,
+  TextField,
+  TextInput,
+} from '@/components/admin';
+
+const filters = [
+  <TextInput source="q" placeholder="Rechercher un contact" label={false} alwaysOn />,
+  <ReferenceInput source="client_id" reference="clients" sort={{ field: 'nom', order: 'ASC' }} alwaysOn>
+    <AutocompleteInput placeholder="Filtrer par client" label={false} />
+  </ReferenceInput>,
+  <TextInput source="email" placeholder="Filtrer par email" label="Email" />,
+];
 
 export const ContactList = () => (
-  <List>
+  <List filters={filters} sort={{ field: 'nom', order: 'ASC' }}>
     <DataTable rowClick="edit">
       <DataTable.Col source="id">
         <TextField source="id" />
