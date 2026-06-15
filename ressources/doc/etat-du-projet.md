@@ -1,6 +1,6 @@
 # Etat du projet
 
-_Date : 2026-06-01_
+_Date : 2026-06-15_
 
 ## Resume executif
 
@@ -45,6 +45,7 @@ L'objectif n'est pas encore de fournir une application de production complete, m
 - **ra-data-fakerest**
 - **Tailwind CSS 4**
 - composants admin locaux dans `src/components/admin`
+- guessers admin exportes depuis `src/components/admin` pour prototypage rapide : `ListGuesser`, `EditGuesser`, `ShowGuesser`
 - composants UI dans `src/components/ui`
 - **Vitest** + **Testing Library** pour les tests minimaux
 
@@ -297,11 +298,15 @@ Les écrans sont stables et prêts pour un vrai backend.
 
 ### Priorite 4 - Ameliorations fonctionnelles
 
-**Statut :** 🎯 À venir
+**Statut :** 🎯 En cours
+
+Actions réalisées :
+
+1. Exporter les guessers de prototypage depuis `src/components/admin` : `ListGuesser`, `EditGuesser`, `ShowGuesser`
 
 Actions prévues :
 
-1. Ajouter des "guesser" pour générer automatiquement les champs
+1. Ajouter un `CreateGuesser` si le besoin de scaffolding create se confirme
 2. Mettre en place un système d'authentification/roles
 3. Ajouter des filtres et tris avancés sur les listes
 
@@ -321,9 +326,10 @@ Actions prévues :
 
 **Actions :**
 
-1. Ajouter des "guesser" pour generer automatiquement les champs
-2. Mettre en place un systeme d'authentification/roles
-3. Ajouter des filtres et tris avances sur les listes
+1. Utiliser les guessers (`ListGuesser`, `EditGuesser`, `ShowGuesser`) pour accelerer le prototypage des nouvelles ressources
+2. Ajouter un `CreateGuesser` si necessaire
+3. Mettre en place un systeme d'authentification/roles
+4. Ajouter des filtres et tris avances sur les listes
 
 ---
 
@@ -350,7 +356,8 @@ Il est maintenant :
 
 1. **Améliorations fonctionnelles** (Priorité 4)
 
-   - Ajout de composants "guesser"
+   - Utilisation des composants guesser disponibles
+   - Ajout eventuel d'un `CreateGuesser`
    - Système d'authentification/roles
    - Filtres et tris avancés
 2. **Migration backend IBM i** (Priorité 3)
