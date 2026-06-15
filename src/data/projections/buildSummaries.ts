@@ -16,6 +16,12 @@ export type BaseData = {
   fournisseurs: Fournisseur[];
 };
 
+export type TaskWithClient = Task & {
+  contact_name: string;
+  client_id: number | null;
+  client_name: string;
+};
+
 export const buildSummaries = (data: BaseData) => {
   const contacts_summary = data.contacts.map((contact) => {
     const client = data.clients.find(c => c.id === contact.client_id);
@@ -42,8 +48,21 @@ export const buildSummaries = (data: BaseData) => {
     };
   });
 
+  const tasks_with_client = data.tasks.map((task) => {
+    const contact = data.contacts.find(c => c.id === task.contact_id);
+    const client = contact ? data.clients.find(c => c.id === contact.client_id) : undefined;
+    
+    return {
+      ...task,
+      contact_name: contact ? `${contact.prenom} ${contact.nom}` : '',
+      client_id: client?.id ?? null,
+      client_name: client?.nom ?? '',
+    };
+  });
+
   return {
     ...data,
     contacts_summary,
+    tasks_with_client,
   };
 };
