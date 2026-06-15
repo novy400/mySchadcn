@@ -1,8 +1,25 @@
-import { DataTable, List, NumberField, TextField, TextInput } from '@/components/admin';
+import { DataTable, List, NumberField, TextField, TextInput, ReferenceInput, AutocompleteInput } from '@/components/admin';
 
 const filters = [
   <TextInput source="q" placeholder="Search" label={false} alwaysOn />,
-  <TextInput source="status" placeholder="Filter by status" label={false} alwaysOn />,
+  <ReferenceInput
+    source="contact_id"
+    reference="contacts"
+    sort={{ field: 'nom', order: 'ASC' }}
+    alwaysOn
+  >
+    <AutocompleteInput placeholder="Filter by contact" label={false} />
+  </ReferenceInput>,
+  <AutocompleteInput
+    source="status"
+    placeholder="Filter by status"
+    choices={[
+      { id: 'OPEN', name: 'Open' },
+      { id: 'DONE', name: 'Done' },
+    ]}
+    label={false}
+    alwaysOn
+  />,
 ];
 
 export const TaskList = () => (
