@@ -1,62 +1,127 @@
 # Comment créer un nouveau projet à partir de mySchadcn
 
-Ce projet a été conçu de manière modulaire afin de servir facilement de base (template) pour d'autres projets nécessitant **Vite + React 19 + TypeScript + shadcn-admin-kit**.
+`mySchadcn` peut servir de base à un nouveau projet admin/CRM basé sur :
 
-Vous disposez de **3 méthodes** pour générer un nouveau projet selon vos besoins.
+- Vite
+- React 19
+- TypeScript
+- Tailwind CSS
+- `ra-core`
+- shadcn-admin-kit / composants admin locaux
+- `ra-data-fakerest` pour le prototype de données
 
----
-
-## Méthode 1 : Utiliser le script d'extraction local (bash)
-
-Si vous avez cloné ce dépôt localement et que vous avez fait des ajustements que vous souhaitez conserver dans un nouveau projet, vous pouvez utiliser le script bash fourni.
-
-**Prérequis** : Avoir un terminal type **Git Bash** (sur Windows) ou un terminal classique sur MacOS/Linux.
-
-1. Ouvrez votre terminal à la racine de l'actuel projet `mySchadcn`.
-2. Donnez les droits d'exécution au script (une seule fois nécessaire) :
-   ```bash
-   chmod +x scripts/extract-project.sh
-   ```
-3. Exécutez le script en lui donnant le chemin de votre nouveau projet :
-   ```bash
-   ./scripts/extract-project.sh ../mon-nouveau-crm
-   ```
-
-**Ce que fait le script :**
-- Il copie vos fichiers.
-- Il supprime automatiquement le cache existant, les `node_modules`, et l'historique Git (`.git`).
-- Il initialise un tout nouveau `git init`.
-- Il modifie le le champ `name` du fichier `package.json` par le nom de votre dossier cible.
-
-Ensuite, il suffit d'aller dans votre dossier (`cd ../mon-nouveau-crm`) et de lancer `npm install`.
+Vous disposez de **3 méthodes** pour créer un nouveau projet selon votre contexte.
 
 ---
 
-## Méthode 2 : Télécharger via Degit (le plus rapide depuis GitHub)
+## Méthode 1 : utiliser le script d'extraction local
 
-Si `mySchadcn` est déposé sur GitHub et que vous voulez générer un projet flambant neuf **sans le cloner entièrement** et sans télécharger l'historique de commits.
+C'est la méthode recommandée si vous avez le dépôt `mySchadcn` en local et que vous voulez repartir de son état actuel.
 
-1. Dans votre terminal, placez-vous dans votre dossier de projets (ex: `Documents/mesProjets/`).
-2. Tapez la commande suivante :
-   ```bash
-   npx degit novy400/mySchadcn mon-nouveau-crm
-   ```
-3. Entrez dans le dossier, modifiez manuellement le `package.json` et installez !
-   ```bash
-   cd mon-nouveau-crm
-   npm install
-   ```
+### Prérequis
 
-*Note : La commande degit va simplement récupérer la dernière version de la branche principale du repo github sans inclure le dossier .git.*
+- Être placé à la racine de `mySchadcn`
+- Avoir un terminal Bash : Git Bash sur Windows, ou terminal standard sur macOS/Linux
+- Avoir Node.js disponible
+- Avoir Git disponible si vous voulez initialiser automatiquement le nouveau dépôt
+
+### Commande
+
+```bash
+chmod +x scripts/extract-project.sh
+./scripts/extract-project.sh ../mon-nouveau-crm
+```
+
+### Ce que fait le script
+
+Le script :
+
+- copie les fichiers du projet courant vers le dossier cible ;
+- refuse d'écrire dans un dossier cible déjà non vide ;
+- exclut automatiquement les éléments locaux ou générés :
+  - `.git`
+  - `node_modules`
+  - `dist`
+  - `coverage`
+  - `.vite`, `.turbo`, `.cache`
+  - fichiers `*.log`
+  - `.env`, `.env.local`, `.env.*.local`
+- initialise un nouvel historique Git avec `git init` si Git est disponible ;
+- renomme le package npm dans :
+  - `package.json`
+  - `package-lock.json`, si présent
+- transforme le nom du dossier cible en nom npm valide, par exemple `Mon CRM` devient `mon-crm`.
+
+### Étapes après extraction
+
+```bash
+cd ../mon-nouveau-crm
+npm install
+npm run dev
+```
+
+Vérifications recommandées :
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
 
 ---
 
-## Méthode 3 : Transformer ce dépôt GitHub en "Template Repository"
+## Méthode 2 : télécharger via Degit
 
-C'est la méthode idéale et la plus officielle offerte par GitHub. Elle fait de votre dépôt un "gabarit" réutilisable infiniment avec un simple bouton.
+Cette méthode est rapide si le dépôt est disponible sur GitHub et que vous voulez récupérer la dernière version sans l'historique Git.
 
-1. Allez sur la page GitHub de votre dépôt (`novy400/mySchadcn`).
-2. Cliquez sur l'onglet **Settings** (Paramètres).
-3. Dans la section **General**, cochez la case **"Template repository"**.
-4. Désormais, sur la page d'accueil de ce dépôt sur GitHub, un gros bouton vert **"Use this template"** apparaîtra.
-5. À chaque clic sur ce bouton, GitHub créera un tout nouveau dépôt (avec un nouveau nom) reprenant l'architecture de départ, sans l'historique des commits précédents.
+```bash
+npx degit novy400/mySchadcn mon-nouveau-crm
+cd mon-nouveau-crm
+npm install
+npm run dev
+```
+
+À faire ensuite :
+
+- modifier le champ `name` dans `package.json` ;
+- modifier aussi `package-lock.json` si vous le conservez ;
+- initialiser Git si nécessaire :
+
+```bash
+git init
+```
+
+---
+
+## Méthode 3 : utiliser GitHub Template Repository
+
+Cette méthode est pratique si `mySchadcn` doit être réutilisé régulièrement comme gabarit.
+
+1. Aller sur la page GitHub du dépôt `novy400/mySchadcn`.
+2. Ouvrir **Settings**.
+3. Dans **General**, cocher **Template repository**.
+4. Revenir sur la page principale du dépôt.
+5. Cliquer sur **Use this template** pour créer un nouveau dépôt basé sur ce projet.
+
+Le nouveau dépôt reprend l'architecture du projet sans l'historique Git initial.
+
+---
+
+## Nettoyage conseillé pour un vrai nouveau projet
+
+Après création, adaptez au minimum :
+
+- `package.json` : nom, description, scripts si besoin ;
+- `README.md` : remplacer la documentation de `mySchadcn` par celle du nouveau projet ;
+- `AGENTS.md` : ajuster les règles spécifiques au nouveau projet ;
+- `src/data/raw/baseData.ts` : remplacer les données de démonstration ;
+- `src/modules/crm/*` : supprimer ou renommer les ressources inutiles ;
+- `ressources/doc/*` : conserver uniquement la documentation utile.
+
+Gardez la suite suivante verte avant de commencer les développements métier :
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
