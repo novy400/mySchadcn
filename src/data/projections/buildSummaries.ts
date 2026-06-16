@@ -4,6 +4,7 @@ import type { Task } from '@/modules/crm/tasks/task.types';
 import type { Note } from '@/modules/crm/notes/note.types';
 import type { Customer, CustomerSignalietique, CustomerRisque } from '@/modules/crm/customers/customer.types';
 import type { Fournisseur } from '@/modules/crm/fournisseurs/fournisseur.types';
+import type { Order } from '@/modules/crm/orders/order.types';
 
 export type BaseData = {
   clients: Client[];
@@ -14,6 +15,7 @@ export type BaseData = {
   customerSignalietiques: CustomerSignalietique[];
   customerRisques: CustomerRisque[];
   fournisseurs: Fournisseur[];
+  orders: Order[];
 };
 
 export type TaskWithClient = Task & {

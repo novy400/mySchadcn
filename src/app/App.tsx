@@ -11,6 +11,7 @@ import { notes } from '../modules/crm/notes';
 import { contactsSummary } from '../modules/crm/contacts-summary';
 import { fournisseurs } from '../modules/crm/fournisseurs';
 import { customerResource, customerSignalietiqueResource, customerRisqueResource } from '../modules/crm/customers';
+import { orders } from '../modules/crm/orders';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Resource {...notes} />
       <Resource {...contactsSummary} />
       <Resource {...fournisseurs} />
+      <Resource {...orders} />
 
       {/* Ressources de détail avec Tabs */}
       <Resource {...customerResource} />
