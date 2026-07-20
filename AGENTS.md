@@ -143,3 +143,17 @@ Verifier d'abord le registry / MCP shadcn.
 - `ressources/doc/howto-ajouter-ressource-module.md`
 - `ressources/doc/howto-ajouter-ressource-projection-summary.md`
 - `ressources/doc/howto-migrer-fakerest-vers-rest-ibmi.md`
+
+## Agent skills
+
+### Issue tracker
+
+Les tickets et PRD sont suivis localement sous `.scratch/`; les pull requests ne sont pas une surface de triage. Voir `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Le suivi local utilise les cinq libellés canoniques sans renommage. Voir `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Le dépôt utilise une organisation single-context. Voir `docs/agents/domain.md`.
