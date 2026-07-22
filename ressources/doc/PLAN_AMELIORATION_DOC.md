@@ -65,6 +65,8 @@ préparer les décisions d'implémentation sans modifier prématurément l'appli
 - validation finale : lint réussi, 23 fichiers/26 tests réussis, build réussi ;
 - avertissements non bloquants conservés : parsing CSS sous jsdom et bundle principal
   supérieur à 500 kB.
+- ces deux avertissements historiques ont ensuite été résolus par la tranche 6 du
+  [plan d'implémentation](./PLAN_IMPLEMENTATION.md).
 
 ## Résultat
 

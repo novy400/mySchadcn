@@ -10,7 +10,7 @@ export default mergeConfig(
       setupFiles: ['./src/test/setup.ts'],
       include: ['src/**/*.test.{ts,tsx}'],
       exclude: ['src/**/*.spec.{ts,tsx}', 'dist', 'node_modules'],
-      css: true,
+      css: false,
     },
   }),
 );

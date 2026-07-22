@@ -17,7 +17,7 @@ documentaire, par tranches petites et vérifiables.
 | 3 | Stabiliser le contrat du futur DataProvider IBM i | Terminé |
 | 4 | Ajouter authentification et autorisations | Terminé |
 | 5 | Traiter la synchronisation des projections après mutation | Terminé |
-| 6 | Réduire les avertissements CSS de test et la taille du bundle | À évaluer |
+| 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -177,7 +177,39 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - `npm run build` : réussi ;
 - revue standards et conformité au plan : terminée ; aucun constat restant.
 
-## Prochaine tranche
+## Tranche 6 — Tests CSS et découpage du bundle
 
-La tranche 6 doit évaluer les avertissements CSS de test et la taille du bundle, puis
-séparer les corrections utiles des avertissements acceptables du prototype.
+### Diagnostic
+
+- l'avertissement CSS est reproduit par les seuls tests du rich-text input ;
+- les deux tests du rich-text input sont des smoke tests d'import et de définition ;
+- les autres tests actifs vérifient le DOM et les interactions sans assertion visuelle ;
+- jsdom échoue sur la feuille Tailwind moderne alors que le navigateur l'accepte ;
+- le chunk unique d'environ 950 kB est dominé par React, React Admin, le routeur et les
+  primitives UI nécessaires à l'administration ;
+- un découpage uniquement fondé sur la taille génère trop de micro-chunks.
+
+### Réalisé
+
+- désactivation explicite de l'injection CSS dans jsdom ;
+- conservation de la compilation CSS dans le build Vite ;
+- quatre groupes fonctionnels de dépendances, produisant cinq chunks principaux tous
+  inférieurs à 300 kB minifiés, plus le petit runtime Rolldown ;
+- suppression des deux avertissements dans les commandes de référence ;
+- smoke test du build : connexion Responsable, dashboard visible, console sans erreur ;
+- publication du diagnostic dans
+  [`diagnostic-tests-et-bundle.md`](./diagnostic-tests-et-bundle.md).
+
+### Validation
+
+- `npm run lint` : réussi ;
+- `npm run test` : 38 fichiers, 85 tests réussis, sans avertissement CSS ;
+- `npm run build` : réussi, sans avertissement de taille de chunk ;
+- smoke test navigateur : réussi ;
+- revue standards et conformité au plan : terminée ; aucun constat restant.
+
+## Suite
+
+Les six tranches du plan initial sont terminées. Les évolutions suivantes relèvent d'un
+nouveau cadrage produit ou technique, notamment le branchement IBM i et l'enrichissement
+du modèle des commandes.

@@ -21,6 +21,11 @@ sur IBM i.
 Les composants d'administration sont maintenus localement dans
 `src/components/admin`. Les primitives visuelles sont dans `src/components/ui`.
 
+Le build sépare les dépendances React, React Admin, primitives UI et fournisseurs
+secondaires via `build.rolldownOptions.output.codeSplitting`. Vitest ne charge pas le CSS
+dans jsdom, car la suite active vérifie le comportement DOM et non le rendu visuel ; le CSS
+reste compilé et contrôlé par le build et les recettes navigateur.
+
 ## Entrées principales
 
 ```text

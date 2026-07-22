@@ -22,6 +22,7 @@ conception liés à sa future intégration IBM i.
 - [Migrer FakeRest vers une API IBM i](./howto-migrer-fakerest-vers-rest-ibmi.md)
 - [Contrat du DataProvider IBM i](./contrat-data-provider-ibmi.md)
 - [Authentification et autorisations](./authentification-autorisations.md)
+- [Diagnostic des tests CSS et du bundle](./diagnostic-tests-et-bundle.md)
 - [Mettre à jour depuis shadcn-admin-kit](./git-upstream-maj.md)
 - [Stratégie de mise à jour Shadcn](./STRATEGIE_MAJ_SHADCN.md)
 
