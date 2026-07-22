@@ -1,6 +1,6 @@
-# Plan d'amélioration documentaire
+﻿# Plan d'amélioration documentaire
 
-_Branche de travail : `codex/docs-restructuration`_  
+_Branche de travail : `codex/docs-restructuration`_
 _Dernière mise à jour : 2026-07-22_
 
 ## Objectif

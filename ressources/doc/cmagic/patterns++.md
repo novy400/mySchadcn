@@ -1,4 +1,4 @@
-# Stratégie de Modernisation Flight400
+﻿# Stratégie de Modernisation Flight400
 
 ## Une Approche par Patterns Applicatifs (Shadcn Admin Kit)
 
@@ -6,7 +6,7 @@
 
 L'application **Flight400**, typique des environnements **IBM i (AS/400) / 5250** et des programmes **RPG**, est par nature orientée **processus séquentiels** (transactions).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
-L'objectif de cette modernisation est de faire le pont vers une architecture moderne orientée **données et interactions**, en utilisant les concepts de **patterns applicatifs** inspirés de frameworks comme **Shadcn Admin Kit** (le kit graphique du même éditeur Marmelab). 
+L'objectif de cette modernisation est de faire le pont vers une architecture moderne orientée **données et interactions**, en utilisant les concepts de **patterns applicatifs** inspirés de frameworks comme **Shadcn Admin Kit** (le kit graphique du même éditeur Marmelab).
 
 Cette approche établit un **vocabulaire commun** essentiel pour l'analyse métier, la conception UX et le développement API.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
@@ -24,24 +24,24 @@ Ces patterns transforment la gestion des fichiers DB2/400 en entités modernes a
 
 Ce pattern est le socle de l'application métier et assure la gestion de base des entités.
 
-* **Concept :** Implémentation standard des opérations **C**reate, **R**ead, **U**pdate, **D**elete sur des entités (Ressources).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Lien Shadcn Admin Kit :** Ce kit, comme son prédécesseur React-Admin, est le socle de l'application métier et est conçu pour la **génération rapide de CRUD**, utilisant des composants modernes basés sur Tailwind CSS et Radix UI.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** Implémentation standard des opérations **C**reate, **R**ead, **U**pdate, **D**elete sur des entités (Ressources).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Lien Shadcn Admin Kit :** Ce kit, comme son prédécesseur React-Admin, est le socle de l'application métier et est conçu pour la **génération rapide de CRUD**, utilisant des composants modernes basés sur Tailwind CSS et Radix UI.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Bénéfice :** Le développeur IBM i sait immédiatement que des services pour GET, POST, PUT, DELETE sur /api/clients doivent être exposés.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ### 1.2. 🗂️ Pattern de Découverte/Filtrage/Recherche
 
 Crucial pour l'efficacité des utilisateurs confrontés à de grandes quantités de données.
 
-* **Concept :** Mise en place de filtres rapides, de tris et de recherches textuelles (Facets).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Lien Shadcn Admin Kit :** Le kit fournit des **tables de données flexibles** préconfigurées qui intègrent nativement le filtrage et le tri, ce qui est crucial pour l'efficacité des utilisateurs.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** Mise en place de filtres rapides, de tris et de recherches textuelles (Facets).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Lien Shadcn Admin Kit :** Le kit fournit des **tables de données flexibles** préconfigurées qui intègrent nativement le filtrage et le tri, ce qui est crucial pour l'efficacité des utilisateurs.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Bénéfice :** L'Agent de Réservation peut rapidement **trouver l'information** en combinant des filtres (Statut \+ Date \+ Destination).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ### 1.3. 🧩 Pattern de Composition d'Écran (Maître-Détail)
 
 Structure l'information détaillée pour la rendre compréhensible.
 
-* **Concept :** L'écran de consultation d'une ressource est composé de sous-composants ou d'**onglets** affichant des informations connexes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Lien Shadcn Admin Kit :** L'accent mis sur la **customisation complète** dans Shadcn Admin Kit permet la construction aisée de layouts complexes et logiquement organisés (Ex: onglets) dans les vues d'édition ou de consultation.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** L'écran de consultation d'une ressource est composé de sous-composants ou d'**onglets** affichant des informations connexes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Lien Shadcn Admin Kit :** L'accent mis sur la **customisation complète** dans Shadcn Admin Kit permet la construction aisée de layouts complexes et logiquement organisés (Ex: onglets) dans les vues d'édition ou de consultation.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Bénéfice :** L'utilisateur est guidé, l'information est **organisée logiquement** (Ex: onglet "Historique des Commandes" sur la fiche Client), évitant la navigation séquentielle 5250\.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ## 2\. Logique Métier Complexe : Workflow, Actions et Transactions
@@ -52,46 +52,46 @@ Ces patterns gèrent les règles, les validations complexes et la cohérence ent
 
 Modélise le cycle de vie des entités critiques (Ex: Réservation, Vol).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
-* **Concept :** Les entités suivent un cycle de vie avec des **statuts** bien définis (Ex: *Nouveau* ➡️*Confirmé* ➡️ *Volé*).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Lien Shadcn Admin Kit :** Ce pattern est implémenté via des composants UI standard pour l'affichage (type \`ChipField\`) et le kit, étant **backend-agnostic**, est parfaitement adapté à l'intégration de la logique conditionnelle et des transitions de statut côté API.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** Les entités suivent un cycle de vie avec des **statuts** bien définis (Ex: *Nouveau* ➡️*Confirmé* ➡️ *Volé*).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Lien Shadcn Admin Kit :** Ce pattern est implémenté via des composants UI standard pour l'affichage (type \`ChipField\`) et le kit, étant **backend-agnostic**, est parfaitement adapté à l'intégration de la logique conditionnelle et des transitions de statut côté API.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Lien avec l'UX :** Cartographier le **processus métier** et imposer la bonne séquence d'actions.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ### 2.2. 🎯 Pattern des Actions Métier (Commands)
 
 Ce pattern est utilisé pour toute opération qui dépasse la simple modification d'un champ.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
-* **Concept :** Une Action Métier a un **nom explicite** ("Annuler le vol", "Valider la réservation") et déclenche une logique complexe. Le **Pattern des Actions Métier (Commands)** est le maillon essentiel qui concrétise le **Workflow** et actionne la **Saga**.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Lien Shadcn Admin Kit :** L'interface n'est plus responsable de la logique, elle devient l'émetteur d'un **Command** clair qui appelle un **Endpoint API dédié** (Ex: POST /reservations/{id}/validate). Le kit permet de créer facilement des boutons personnalisés qui court-circuitent le CRUD standard via son architecture basée sur React.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** Une Action Métier a un **nom explicite** ("Annuler le vol", "Valider la réservation") et déclenche une logique complexe. Le **Pattern des Actions Métier (Commands)** est le maillon essentiel qui concrétise le **Workflow** et actionne la **Saga**.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Lien Shadcn Admin Kit :** L'interface n'est plus responsable de la logique, elle devient l'émetteur d'un **Command** clair qui appelle un **Endpoint API dédié** (Ex: POST /reservations/{id}/validate). Le kit permet de créer facilement des boutons personnalisés qui court-circuitent le CRUD standard via son architecture basée sur React.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Lien avec le Workflow :** L'Action Métier est le **moteur de transition** qui fait passer l'entité d'un état à un autre.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ### 2.3. 🛡️ Pattern Saga
 
 Essentiel pour garantir la **cohérence des données à travers des transactions distribuées** (typiques d'un Extranet).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
-* **Concept :** Une séquence de transactions locales coordonnée. Si une étape échoue, le Saga exécute des **transactions de compensation** pour annuler les modifications précédentes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Contexte Flight400 :** La **Vente de Billets** (Création de Réservation) est l'exemple archétypal, car elle touche l'Inventaire (IBM i), le Paiement (Externe) et la Notification.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Concept :** Une séquence de transactions locales coordonnée. Si une étape échoue, le Saga exécute des **transactions de compensation** pour annuler les modifications précédentes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Contexte Flight400 :** La **Vente de Billets** (Création de Réservation) est l'exemple archétypal, car elle touche l'Inventaire (IBM i), le Paiement (Externe) et la Notification.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 * **Lien avec Shadcn Admin Kit :** Le pattern Saga, bien que géré au niveau de l'API Gateway, est déclenché par le **Command** (Action Métier) lancé depuis l'interface utilisateur, qui peut ensuite gérer l'affichage des **statuts granulaires asynchrones** ($PAIEMENT\_EN\_ATTENTE$).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
-## 
+##
 
 ## 3\. Plan d'Action : Modernisation en 5 Étapes pour Flight400 (Applicable à Shadcn Admin Kit)
 
 Cette feuille de route s'appuie sur la modélisation par patterns pour structurer le projet.
 
-* **Étape 1 : Cartographie des Entités et des API de Base (CRUD)**  
-  * **Objectif :** Définir la fondation des données modernes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-  * **Action :** Lister les Fichiers Physiques (DB2/400) et les transformer en **Ressources REST** (Clients, Vols, Réservations).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Étape 2 : Modélisation du Flux de Travail (Workflow & State)**  
-  * **Objectif :** Définir le cycle de vie métier des entités critiques.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-  * **Action :** Dessiner le **Diagramme d'États** (Workflow) de l'entité la plus critique (Ex: Réservation).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Étape 3 : Définition des Actions Métier (Commands)**  
-  * **Objectif :** Isoler et standardiser la logique métier complexe.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-  * **Action :** Identifier toutes les transitions critiques du Workflow qui nécessitent plus qu'un simple CRUD.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Étape 4 : Modélisation et Implémentation du Pattern Saga**  
-  * **Objectif :** Assurer la cohérence des transactions distribuées.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-  * **Action :** Pour chaque Action Métier impliquant plusieurs services, définir un **Saga**.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
-* **Étape 5 : Conception UX et Migration par Vues (Shadcn Admin Kit)**  
-  * **Objectif :** Livrer la valeur aux utilisateurs finaux.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)  
+* **Étape 1 : Cartographie des Entités et des API de Base (CRUD)**
+  * **Objectif :** Définir la fondation des données modernes.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+  * **Action :** Lister les Fichiers Physiques (DB2/400) et les transformer en **Ressources REST** (Clients, Vols, Réservations).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Étape 2 : Modélisation du Flux de Travail (Workflow & State)**
+  * **Objectif :** Définir le cycle de vie métier des entités critiques.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+  * **Action :** Dessiner le **Diagramme d'États** (Workflow) de l'entité la plus critique (Ex: Réservation).[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Étape 3 : Définition des Actions Métier (Commands)**
+  * **Objectif :** Isoler et standardiser la logique métier complexe.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+  * **Action :** Identifier toutes les transitions critiques du Workflow qui nécessitent plus qu'un simple CRUD.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Étape 4 : Modélisation et Implémentation du Pattern Saga**
+  * **Objectif :** Assurer la cohérence des transactions distribuées.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+  * **Action :** Pour chaque Action Métier impliquant plusieurs services, définir un **Saga**.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
+* **Étape 5 : Conception UX et Migration par Vues (Shadcn Admin Kit)**
+  * **Objectif :** Livrer la valeur aux utilisateurs finaux.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
   * **Action :** Construire l'interface en utilisant les patterns de Vues et les composants graphiques modernes de **Shadcn Admin Kit**.[1](https://docs.google.com/document/d/1Dxzei6PGUo3Yt9bUc8yMd-sGwpn6bV0TbsnoGM_cE38/edit)
 
 ### **🚀 1\. Définir le Projet par les Patterns (Étape 1 : Le "Quoi")**
@@ -113,20 +113,20 @@ Adopter ce langage commun basé sur les patterns améliore la communication avec
 
 #### **A. Avec les End-Users (Agents de Réservation, Logistique)**
 
-* **Langage Visuel :** Les patterns de React-Admin sont immédiatement reconnaissables et familiers (listes, formulaires, filtres). Vous pouvez utiliser des maquettes React-Admin pour dire : "Voici la **Liste des Vols**, et voici comment le **Filtrage par destination** va fonctionner."  
-* **Focus sur l'Ergonomie :** L'échange quitte le "Comment taper l'information" (5250) pour se concentrer sur **l'efficacité** et les **besoins non satisfaits** (ex: "J'ai besoin de trier la liste des passagers par classe de fidélité, ce que je ne peux pas faire sur le 5250").  
+* **Langage Visuel :** Les patterns de React-Admin sont immédiatement reconnaissables et familiers (listes, formulaires, filtres). Vous pouvez utiliser des maquettes React-Admin pour dire : "Voici la **Liste des Vols**, et voici comment le **Filtrage par destination** va fonctionner."
+* **Focus sur l'Ergonomie :** L'échange quitte le "Comment taper l'information" (5250) pour se concentrer sur **l'efficacité** et les **besoins non satisfaits** (ex: "J'ai besoin de trier la liste des passagers par classe de fidélité, ce que je ne peux pas faire sur le 5250").
 * **Validation du Flux :** Utiliser le pattern **Workflow & State** permet de valider avec eux si les étapes définies (ex: *Réservé* $\\to$ *Confirmé* $\\to$ *Enregistré* $\\to$ *Volé*) correspondent bien à la réalité opérationnelle.
 
 #### **B. Avec les Développeurs IBM i (RPG)**
 
-* **Découplage API (Back-end) :** Les développeurs RPG savent que chaque pattern React-Admin (CRUD) correspond à un besoin **API clair**.  
-  * Le $List$ a besoin d'une API (souvent REST) qui gère le **filtrage, le tri et la pagination** des données.  
-  * Le $Edit$ a besoin d'une API pour **lire** les détails d'une fiche et une API pour l'**écriture/la mise à jour** des champs.  
+* **Découplage API (Back-end) :** Les développeurs RPG savent que chaque pattern React-Admin (CRUD) correspond à un besoin **API clair**.
+  * Le $List$ a besoin d'une API (souvent REST) qui gère le **filtrage, le tri et la pagination** des données.
+  * Le $Edit$ a besoin d'une API pour **lire** les détails d'une fiche et une API pour l'**écriture/la mise à jour** des champs.
 * **Langage Technique Standard :** L'échange passe de "Faites-moi un programme qui met à jour le fichier physique FICHRES" à "Nous avons besoin d'un **Point d'accès API** conforme au pattern REST pour la **Ressource 'Réservation'** qui prend en charge les paramètres de filtre status et dateDepart."
 
 #### **C. Avec les Analystes Métiers et Architectes**
 
-* **Modélisation Claire :** Les patterns sont des blocs de construction logiques qui permettent de modéliser l'application sans ambiguïté. L'analyse métier devient la **cartographie** des entités existantes (fichiers physiques, programmes) vers les **patterns applicatifs cibles**.  
+* **Modélisation Claire :** Les patterns sont des blocs de construction logiques qui permettent de modéliser l'application sans ambiguïté. L'analyse métier devient la **cartographie** des entités existantes (fichiers physiques, programmes) vers les **patterns applicatifs cibles**.
 * **Priorisation des Dépendances :** Le pattern **Composition d'Écran** (Maître-Détail) oblige à identifier quelles entités doivent être migrées en premier. (Ex: Pour avoir l'écran de Réservation complet, j'ai besoin que les ressources 'Vol' et 'Client' soient déjà migrées).
 
 ---
@@ -135,10 +135,10 @@ Adopter ce langage commun basé sur les patterns améliore la communication avec
 
 L'approche par patterns vous positionne idéalement pour l'intégration future de l'IA :
 
-1. **Données Structurées :** L'API orientée **Ressources/Patterns** (CRUD/REST) est la forme de données la plus facile à consommer par un agent d'IA ou un modèle LLM (Large Language Model). L'IA peut comprendre : "Je dois interroger la **Ressource Réservation** avec les filtres status='confirmé' pour répondre à la question de l'utilisateur."  
+1. **Données Structurées :** L'API orientée **Ressources/Patterns** (CRUD/REST) est la forme de données la plus facile à consommer par un agent d'IA ou un modèle LLM (Large Language Model). L'IA peut comprendre : "Je dois interroger la **Ressource Réservation** avec les filtres status='confirmé' pour répondre à la question de l'utilisateur."
 2. **Flux Clairs :** Le pattern **Workflow & State** permet à une IA de comprendre les **actions possibles** dans l'application (ex: "Puis-je annuler cette réservation ? L'IA vérifiera si l'état actuel permet la transition vers l'état 'Annulé'").
 
-          
+
 
 ---
 
@@ -150,20 +150,20 @@ Ce pattern permet de traiter des opérations qui dépassent la simple modificati
 
 Une **Action Métier** est une opération qui :
 
-1. A un **nom explicite** et orienté métier (ex: "Valider la réservation", "Annuler le vol", "Envoyer la facture").  
-2. Peut impliquer des **règles de validation complexes** (ex: "On ne peut annuler que si le vol est dans plus de 48 heures").  
-3. Peut entraîner des **modifications sur plusieurs entités** simultanément (ex: "Valider une réservation" met à jour la réservation, réduit le nombre de sièges disponibles sur le vol, et crée un enregistrement de paiement).  
+1. A un **nom explicite** et orienté métier (ex: "Valider la réservation", "Annuler le vol", "Envoyer la facture").
+2. Peut impliquer des **règles de validation complexes** (ex: "On ne peut annuler que si le vol est dans plus de 48 heures").
+3. Peut entraîner des **modifications sur plusieurs entités** simultanément (ex: "Valider une réservation" met à jour la réservation, réduit le nombre de sièges disponibles sur le vol, et crée un enregistrement de paiement).
 4. Est souvent représentée par un **bouton** ou une **icône** dans l'interface utilisateur.
 
 #### **Implémentation dans React-Admin/Modernisation**
 
 Dans un projet moderne comme Flight400 modernisé avec React-Admin, ce pattern est mis en œuvre de la manière suivante :
 
-* **Côté Interface (React-Admin) :**  
-  * Utilisation de composants $CustomAction$ ou de boutons personnalisés (dans le $ListActionToolbar$ ou le $Show/Edit View$).  
-  * Ces boutons appellent un **Point d'Accès API (Endpoint) dédié** et explicite.  
-* **Côté API (Back-end) :**  
-  * Au lieu d'utiliser les endpoints génériques REST (/api/reservations/123 en méthode PUT), on utilise des endpoints spécifiques à l'action (/api/reservations/123/validate ou /api/commands/validate\_reservation).  
+* **Côté Interface (React-Admin) :**
+  * Utilisation de composants $CustomAction$ ou de boutons personnalisés (dans le $ListActionToolbar$ ou le $Show/Edit View$).
+  * Ces boutons appellent un **Point d'Accès API (Endpoint) dédié** et explicite.
+* **Côté API (Back-end) :**
+  * Au lieu d'utiliser les endpoints génériques REST (/api/reservations/123 en méthode PUT), on utilise des endpoints spécifiques à l'action (/api/reservations/123/validate ou /api/commands/validate\_reservation).
   * C'est le rôle des **programmes RPG/Services Modernisés** de Flight400 de fournir ces endpoints spécifiques, car la logique métier complexe est déjà encapsulée dans ces programmes.
 
 ### **Exemple avec Flight400 : La Réservation**
@@ -181,12 +181,12 @@ Dans un projet moderne comme Flight400 modernisé avec React-Admin, ce pattern e
 
 L'Action Métier est souvent le **moteur de transition** d'un **Workflow**.
 
-* Le **Workflow** (Pattern de Statut) définit les états valides (ex: *Réservé*, *Confirmé*, *Annulé*).  
+* Le **Workflow** (Pattern de Statut) définit les états valides (ex: *Réservé*, *Confirmé*, *Annulé*).
 * L'**Action Métier** (Pattern de Commande) est l'événement qui fait passer l'entité d'un état à l'autre.
 
 **Analyse Métier avec les End-Users :**
 
-1. **Identifier les États (State) :** "Quelles sont toutes les étapes par lesquelles une réservation peut passer ?"  
+1. **Identifier les États (State) :** "Quelles sont toutes les étapes par lesquelles une réservation peut passer ?"
 2. **Identifier les Transitions (Actions) :** "Quel est le **nom de l'action** (bouton) qui permet de passer de l'état 'Réservé' à l'état 'Confirmé' ?"
 
 Cela permet de créer un **diagramme d'état** qui est un outil d'échange très puissant avec les utilisateurs finaux et l'analyse métier.
@@ -199,7 +199,7 @@ L'utilisateur ne se préoccupe pas de "Update le champ statut", mais de "Cliquer
 
 Dans votre projet de modernisation Flight400 :
 
-1. **Utilisez le CRUD et les Listes** pour gérer les données de base (créer un nouveau client, modifier un numéro de téléphone).  
+1. **Utilisez le CRUD et les Listes** pour gérer les données de base (créer un nouveau client, modifier un numéro de téléphone).
 2. **Utilisez les Actions Métier (Commands)** pour tout ce qui est une procédure métier **significative** et **réglementée** (tout ce qui a des règles de validation et des effets secondaires importants sur le système).
 
 Cela garantit que l'interface moderne est non seulement fonctionnelle, mais qu'elle **reflète fidèlement la logique opérationnelle** complexe héritée de votre application IBM i.
@@ -216,15 +216,15 @@ Voici comment ces patterns sont implémentés concrètement :
 
 Ce pattern est la base de React-Admin et ne nécessite pratiquement aucune personnalisation.
 
-* **Ressource Déclarative :** L'essentiel du travail se fait avec le composant $Resource$.  
+* **Ressource Déclarative :** L'essentiel du travail se fait avec le composant $Resource$.
 * JavaScript
 
-\<Admin dataProvider={...}\>  
-    \<Resource name\="reservations" list\={ReservationList} edit\={ReservationEdit} create\={ReservationCreate} /\>  
+\<Admin dataProvider={...}\>
+    \<Resource name\="reservations" list\={ReservationList} edit\={ReservationEdit} create\={ReservationCreate} /\>
 \</Admin\>
 
-*   
-  * **Implication :** Chaque $Resource$ (ex: reservations) mappe directement aux endpoints REST standard (/reservations, /reservations/123). Le Data Provider s'attend à recevoir des requêtes GET, POST, PUT, DELETE pour ces URLs.  
+*
+  * **Implication :** Chaque $Resource$ (ex: reservations) mappe directement aux endpoints REST standard (/reservations, /reservations/123). Le Data Provider s'attend à recevoir des requêtes GET, POST, PUT, DELETE pour ces URLs.
   * **Atomic CRM :** Il utilise ce schéma pour ses entités de base (Contacts, Deals, Companies).
 
 ---
@@ -237,77 +237,77 @@ C'est ici que vous devez intervenir pour vos spécificités Flight400. Le patter
 
 Vous créez un composant bouton personnalisé. Ce composant est inséré dans la vue $Edit$ ou $Show$ de la ressource.
 
-1. Le Composant Bouton (Exemple : Annuler la Réservation) :  
-   Vous utilisez les hooks de mutation de React-Admin (comme $useDataProvider$) qui permettent d'interagir avec l'API sans passer par les opérations CRUD standard (CREATE, UPDATE, etc.).  
+1. Le Composant Bouton (Exemple : Annuler la Réservation) :
+   Vous utilisez les hooks de mutation de React-Admin (comme $useDataProvider$) qui permettent d'interagir avec l'API sans passer par les opérations CRUD standard (CREATE, UPDATE, etc.).
 2. JavaScript
 
-// Exemple simplifié pour un composant bouton "Annuler"  
+// Exemple simplifié pour un composant bouton "Annuler"
 import { useDataProvider, useNotify, useRedirect } from 'react-admin';
 
-const CancelReservationButton \= ({ record }) \=\> {  
-    const dataProvider \= useDataProvider();  
-    const notify \= useNotify();  
+const CancelReservationButton \= ({ record }) \=\> {
+    const dataProvider \= useDataProvider();
+    const notify \= useNotify();
     const redirect \= useRedirect();
 
-    const handleClick \= () \=\> {  
-        // Appel API personnalisé qui ne suit pas le schéma UPDATE  
-        dataProvider.customAction('CANCEL\_RESERVATION', { id: record.id })  
-            .then(() \=\> {  
-                notify('Réservation annulée avec succès', { type: 'success' });  
-                redirect('list', 'reservations');  
-            })  
-            .catch(error \=\> {  
-                notify(\`Erreur: ${error.message}\`, { type: 'warning' });  
-            });  
+    const handleClick \= () \=\> {
+        // Appel API personnalisé qui ne suit pas le schéma UPDATE
+        dataProvider.customAction('CANCEL\_RESERVATION', { id: record.id })
+            .then(() \=\> {
+                notify('Réservation annulée avec succès', { type: 'success' });
+                redirect('list', 'reservations');
+            })
+            .catch(error \=\> {
+                notify(\`Erreur: ${error.message}\`, { type: 'warning' });
+            });
     };
 
-    return \<Button label\="Annuler la Réservation" onClick\={handleClick} /\>;  
+    return \<Button label\="Annuler la Réservation" onClick\={handleClick} /\>;
 };
 
-3.   
-4.   
+3.
+4.
 5. **L'Intégration :** Ce bouton est ensuite injecté dans l'en-tête de la vue $Edit$, remplaçant (ou complétant) les boutons d'action par défaut ($EditActions$).
 
 #### **Étape B : Côté API (Data Provider)**
 
 Le $dataProvider$ est l'adaptateur entre React-Admin et votre API de modernisation Flight400 (qui, en interne, peut appeler vos programmes RPG existants). C'est le Data Provider qui interprète l'action personnalisée et la traduit en un appel HTTP spécifique.
 
-1. Définition de l'Action dans le Data Provider :  
-   Vous modifiez l'implémentation de votre Data Provider pour intercepter l'action personnalisée ('CANCEL\_RESERVATION').  
+1. Définition de l'Action dans le Data Provider :
+   Vous modifiez l'implémentation de votre Data Provider pour intercepter l'action personnalisée ('CANCEL\_RESERVATION').
 2. JavaScript
 
-// Dans votre implémentation du Data Provider  
-const customDataProvider \= {  
+// Dans votre implémentation du Data Provider
+const customDataProvider \= {
     // ... toutes les fonctions CRUD standard (getOne, update, create, delete)
 
-    customAction: (type, params) \=\> {  
-        if (type \=== 'CANCEL\_RESERVATION') {  
-            const { id } \= params;  
-            // Traduction de l'action métier en appel HTTP explicite  
-            return fetch(\`http://api-flight400/reservations/${id}/cancel\`, {  
-                method: 'POST', // ou PUT  
-            }).then(response \=\> response.json());  
-        }  
-        // ... autres actions personnalisées  
+    customAction: (type, params) \=\> {
+        if (type \=== 'CANCEL\_RESERVATION') {
+            const { id } \= params;
+            // Traduction de l'action métier en appel HTTP explicite
+            return fetch(\`http://api-flight400/reservations/${id}/cancel\`, {
+                method: 'POST', // ou PUT
+            }).then(response \=\> response.json());
+        }
+        // ... autres actions personnalisées
     },
 
-    // React-Admin appelle cette fonction lorsque le bouton est cliqué  
-    // La méthode utilisée est souvent 'update' ou 'custom'  
-    // Pour les Actions Métier, l'approche 'customAction' (ou l'utilisation de \`useMutation\` avec un hook personnalisé) est la plus propre.  
+    // React-Admin appelle cette fonction lorsque le bouton est cliqué
+    // La méthode utilisée est souvent 'update' ou 'custom'
+    // Pour les Actions Métier, l'approche 'customAction' (ou l'utilisation de \`useMutation\` avec un hook personnalisé) est la plus propre.
 };
 
-3.   
-4. 
+3.
+4.
 
 ### **3\. 🧩 Implémentation du Pattern Workflow & State**
 
 Ce pattern est géré par une combinaison des patterns précédents et de la **logique conditionnelle** dans l'interface.
 
-* **Affichage du Statut :** Le statut est un champ classique de la ressource. On utilise un champ de formatage (ex: $ChipField$ pour afficher le statut avec une couleur).  
-* **Contrôle des Actions (Règles Métier) :**  
-  * Le bouton $CancelReservationButton$ créé à l'étape 2.A **n'est affiché** que si le record.status le permet (ex: status \!== 'CANCELLED').  
-  * En utilisant une logique conditionnelle dans React : if (record.status \=== 'CONFIRMED') { return \<CancelReservationButton record={record} /\> }  
-* **Atomic CRM :** Dans Atomic CRM, cela se manifeste dans la gestion des **Deals** qui passent par des étapes (Kanban Board). La modification de l'étape est techniquement un $UPDATE$ d'un champ status, mais elle déclenche une logique   
+* **Affichage du Statut :** Le statut est un champ classique de la ressource. On utilise un champ de formatage (ex: $ChipField$ pour afficher le statut avec une couleur).
+* **Contrôle des Actions (Règles Métier) :**
+  * Le bouton $CancelReservationButton$ créé à l'étape 2.A **n'est affiché** que si le record.status le permet (ex: status \!== 'CANCELLED').
+  * En utilisant une logique conditionnelle dans React : if (record.status \=== 'CONFIRMED') { return \<CancelReservationButton record={record} /\> }
+* **Atomic CRM :** Dans Atomic CRM, cela se manifeste dans la gestion des **Deals** qui passent par des étapes (Kanban Board). La modification de l'étape est techniquement un $UPDATE$ d'un champ status, mais elle déclenche une logique
 * métier côté API (backend) pour mettre à jour les dates et les activités.
 
 En résumé, React-Admin offre la **flexibilité** nécessaire pour implémenter n'importe quel pattern, même ceux qui ne sont pas purement CRUD, en vous donnant le contrôle total sur l'appel API via des composants personnalisés et le $Data Provider$.
@@ -324,8 +324,8 @@ Dans l'application 5250, une transaction était souvent gérée de manière sync
 
 Dans un environnement modernisé (Web, API, Extranet), une seule transaction utilisateur peut impliquer :
 
-1. Le système de Réservation (IBM i / RPG).  
-2. Le système de Paiement (Externe, via une API REST).  
+1. Le système de Réservation (IBM i / RPG).
+2. Le système de Paiement (Externe, via une API REST).
 3. Le système de Notification (Email, SMS).
 
 Si l'étape 2 échoue après que l'étape 1 a réussi, votre système est incohérent.
@@ -354,12 +354,12 @@ Le rôle des Patterns Applicatifs React-Admin et celui du Pattern Saga sont comp
 
 #### **Impact sur React-Admin / Extranet**
 
-1. **Changement d'État (UX) :** L'utilisateur doit être informé que l'action est **asynchrone**. Une fois que l'utilisateur clique sur "Valider la Commande" (le Command), l'interface passe à un état **"En Traitement"**.  
-   * React-Admin peut afficher une $Notification$ ou un $Redirect$ vers une page $Show$ où le statut est PENDING.  
-2. **Statuts Granulaires :** Votre Pattern **Workflow & State** (du point précédent) doit être enrichi pour inclure des statuts temporaires ou d'erreur liés à la Saga :  
-   * RESERVATION\_PENDING\_PAYMENT  
-   * RESERVATION\_PAYMENT\_FAILED  
-   * RESERVATION\_COMPLETED (si Saga réussie)  
+1. **Changement d'État (UX) :** L'utilisateur doit être informé que l'action est **asynchrone**. Une fois que l'utilisateur clique sur "Valider la Commande" (le Command), l'interface passe à un état **"En Traitement"**.
+   * React-Admin peut afficher une $Notification$ ou un $Redirect$ vers une page $Show$ où le statut est PENDING.
+2. **Statuts Granulaires :** Votre Pattern **Workflow & State** (du point précédent) doit être enrichi pour inclure des statuts temporaires ou d'erreur liés à la Saga :
+   * RESERVATION\_PENDING\_PAYMENT
+   * RESERVATION\_PAYMENT\_FAILED
+   * RESERVATION\_COMPLETED (si Saga réussie)
 3. **Gestion des Erreurs :** Si une Saga échoue, React-Admin doit recevoir et afficher une erreur claire, orientée métier, basée sur la transaction de compensation (ex: "Le paiement a échoué. Les sièges ont été libérés. Veuillez réessayer.").
 
 ### **Conclusion**
@@ -368,7 +368,7 @@ Le Pattern Saga est un **excellent choix technique** pour garantir l'intégrité
 
 Il complète parfaitement les autres patterns :
 
-* Il est déclenché par le **Pattern Action Métier** (le "Command" lancé par l'utilisateur).  
+* Il est déclenché par le **Pattern Action Métier** (le "Command" lancé par l'utilisateur).
 * Il nécessite l'évolution du **Pattern Workflow & State** pour gérer les états de transition asynchrone.
 
 Si vous vous attaquez à la modernisation de Flight400, il est essentiel de déterminer **quelles sont les procédures métier clés qui nécessitent une garantie de cohérence distribuée (Saga)**. Les transactions financières et les réservations complexes sont des candidats idéaux.
@@ -387,15 +387,15 @@ Voici comment ils interagissent et pourquoi cette combinaison est puissante pour
 
 Le Workflow est la **modélisation métier** du cycle de vie de l'entité. Il définit les **états valides** et les **transitions autorisées**. C'est le contrat de haut niveau avec l'utilisateur et l'analyste métier.
 
-* **Rôle :** Définir la *séquence d'états* que l'entité (ex: Réservation) doit suivre.  
-* **Exemple Flight400 :**  
+* **Rôle :** Définir la *séquence d'états* que l'entité (ex: Réservation) doit suivre.
+* **Exemple Flight400 :**
   * États : \`$DÉBUT$ \\to PAIEMENT\_EN\_COURS \\to CONFIRMÉ \\to ENREGISTRÉ \\to VOLÉ \\to ARCHIVÉ$
 
 ### **2\. 🛡️ Le Pattern Saga : Le "Comment"**
 
 Le Saga est la **mécanique technique** qui garantit que le passage d'un état à un autre (la transition) est fiable, même s'il implique plusieurs systèmes.
 
-* **Rôle :** Exécuter la *transition* en toute sécurité et gérer les échecs (transactions de compensation).  
+* **Rôle :** Exécuter la *transition* en toute sécurité et gérer les échecs (transactions de compensation).
 * **Exemple Flight400 :** Le passage de l'état PAIEMENT\_EN\_COURS à CONFIRMÉ.
 
 ---
@@ -420,16 +420,16 @@ La structure du Workflow impose la structure du Saga. Chaque **transition critiq
 
 Dans une interface React-Admin (Extranet), les Actions Métier lancées par l'utilisateur ne sont plus instantanées comme dans le 5250\.
 
-* Le Workflow définit l'état $PAIEMENT\\\_EN\\\_COURS$.  
-* Le Saga exécute la logique en arrière-plan (asynchrone).  
+* Le Workflow définit l'état $PAIEMENT\\\_EN\\\_COURS$.
+* Le Saga exécute la logique en arrière-plan (asynchrone).
 * L'interface React-Admin (grâce à l'état du Workflow) informe l'utilisateur : "Votre réservation est **en cours de validation**" au lieu de simplement planter ou attendre.
 
 ### **Conclusion pour Flight400**
 
 Pour votre projet, il est essentiel de **cartographier le Workflow** avant de coder les Sagas :
 
-1. **Dessinez le Diagramme d'États (Workflow) :** Identifiez les statuts et les transitions.  
-2. **Identifiez les Sagas :** Pour chaque transition qui franchit les limites d'un service unique (ex: communication avec le service de paiement, mise à jour de l'inventaire des sièges), vous devez définir un Saga.  
+1. **Dessinez le Diagramme d'États (Workflow) :** Identifiez les statuts et les transitions.
+2. **Identifiez les Sagas :** Pour chaque transition qui franchit les limites d'un service unique (ex: communication avec le service de paiement, mise à jour de l'inventaire des sièges), vous devez définir un Saga.
 3. **Définissez les Transactions de Compensation :** Pour chaque étape dans la Saga, vous devez savoir comment l'annuler si les étapes suivantes échouent.
 
 Cette approche combinée garantit une application **cohérente d'un point de vue métier** (grâce au Workflow) et **robuste d'un point de vue technique** (grâce au Saga).
@@ -483,13 +483,13 @@ L'action **Action Métier :** Lancer\_Paiement déclenche le Saga.
 
 #### **Le Scénario d'Échec (Remboursement)**
 
-1. L'utilisateur lance l'action Lancer\_Paiement.  
-2. **T1** réussit (Sièges pré-réservés).  
-3. **T2** échoue (Carte refusée).  
-4. **Le Saga entre en mode Compensation :**  
-   * Compensation de **T1** est appelée : les sièges sont libérés.  
-   * Compensation de **T2** n'est pas nécessaire (pas de débit).  
-   * **T3** est modifiée : L'état de la Réservation est mis à $Échec\\\_Paiement$.  
+1. L'utilisateur lance l'action Lancer\_Paiement.
+2. **T1** réussit (Sièges pré-réservés).
+3. **T2** échoue (Carte refusée).
+4. **Le Saga entre en mode Compensation :**
+   * Compensation de **T1** est appelée : les sièges sont libérés.
+   * Compensation de **T2** n'est pas nécessaire (pas de débit).
+   * **T3** est modifiée : L'état de la Réservation est mis à $Échec\\\_Paiement$.
 5. **Côté React-Admin :** L'Agent\_Réservation voit le statut $Échec\\\_Paiement$ et reçoit une notification l'informant de l'échec et de la libération des sièges.
 
 ---
@@ -498,10 +498,10 @@ L'action **Action Métier :** Lancer\_Paiement déclenche le Saga.
 
 L'interface doit gérer l'asynchronisme et les statuts du Workflow :
 
-* **Composant Bouton (Action Métier) :** Le bouton Lancer\_Paiement doit être désactivé immédiatement après le clic pour éviter les doubles soumissions.  
-* **Affichage de l'État :** La vue $ReservationShow$ ou $ReservationEdit$ doit afficher le statut :  
-  * Si $status \= PAIEMENT\\\_EN\\\_COURS$, afficher un message "Transaction en cours..." et un spinner.  
-  * Si $status \= Échec\\\_Paiement$, afficher le bouton $Relancer\\\_Paiement$.  
+* **Composant Bouton (Action Métier) :** Le bouton Lancer\_Paiement doit être désactivé immédiatement après le clic pour éviter les doubles soumissions.
+* **Affichage de l'État :** La vue $ReservationShow$ ou $ReservationEdit$ doit afficher le statut :
+  * Si $status \= PAIEMENT\\\_EN\\\_COURS$, afficher un message "Transaction en cours..." et un spinner.
+  * Si $status \= Échec\\\_Paiement$, afficher le bouton $Relancer\\\_Paiement$.
   * Si $status \= CONFIRMÉE$, afficher le bouton $Envoyer\\\_Billet\\\_Manuellement$.
 
 Cette approche garantit que les Agents de Réservation, habitués à la rapidité synchrone du 5250, comprennent ce qui se passe et savent quoi faire en cas d'échec (grâce aux statuts clairs du Workflow et aux actions compensatoires gérées par le Saga).
@@ -520,56 +520,56 @@ L'objectif est de montrer comment la complexité du code RPG et des écrans 5250
 
 ### **Chapitre 1 : Introduction et Constat de l'Existant (Flight400 Classique)**
 
-* **Problème :** Les transactions 5250 sont synchrones, couplées (présentation/logique/données), et rigides.  
-* **Illustration :** Montrez un écran 5250 (ex: la fiche de réservation) et mettez en évidence :  
-  * L'absence de distinction claire entre READ et EDIT.  
+* **Problème :** Les transactions 5250 sont synchrones, couplées (présentation/logique/données), et rigides.
+* **Illustration :** Montrez un écran 5250 (ex: la fiche de réservation) et mettez en évidence :
+  * L'absence de distinction claire entre READ et EDIT.
   * Le rôle du **code fonction** (ex: F3, F6, F12) comme **Actions Métier** implicites et non standardisées.
 
 ### **Chapitre 2 : La Fondation : Le Pattern de Gestion des Ressources (CRUD)**
 
-* **Concept :** Comment les Fichiers Physiques (DB2/400) deviennent des **Ressources REST** (Clients, Vols, Réservations).  
-* **Illustration :**  
-  * **Avant :** Le fichier $FICHCLT$ (Client) sur l'IBM i.  
-  * **Après :** La ressource React-Admin $Client$ implémentée par le Data Provider appelant :  
-    * GET /api/clients (Liste/Filtres)  
-    * GET /api/clients/{id} (Détail)  
-    * PUT /api/clients/{id} (Édition)  
+* **Concept :** Comment les Fichiers Physiques (DB2/400) deviennent des **Ressources REST** (Clients, Vols, Réservations).
+* **Illustration :**
+  * **Avant :** Le fichier $FICHCLT$ (Client) sur l'IBM i.
+  * **Après :** La ressource React-Admin $Client$ implémentée par le Data Provider appelant :
+    * GET /api/clients (Liste/Filtres)
+    * GET /api/clients/{id} (Détail)
+    * PUT /api/clients/{id} (Édition)
   * **Avantage :** Le développeur IBM i sait exactement quels services il doit exposer.
 
 ### **Chapitre 3 : L'Ergonomie et l'Efficacité : Les Patterns de Vues**
 
-* **Pattern :** **Découverte/Filtrage/Recherche** (Listes React-Admin).  
-  * **Illustration :** Remplacez l'écran de sélection de fiches (souvent paginé et à colonnes fixes en 5250\) par un $Datagrid$ React-Admin avec des filtres latéraux dynamiques.  
-  * **Bénéfice :** L'Agent Réservation passe de la recherche par code à la recherche par critères métiers multiples (Statut \+ Date \+ Destination).  
-* **Pattern :** **Composition d'Écran** (Maître-Détail/Onglets).  
-  * **Illustration :** Montrez comment la navigation séquentielle entre écrans 5250 (Client $\\to$ Commandes $\\to$ Paiements) est remplacée par des **Onglets** (via $TabbedForm$) sur l'écran $ClientEdit$.  
+* **Pattern :** **Découverte/Filtrage/Recherche** (Listes React-Admin).
+  * **Illustration :** Remplacez l'écran de sélection de fiches (souvent paginé et à colonnes fixes en 5250\) par un $Datagrid$ React-Admin avec des filtres latéraux dynamiques.
+  * **Bénéfice :** L'Agent Réservation passe de la recherche par code à la recherche par critères métiers multiples (Statut \+ Date \+ Destination).
+* **Pattern :** **Composition d'Écran** (Maître-Détail/Onglets).
+  * **Illustration :** Montrez comment la navigation séquentielle entre écrans 5250 (Client $\\to$ Commandes $\\to$ Paiements) est remplacée par des **Onglets** (via $TabbedForm$) sur l'écran $ClientEdit$.
   * **Bénéfice :** Visualisation immédiate des relations entités (le $1-N$ du DB2/400 est rendu visible).
 
 ### **Chapitre 4 : La Logique Métier Complexe : Workflow & Actions**
 
 C'est ici que vous illustrez la gestion des procédures spécifiques à Flight400.
 
-* **Pattern :** **Flux de Travail et de Statut (Workflow & State)**.  
-  * **Illustration :** Le diagramme d'états que nous avons développé pour la Réservation (Brouillon $\\to$ Paiement $\\to$ Confirmée...).  
-  * **Rôle de React-Admin :** Utilisation du $ChipField$ pour rendre le statut visuel et clair.  
-* **Pattern :** **Actions Métier (Commands)**.  
-  * **Illustration :** Montrez comment le bouton "Valider la Réservation" sur l'Extranet remplace le programme RPG $PGMVLDRES$ et appelle l'endpoint explicite POST /reservations/{id}/validate.  
+* **Pattern :** **Flux de Travail et de Statut (Workflow & State)**.
+  * **Illustration :** Le diagramme d'états que nous avons développé pour la Réservation (Brouillon $\\to$ Paiement $\\to$ Confirmée...).
+  * **Rôle de React-Admin :** Utilisation du $ChipField$ pour rendre le statut visuel et clair.
+* **Pattern :** **Actions Métier (Commands)**.
+  * **Illustration :** Montrez comment le bouton "Valider la Réservation" sur l'Extranet remplace le programme RPG $PGMVLDRES$ et appelle l'endpoint explicite POST /reservations/{id}/validate.
   * **Avantage :** L'interface n'est plus responsable de la logique, elle n'est que l'émetteur d'un **Command** clair.
 
 ### **Chapitre 5 : L'Intégrité des Transactions : Le Pattern Saga**
 
-* **Concept :** Gérer la complexité de la "Vente de Billets" (qui touche l'inventaire IBM i, le paiement externe, et la notification).  
-* **Illustration :** Utilisez le tableau de notre étude de cas :  
-  * **Déclencheur :** Le **Command** $Lancer\\\_Paiement$ sur React-Admin.  
-  * **Séquence :** T1 (Sièges RPG) $\\to$ T2 (Paiement Externe).  
-  * **Compensation :** Montrez la trace d'un échec (ex: Paiement refusé) qui déclenche l'annulation automatique des sièges pré-réservés (via le programme de compensation RPG).  
+* **Concept :** Gérer la complexité de la "Vente de Billets" (qui touche l'inventaire IBM i, le paiement externe, et la notification).
+* **Illustration :** Utilisez le tableau de notre étude de cas :
+  * **Déclencheur :** Le **Command** $Lancer\\\_Paiement$ sur React-Admin.
+  * **Séquence :** T1 (Sièges RPG) $\\to$ T2 (Paiement Externe).
+  * **Compensation :** Montrez la trace d'un échec (ex: Paiement refusé) qui déclenche l'annulation automatique des sièges pré-réservés (via le programme de compensation RPG).
 * **Conclusion :** Le Saga permet de maintenir la garantie ACID des transactions complexes, même en environnement distribué.
 
 ---
 
 Cette structure est logique : elle passe de la gestion de base (CRUD) à l'ergonomie (Vues) pour finir par la complexité (Workflow et Saga). Elle donne des **points d'ancrage clairs** pour les différents acteurs :
 
-* **End-Users/UX :** Chapitres 2 & 3 (Interface, Filtres).  
+* **End-Users/UX :** Chapitres 2 & 3 (Interface, Filtres).
 * **Développeurs/Architectes :** Chapitres 4 & 5 (API, Command, Saga).
 
 C'est une excellente façon d'utiliser Flight400 \! N'hésitez pas si vous avez besoin d'aide pour rédiger les détails techniques de l'implémentation de ces patterns (par exemple, comment le Data Provider React-Admin gère le Saga).
@@ -607,14 +607,14 @@ L'approche consiste à traduire les composants monolithiques de l'IBM i en patte
 
 Le passage du 5250 au Web impose une séparation stricte :
 
-* **Queries (Lecture) :** Le Data Provider appelle des endpoints REST (/api/vols) pour alimenter les listes.  
+* **Queries (Lecture) :** Le Data Provider appelle des endpoints REST (/api/vols) pour alimenter les listes.
 * **Commands (Écriture) :** Les actions métier (ex: "Valider un vol") deviennent des appels explicites à des services RPG exposés.
 
 ### **B. Gestion des Transactions Complexes (Pattern Saga)**
 
 Pour les opérations distribuées (ex: réserver un siège \+ paiement externe) :
 
-* **Séquence :** T1 (Réservation IBM i) $\\rightarrow$ T2 (Paiement API).  
+* **Séquence :** T1 (Réservation IBM i) $\\rightarrow$ T2 (Paiement API).
 * **Compensation :** En cas d'échec de T2, un programme RPG de compensation est déclenché pour libérer le siège automatiquement.
 
 ---
@@ -623,16 +623,16 @@ Pour les opérations distribuées (ex: réserver un siège \+ paiement externe) 
 
 L'utilisation des patterns de Flight400 sert de pont de communication :
 
-* **Utilisateurs Finaux :** Visualisent le futur outil via des maquettes de listes et formulaires familiers.  
-* **Développeurs RPG :** Reçoivent des spécifications d'API claires (endpoints et formats JSON) plutôt que des demandes d'écrans.  
+* **Utilisateurs Finaux :** Visualisent le futur outil via des maquettes de listes et formulaires familiers.
+* **Développeurs RPG :** Reçoivent des spécifications d'API claires (endpoints et formats JSON) plutôt que des demandes d'écrans.
 * **IA / LLM :** Les agents d'IA interagissent plus facilement avec des **Ressources structurées** et des **Actions nommées** qu'avec des flux d'écrans non documentés.
 
 ---
 
 ## **🚀 Prochaines Étapes**
 
-1. **Cartographie :** Identifier la première ressource critique (ex: Réservation).  
-2. **Design API :** Définir les endpoints CRUD pour cette ressource.  
+1. **Cartographie :** Identifier la première ressource critique (ex: Réservation).
+2. **Design API :** Définir les endpoints CRUD pour cette ressource.
 3. **Maquettage :** Illustrer le passage de l'écran 5250 à la vue Edit de React-Admin.
 
 ---
@@ -651,14 +651,14 @@ Dans le cadre de **Flight400**, le pattern Saga est indispensable pour remplacer
 
 #### **Exemple : Réservation d'un billet (Saga à chorégraphie)**
 
-1. **Action Locale (IBM i) :** Le programme RPG réserve temporairement un siège dans le fichier FICHSIEG.  
-2. **Action Externe (API) :** L'application appelle une passerelle de paiement (ex: Stripe).  
-3. **Issue A (Succès) :** Le paiement est validé → Mise à jour du statut de la réservation en "Confirmé" sur l'IBM i.  
+1. **Action Locale (IBM i) :** Le programme RPG réserve temporairement un siège dans le fichier FICHSIEG.
+2. **Action Externe (API) :** L'application appelle une passerelle de paiement (ex: Stripe).
+3. **Issue A (Succès) :** Le paiement est validé → Mise à jour du statut de la réservation en "Confirmé" sur l'IBM i.
 4. **Issue B (Échec \- Compensation) :** Le paiement échoue → Déclenchement automatique d'un **programme de compensation RPG** pour libérer le siège et annuler la transaction en cours.
 
 **Bénéfices pour Flight400 :**
 
-* **Résilience :** Évite les enregistrements bloqués (locks) en cas de coupure réseau.  
+* **Résilience :** Évite les enregistrements bloqués (locks) en cas de coupure réseau.
 * **Traçabilité :** Chaque étape de la Saga est logguée, permettant de savoir exactement où un processus métier s'est arrêté.
 
 ---
@@ -687,27 +687,27 @@ Ces patterns transforment la gestion des fichiers DB2/400 en entités modernes a
 
 Ce pattern est le socle de l'application métier et assure la gestion de base des entités.
 
-* **Concept :** Implémentation standard des opérations **C**reate, **R**ead, **U**pdate, **D**elete sur des entités (Ressources).  
-* **Équivalent Flight400 :** Les écrans d'entrée/modification de fiches (client, vol, réservation).  
-* **Objectif Modernisation :** Centraliser la gestion des entités. Un fichier physique (Ex: `FICHCLT`) devient une **Ressource `Client`** avec des endpoints REST standard.  
+* **Concept :** Implémentation standard des opérations **C**reate, **R**ead, **U**pdate, **D**elete sur des entités (Ressources).
+* **Équivalent Flight400 :** Les écrans d'entrée/modification de fiches (client, vol, réservation).
+* **Objectif Modernisation :** Centraliser la gestion des entités. Un fichier physique (Ex: `FICHCLT`) devient une **Ressource `Client`** avec des endpoints REST standard.
 * **Bénéfice :** Le développeur IBM i sait immédiatement que des services pour `GET`, `POST`, `PUT`, `DELETE` sur `/api/clients` doivent être exposés.
 
 ### 1.2. 🗂️ Pattern de Découverte/Filtrage/Recherche
 
 Crucial pour l'efficacité des utilisateurs confrontés à de grandes quantités de données.
 
-* **Concept :** Mise en place de filtres rapides, de tris et de recherches textuelles (Facets).  
-* **Équivalent Flight400 :** Écrans de sélection de fiches (F6 pour rechercher, F11 pour trier).  
-* **Objectif Modernisation :** Mettre l'accent sur les **critères de segmentation métier** importants.  
+* **Concept :** Mise en place de filtres rapides, de tris et de recherches textuelles (Facets).
+* **Équivalent Flight400 :** Écrans de sélection de fiches (F6 pour rechercher, F11 pour trier).
+* **Objectif Modernisation :** Mettre l'accent sur les **critères de segmentation métier** importants.
 * **Bénéfice :** L'Agent de Réservation peut rapidement **trouver l'information** en combinant des filtres (Statut \+ Date \+ Destination).
 
 ### 1.3. 🧩 Pattern de Composition d'Écran (Maître-Détail)
 
 Structure l'information détaillée pour la rendre compréhensible.
 
-* **Concept :** L'écran de consultation d'une ressource est composé de sous-composants ou d'**onglets** affichant des informations connexes.  
-* **Équivalent Flight400 :** Séquence d'écrans pour une transaction complexe (Client $\\to$ Réservation $\\to$ Paiement).  
-* **Objectif Modernisation :** Modéliser les **relations entre entités** (1-N).  
+* **Concept :** L'écran de consultation d'une ressource est composé de sous-composants ou d'**onglets** affichant des informations connexes.
+* **Équivalent Flight400 :** Séquence d'écrans pour une transaction complexe (Client $\\to$ Réservation $\\to$ Paiement).
+* **Objectif Modernisation :** Modéliser les **relations entre entités** (1-N).
 * **Bénéfice :** L'utilisateur est guidé, l'information est **organisée logiquement** (Ex: onglet "Historique des Commandes" sur la fiche Client), évitant la navigation séquentielle 5250\.
 
 ## 2\. Logique Métier Complexe : Workflow, Actions et Transactions
@@ -716,27 +716,27 @@ Ces patterns gèrent les règles, les validations complexes et la cohérence ent
 
 Modélise le cycle de vie des entités critiques (Ex: Réservation, Vol).
 
-* **Concept :** Les entités suivent un cycle de vie avec des **statuts** bien définis (Ex: *Nouveau* $\\to$ *Confirmé* $\\to$ *Volé*).  
-* **Équivalent Flight400 :** Les codes statut gérés par des champs dans le DB2/400 et mis à jour par des programmes RPG.  
-* **Objectif Modernisation :** Cartographier le **processus métier** et imposer la bonne séquence d'actions.  
+* **Concept :** Les entités suivent un cycle de vie avec des **statuts** bien définis (Ex: *Nouveau* $\\to$ *Confirmé* $\\to$ *Volé*).
+* **Équivalent Flight400 :** Les codes statut gérés par des champs dans le DB2/400 et mis à jour par des programmes RPG.
+* **Objectif Modernisation :** Cartographier le **processus métier** et imposer la bonne séquence d'actions.
 * **Lien avec l'UX :** Utilisation de $ChipField$ dans React-Admin pour rendre l'état visuel et clair.
 
 ### 2.2. 🎯 Pattern des Actions Métier (Commands)
 
 Ce pattern est utilisé pour toute opération qui dépasse la simple modification d'un champ.
 
-* **Concept :** Une Action Métier a un **nom explicite** ("Annuler le vol", "Valider la réservation") et déclenche une logique complexe (règles de validation, modifications sur plusieurs entités).  
-* **Équivalent Flight400 :** Le programme RPG monolithique `PGMVLDRES`.  
-* **Objectif Modernisation :** L'interface n'est plus responsable de la logique, elle devient l'émetteur d'un **Command** clair qui appelle un **Endpoint API dédié** (Ex: `POST /reservations/{id}/validate`).  
+* **Concept :** Une Action Métier a un **nom explicite** ("Annuler le vol", "Valider la réservation") et déclenche une logique complexe (règles de validation, modifications sur plusieurs entités).
+* **Équivalent Flight400 :** Le programme RPG monolithique `PGMVLDRES`.
+* **Objectif Modernisation :** L'interface n'est plus responsable de la logique, elle devient l'émetteur d'un **Command** clair qui appelle un **Endpoint API dédié** (Ex: `POST /reservations/{id}/validate`).
 * **Lien avec le Workflow :** L'Action Métier est le **moteur de transition** qui fait passer l'entité d'un état à un autre.
 
 ### 2.3. 🛡️ Pattern Saga
 
 Essentiel pour garantir la **cohérence des données à travers des transactions distribuées** (typiques d'un Extranet).
 
-* **Concept :** Une séquence de transactions locales coordonnée. Si une étape échoue, le Saga exécute des **transactions de compensation** pour annuler les modifications précédentes.  
-* **Contexte Flight400 :** La **Vente de Billets** (Création de Réservation) est l'exemple archétypal, car elle touche l'Inventaire (IBM i), le Paiement (Externe) et la Notification.  
-* **Lien avec les autres patterns :** Il est déclenché par le **Command** (Action Métier) et nécessite l'évolution du **Workflow & State** pour gérer les états de transition asynchrone (Ex: `PAIEMENT_EN_ATTENTE`).  
+* **Concept :** Une séquence de transactions locales coordonnée. Si une étape échoue, le Saga exécute des **transactions de compensation** pour annuler les modifications précédentes.
+* **Contexte Flight400 :** La **Vente de Billets** (Création de Réservation) est l'exemple archétypal, car elle touche l'Inventaire (IBM i), le Paiement (Externe) et la Notification.
+* **Lien avec les autres patterns :** Il est déclenché par le **Command** (Action Métier) et nécessite l'évolution du **Workflow & State** pour gérer les états de transition asynchrone (Ex: `PAIEMENT_EN_ATTENTE`).
 * **Bénéfice :** Maintient la garantie ACID des transactions complexes, même en environnement distribué.
 
 ## 3\. Plan d'Action : Modernisation en 5 Étapes pour Flight400
@@ -747,36 +747,36 @@ Cette feuille de route s'appuie sur la modélisation par patterns pour structure
 
 **Objectif :** Définir la fondation des données modernes.
 
-* **Action :** Lister les Fichiers Physiques (DB2/400) et les transformer en **Ressources REST** (Clients, Vols, Réservations).  
+* **Action :** Lister les Fichiers Physiques (DB2/400) et les transformer en **Ressources REST** (Clients, Vols, Réservations).
 * **Livraison :** Spécification des **Endpoints CRUD** pour les développeurs IBM i/API.
 
 ### Étape 2 : Modélisation du Flux de Travail (Workflow & State)
 
 **Objectif :** Définir le cycle de vie métier des entités critiques.
 
-* **Action :** Dessiner le **Diagramme d'États** (Workflow) de l'entité la plus critique (Ex: Réservation).  
+* **Action :** Dessiner le **Diagramme d'États** (Workflow) de l'entité la plus critique (Ex: Réservation).
 * **Validation :** Valider les **États valides** et les **Transitions autorisées** avec les utilisateurs finaux.
 
 ### Étape 3 : Définition des Actions Métier (Commands)
 
 **Objectif :** Isoler et standardiser la logique métier complexe.
 
-* **Action :** Identifier toutes les transitions critiques du Workflow qui nécessitent plus qu'un simple CRUD (Ex: "Lancer le Paiement", "Annuler la Réservation").  
+* **Action :** Identifier toutes les transitions critiques du Workflow qui nécessitent plus qu'un simple CRUD (Ex: "Lancer le Paiement", "Annuler la Réservation").
 * **Livraison :** Spécification des **Endpoints API dédiés et explicites** pour chaque Action Métier.
 
 ### Étape 4 : Modélisation et Implémentation du Pattern Saga
 
 **Objectif :** Assurer la cohérence des transactions distribuées.
 
-* **Action :** Pour chaque Action Métier impliquant plusieurs services (Ex: Vente de Billets), définir un **Saga**.  
-* **Livraison :** Définition des **Transactions Locales** et des **Transactions de Compensation** pour chaque étape.  
+* **Action :** Pour chaque Action Métier impliquant plusieurs services (Ex: Vente de Billets), définir un **Saga**.
+* **Livraison :** Définition des **Transactions Locales** et des **Transactions de Compensation** pour chaque étape.
 * **Architecture :** Mise en place du mécanisme d'Orchestration ou de Chorégraphie du Saga.
 
 ### Étape 5 : Conception UX et Migration par Vues (React-Admin)
 
 **Objectif :** Livrer la valeur aux utilisateurs finaux.
 
-* **Action :** Construire l'interface React-Admin en utilisant les patterns de Vues (Listes/Filtres, Maître-Détail/Onglets).  
+* **Action :** Construire l'interface React-Admin en utilisant les patterns de Vues (Listes/Filtres, Maître-Détail/Onglets).
 * **Priorisation :** Commencer la migration par l'entité la plus simple pour valider l'approche (Ex: Client) ou par la plus critique (Ex: Réservation), en gérant l'asynchronisme du Saga dans l'interface utilisateur.
 
 # modif
@@ -798,6 +798,5 @@ Voici le modèle d'architecture complet des patterns pour la modernisation d'une
 
 Ce modèle est particulièrement efficace pour les échanges :
 
-* Les **End-Users** comprennent le **Workflow** et les **Actions Métier** (les boutons).  
+* Les **End-Users** comprennent le **Workflow** et les **Actions Métier** (les boutons).
 * Les **Développeurs** utilisent le **CRUD** pour les API de base et les **Commands/Saga** pour la logique complexe.
-

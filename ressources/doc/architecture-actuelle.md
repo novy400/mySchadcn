@@ -1,4 +1,4 @@
-# Architecture actuelle
+﻿# Architecture actuelle
 
 _État constaté le 2026-07-22._
 
@@ -118,4 +118,3 @@ npm run lint
 npm run test
 npm run build
 ```
-

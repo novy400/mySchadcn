@@ -1,4 +1,4 @@
-# Concepts CMagic
+﻿# Concepts CMagic
 
 _Statut : vocabulaire de conception._
 
@@ -96,4 +96,3 @@ Action répartie sur plusieurs systèmes ?
 3. Définir les contrats HTTP et les erreurs métier.
 4. Implémenter les règles et orchestrations côté backend IBM i/API.
 5. Remplacer le provider local sans déplacer la logique métier dans les composants React.
-
