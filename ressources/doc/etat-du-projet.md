@@ -91,6 +91,9 @@ notamment :
 - plusieurs composants admin, dont `Admin`, `DataTable` et `ResourcePage` ;
 - les principaux sous-composants de `DataTable` ;
 - les variantes du rich-text input.
+- la liste et le contrat de ressource `fournisseurs` ;
+- les onglets de statut et le contrat de ressource `orders` ;
+- la liste `customers` et ses données Général, Signalétique et Risque.
 
 Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doivent pas
 être présentés comme une couverture opérationnelle.
@@ -102,18 +105,16 @@ Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doiven
   mutations FakeRest ;
 - absence d'authentification et de gestion des rôles ;
 - absence de vrai contrat HTTP avec IBM i ;
-- couverture encore absente ou partielle pour `orders`, `fournisseurs` et les onglets
-  `customers` ;
 - produits du panier de commande non modélisés comme ressource ;
 - documentation CMagic encore composée en partie de notes exploratoires.
 
 ## Priorités
 
 1. Stabiliser la documentation et distinguer état présent, décisions et cible.
-2. Ajouter des tests aux modules récemment introduits.
+2. Définir les règles métier des commandes et des futurs processus à statuts.
 3. Formaliser le contrat du futur DataProvider IBM i.
-4. Définir les règles métier des commandes et des futurs processus à statuts.
-5. Préparer l'authentification et les autorisations avant toute utilisation réelle.
+4. Préparer l'authentification et les autorisations avant toute utilisation réelle.
+5. Décider comment resynchroniser les projections après mutation.
 
 ## Vérification
 

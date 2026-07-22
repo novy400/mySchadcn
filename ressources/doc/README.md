@@ -11,6 +11,7 @@ conception liés à sa future intégration IBM i.
 | [Architecture actuelle](./architecture-actuelle.md) | Organisation du code et flux de données | Actuel |
 | [Recette fonctionnelle](./recette-fonctionnelle.md) | Parcours de vérification manuelle | À actualiser |
 | [Plan d'amélioration documentaire](./PLAN_AMELIORATION_DOC.md) | Travaux décidés et avancement | Actuel |
+| [Plan d'implémentation](./PLAN_IMPLEMENTATION.md) | Tranches applicatives issues de l'audit | Actuel |
 
 ## Guides pratiques
 
