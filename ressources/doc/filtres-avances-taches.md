@@ -85,7 +85,8 @@ const filters = [
 
 ## Points de vigilance
 
-- `tasks_with_client` est calculée au chargement du dataset FakeRest ;
+- `tasks_with_client` est calculée au chargement puis resynchronisée par le DataProvider
+  après une mutation de ses sources FakeRest ;
 - le filtre client dépend de cette projection et non d'un champ de la tâche brute ;
 - une future API devra gérer `q`, `contact_id`, `client_id`, `status`, le tri et la
   pagination avec les mêmes contrats ;

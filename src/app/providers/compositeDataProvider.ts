@@ -38,32 +38,9 @@ const operationCapabilities: Readonly<Record<string, ResourceCapability>> = {
   deleteMany: 'delete',
 };
 
-export const createCompositeDataProvider = ({
-  restProvider,
-  fallbackProvider,
-  restResources,
-}: CompositeDataProviderOptions): DataProvider => {
-  for (const resource of restResources) {
-    if (!isResourceName(resource)) {
-      throw new UnknownResourceError(resource);
-    }
-  }
-
-  const migratedResources = new Set<string>(restResources);
-  const combinedProvider = combineDataProviders((resource) => {
-    if (!isResourceName(resource)) {
-      throw new UnknownResourceError(resource);
-    }
-
-    return migratedResources.has(resource) ? restProvider : fallbackProvider;
-  });
-
-  return new Proxy(combinedProvider, {
+export const enforceResourceContracts = (provider: DataProvider): DataProvider =>
+  new Proxy(provider, {
     get: (target, property, receiver) => {
-      if (property === 'supportAbortSignal') {
-        return Boolean(restProvider.supportAbortSignal && fallbackProvider.supportAbortSignal);
-      }
-
       const providerMethod = Reflect.get(target, property, receiver);
       const capability = typeof property === 'string' ? operationCapabilities[property] : undefined;
 
@@ -85,4 +62,29 @@ export const createCompositeDataProvider = ({
       };
     },
   });
+
+export const createCompositeDataProvider = ({
+  restProvider,
+  fallbackProvider,
+  restResources,
+}: CompositeDataProviderOptions): DataProvider => {
+  for (const resource of restResources) {
+    if (!isResourceName(resource)) {
+      throw new UnknownResourceError(resource);
+    }
+  }
+
+  const migratedResources = new Set<string>(restResources);
+  const combinedProvider = combineDataProviders((resource) => {
+    if (!isResourceName(resource)) {
+      throw new UnknownResourceError(resource);
+    }
+
+    return migratedResources.has(resource) ? restProvider : fallbackProvider;
+  });
+
+  combinedProvider.supportAbortSignal = Boolean(
+    restProvider.supportAbortSignal && fallbackProvider.supportAbortSignal,
+  );
+  return enforceResourceContracts(combinedProvider);
 };

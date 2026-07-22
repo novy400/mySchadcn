@@ -20,12 +20,28 @@ export type BaseData = {
 
 export type TaskWithClient = Task & {
   contact_name: string;
-  client_id: number | null;
+  client_id: Client['id'] | null;
   client_name: string;
 };
 
-export const buildSummaries = (data: BaseData) => {
-  const contacts_summary = data.contacts.map((contact) => {
+export type ProjectionSourceData = Pick<
+  BaseData,
+  'clients' | 'contacts' | 'tasks' | 'notes'
+>;
+
+export const buildTaskWithClient = (
+  task: Task,
+  contact?: Contact,
+  client?: Client,
+): TaskWithClient => ({
+  ...task,
+  contact_name: contact ? `${contact.prenom} ${contact.nom}` : '',
+  client_id: client?.id ?? null,
+  client_name: client?.nom ?? '',
+});
+
+export const buildContactSummaries = (data: ProjectionSourceData) =>
+  data.contacts.map((contact) => {
     const client = data.clients.find(c => c.id === contact.client_id);
     const openTasks = data.tasks.filter(
       t => t.contact_id === contact.id && t.status === 'OPEN'
@@ -50,17 +66,17 @@ export const buildSummaries = (data: BaseData) => {
     };
   });
 
-  const tasks_with_client = data.tasks.map((task) => {
+export const buildTasksWithClient = (data: ProjectionSourceData) =>
+  data.tasks.map((task) => {
     const contact = data.contacts.find(c => c.id === task.contact_id);
     const client = contact ? data.clients.find(c => c.id === contact.client_id) : undefined;
-    
-    return {
-      ...task,
-      contact_name: contact ? `${contact.prenom} ${contact.nom}` : '',
-      client_id: client?.id ?? null,
-      client_name: client?.nom ?? '',
-    };
+
+    return buildTaskWithClient(task, contact, client);
   });
+
+export const buildSummaries = (data: BaseData) => {
+  const contacts_summary = buildContactSummaries(data);
+  const tasks_with_client = buildTasksWithClient(data);
 
   return {
     ...data,

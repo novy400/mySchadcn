@@ -157,9 +157,11 @@ Vérifier :
 - la liste charge les champs enrichis
 - la projection est construite via `buildSummaries` au chargement du dataset
 
-Avec FakeRest, cette construction initiale ne garantit pas que la projection sera
-resynchronisée après une mutation de ses collections sources. Tester ce comportement et,
-si nécessaire, recalculer côté provider ou exposer la projection depuis le backend.
+Avec FakeRest, déclarer les collections sources dans la politique de synchronisation du
+DataProvider et tester la projection par une mutation suivie d'une lecture. Le prototype
+recalcule actuellement `contacts_summary` et `tasks_with_client` après les mutations de
+`clients`, `contacts`, `tasks` et `notes`. En production, préférer une projection exposée
+directement par le backend.
 
 Ajouter un test ciblé de la fonction pure couvrant :
 

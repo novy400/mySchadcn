@@ -16,7 +16,7 @@ documentaire, par tranches petites et vérifiables.
 | 2 | Formaliser et tester le modèle métier des commandes | Terminé |
 | 3 | Stabiliser le contrat du futur DataProvider IBM i | Terminé |
 | 4 | Ajouter authentification et autorisations | Terminé |
-| 5 | Traiter la synchronisation des projections après mutation | À cadrer |
+| 5 | Traiter la synchronisation des projections après mutation | Terminé |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | À évaluer |
 
 ## Tranche 1 — Couverture des modules récents
@@ -148,7 +148,36 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - `npm run build` : réussi ;
 - revue standards et conformité au plan : terminée ; constats corrigés avant clôture.
 
+## Tranche 5 — Synchronisation des projections
+
+### Stratégie retenue
+
+- conserver les transformations métier dans des fonctions pures de `src/data/projections` ;
+- observer les mutations au seam public du DataProvider ;
+- recalculer `contacts_summary` et `tasks_with_client` depuis les collections sources ;
+- remplacer les collections projetées après `create`, `update` et `updateMany` sur
+  `clients`, `contacts`, `tasks` ou `notes` ;
+- réserver au futur backend IBM i la synchronisation adaptée aux volumes de production.
+
+### Réalisé
+
+- extraction des constructeurs purs des deux projections ;
+- décorateur de DataProvider resynchronisant les projections dépendantes ;
+- sérialisation des recalculs concurrents pour conserver l'état source le plus récent ;
+- application du contrat de lecture seule au DataProvider FakeRest exporté ;
+- couverture des créations et modifications de tâches ;
+- couverture d'une modification en masse, d'un renommage client et d'une nouvelle note ;
+- mise à jour de l'architecture, de l'état du projet et des guides concernés.
+
+### Validation
+
+- tests ciblés du DataProvider et des projections : 12 tests réussis ;
+- `npm run lint` : réussi ;
+- `npm run test` : 38 fichiers, 85 tests réussis ;
+- `npm run build` : réussi ;
+- revue standards et conformité au plan : terminée ; aucun constat restant.
+
 ## Prochaine tranche
 
-La tranche 5 doit traiter la synchronisation des projections après mutation, en commençant
-par `tasks_with_client` désormais explicitement reliée à sa ressource de mutation `tasks`.
+La tranche 6 doit évaluer les avertissements CSS de test et la taille du bundle, puis
+séparer les corrections utiles des avertissements acceptables du prototype.

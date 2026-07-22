@@ -85,9 +85,11 @@ src/app/providers/dataProvider.ts
 écrans d'administration
 ```
 
-`buildSummaries` est une fonction pure. Les projections sont construites lors de la
-création du dataset FakeRest. Elles ne constituent pas une synchronisation automatique
-après chaque mutation effectuée pendant une session.
+`buildSummaries` et ses constructeurs spécialisés sont des fonctions pures. Les projections
+sont construites lors de la création du dataset FakeRest, puis le DataProvider les
+recalcule après chaque création, modification ou modification en masse de `clients`,
+`contacts`, `tasks` ou `notes`. Les recalculs concurrents sont sérialisés et le provider
+exporté refuse les écritures directes dans une projection.
 
 ## Frontière avec le futur backend
 
@@ -122,7 +124,8 @@ ou des endpoints d'agrégation.
 ## Contraintes connues
 
 - les données FakeRest ne persistent pas après un rechargement complet ;
-- les projections locales peuvent devenir obsolètes après une mutation de leurs sources ;
+- le recalcul local remplace intégralement les deux petites projections après mutation ;
+  cette stratégie de prototype n'est pas destinée aux volumes de production ;
 - les ressources de détail `customerSignalietiques` et `customerRisques` utilisent le même
   identifiant que leur `customer` plutôt qu'une relation explicite ;
 - le panier d'une commande référence des produits qui ne sont pas encore exposés comme

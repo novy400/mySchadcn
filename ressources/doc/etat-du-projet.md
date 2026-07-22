@@ -111,8 +111,8 @@ Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doiven
 ## Limites actuelles
 
 - aucune persistance après rechargement complet ;
-- projections calculées au chargement et non resynchronisées automatiquement après les
-  mutations FakeRest ;
+- projections FakeRest recalculées après création, modification ou modification en masse
+  de leurs ressources sources ;
 - authentification locale non adaptée à la production et autorisations non imposées par un backend ;
 - absence de vrai contrat HTTP avec IBM i ;
 - produits du panier de commande non modélisés comme ressource ;
@@ -123,7 +123,8 @@ Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doiven
 1. Stabiliser la documentation et distinguer état présent, décisions et cible.
 2. Formaliser le contrat du futur DataProvider IBM i.
 3. Préparer l'authentification et les autorisations avant toute utilisation réelle.
-4. Décider comment resynchroniser les projections après mutation.
+4. Remplacer le recalcul local des projections par des endpoints cohérents lors de la
+   migration IBM i.
 5. Étendre le modèle des commandes aux retours détaillés et à l'historique si nécessaire.
 
 ## Vérification
