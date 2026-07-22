@@ -95,6 +95,13 @@ La frontière principale est le `DataProvider`. Une migration vers IBM i devra p
 les noms de ressources et les champs attendus par les écrans, ou les normaliser dans le
 provider.
 
+Cette interface est maintenant décrite par le registre typé
+`src/app/providers/resourceContracts.ts`. Le module `compositeDataProvider.ts` permet de
+router une ressource migrée vers un adapter REST et les autres vers FakeRest. Il constitue
+le seam de migration ; les modules CRM restent indépendants du transport.
+
+Voir [Contrat du DataProvider IBM i](./contrat-data-provider-ibmi.md).
+
 Les projections telles que `contacts_summary` et `tasks_with_client` sont des contrats
 d'écran. En production, elles pourront être alimentées par des vues Db2, des services RPG
 ou des endpoints d'agrégation.

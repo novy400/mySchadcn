@@ -16,6 +16,12 @@ Ne remplacer que:
 
 ## 1. Stabiliser le contrat de donnees
 
+Le contrat retenu pour ce projet est détaillé dans
+[`contrat-data-provider-ibmi.md`](./contrat-data-provider-ibmi.md) et reflété par le registre
+typé `src/app/providers/resourceContracts.ts`. Toute évolution d'un écran consommant un
+nouveau champ, filtre ou tri doit mettre à jour ce registre. Le présent guide ne change
+que si cette évolution modifie également un invariant de transport.
+
 Avant migration, verifier que les noms de champs affiches dans les ecrans correspondent au futur contrat API.
 
 Exemples actuels:

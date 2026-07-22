@@ -14,7 +14,7 @@ documentaire, par tranches petites et vérifiables.
 | --- | --- | --- |
 | 1 | Couvrir `fournisseurs`, `orders` et les onglets `customers` | Terminé |
 | 2 | Formaliser et tester le modèle métier des commandes | Terminé |
-| 3 | Stabiliser le contrat du futur DataProvider IBM i | À cadrer |
+| 3 | Stabiliser le contrat du futur DataProvider IBM i | Terminé |
 | 4 | Ajouter authentification et autorisations | À cadrer |
 | 5 | Traiter la synchronisation des projections après mutation | À cadrer |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | À évaluer |
@@ -76,7 +76,41 @@ Le vocabulaire canonique est enregistré dans [`CONTEXT.md`](../../CONTEXT.md).
 - `npm run test` : 32 fichiers, 48 tests réussis ;
 - `npm run build` : réussi.
 
+## Tranche 3 — Contrat du DataProvider IBM i
+
+### Contrat retenu
+
+- un registre typé unique décrit les onze ressources consommées par l'administration ;
+- le registre fixe leurs champs, capacités, filtres, tris, relations et actions métier ;
+- `tasks` fait partie du contrat même si seule sa projection `tasks_with_client` est
+  enregistrée dans l'application ;
+- les projections sont explicitement en lecture seule ;
+- les commandes exposent des actions métier distinctes des opérations CRUD ;
+- un provider composite permet une migration ressource par ressource sans modifier les écrans ;
+- une ressource absente du registre provoque une erreur explicite au lieu d'être routée
+  silencieusement vers FakeRest.
+
+Le contrat de transport et d'erreur est documenté dans
+[`contrat-data-provider-ibmi.md`](./contrat-data-provider-ibmi.md).
+
+### Réalisé
+
+- ajout du registre `resourceContracts` et de ses tests de contrat ;
+- ajout de `createCompositeDataProvider` couvrant les neuf opérations standard React Admin ;
+- conservation du signal d'annulation uniquement lorsque les deux adapters le supportent ;
+- définition des formats de liste, d'écriture, de relation, de date, de montant et d'erreur ;
+- définition des endpoints attendus pour les actions de commande ;
+- mise à jour du guide de migration IBM i et de l'index documentaire.
+
+### Validation
+
+- tests ciblés du registre et du provider composite : 9 tests réussis ;
+- `npm run lint` : réussi ;
+- `npm run test` : 34 fichiers, 57 tests réussis ;
+- `npm run build` : réussi ;
+- revue standards et conformité au plan : terminée ; constats corrigés avant clôture.
+
 ## Prochaine tranche
 
-La tranche 3 doit stabiliser le contrat du futur DataProvider IBM i avant d'ajouter une
-nouvelle logique métier dépendante de l'API.
+La tranche 4 doit cadrer l'authentification et les autorisations à partir du contrat
+d'erreur désormais fixé (`401` et `403`).
