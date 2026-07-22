@@ -69,7 +69,10 @@ Ouvrir ensuite l'URL affichee par Vite.
 - vérifier les compteurs par statut
 - filtrer par client
 - ouvrir une commande et vérifier le panier et les totaux
-- modifier le statut et l'indicateur de retour
+- sur une commande en cours, vérifier que seules les actions `Livrer` et `Annuler` sont proposées
+- annuler une commande après confirmation et vérifier qu'aucune autre action n'est disponible
+- livrer une autre commande et vérifier que seule l'action `Signaler le retour` reste disponible
+- signaler le retour et vérifier que l'action ne peut pas être répétée
 
 ## Important
 

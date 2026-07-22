@@ -1,6 +1,6 @@
 # Commandes et statuts
 
-_Statut : état du prototype et questions métier ouvertes._
+_Statut : cycle de vie du prototype implémenté ; questions de modélisation avancée ouvertes._
 
 ## Modèle actuel
 
@@ -28,30 +28,35 @@ La ressource `orders` contient :
 - recherche et filtre par client ;
 - choix des colonnes et export ;
 - ouverture de la commande en édition ;
-- modification du client, de la date, du statut et de `returned` ;
+- modification du client et de la date ;
+- actions métier `Livrer`, `Annuler` et `Signaler le retour` selon l'état courant ;
+- confirmation avant l'annulation ;
 - affichage du panier et des totaux.
 
 ![Liste des commandes par statut](image/ordres_status/orders-list-by-status.png)
 
-![Édition du statut d'une commande](image/ordres_status/order-edit-status.png)
+![Référence visuelle d'édition du statut](image/ordres_status/order-edit-status.png)
 
 Les captures proviennent du kit de référence et peuvent différer du prototype local.
 
-## Nature du modèle
+## Transitions retenues
 
-L'implémentation actuelle est un prototype CRUD avec statut éditable. Elle ne constitue
-pas encore un processus métier CMagic : aucune transition n'est contrôlée et aucune action
-`livrer`, `annuler` ou `retourner` n'est définie côté backend.
+| État courant | Action | Résultat |
+| --- | --- | --- |
+| `ordered` | Livrer | `delivered` |
+| `ordered` | Annuler | `canceled` |
+| `delivered` sans retour | Signaler le retour | `delivered` avec `returned: true` |
 
-## Règles à décider avant implémentation métier
+Une commande livrée ou annulée ne change plus de statut. Un retour n'est possible qu'une
+fois sur une commande livrée. Ces règles sont contrôlées dans le frontend du prototype ;
+le futur backend devra les appliquer à son tour et rester l'autorité métier.
 
-1. Une commande livrée peut-elle être annulée ?
-2. Un retour est-il un booléen ou une ressource avec lignes, quantités et motif ?
-3. Les montants sont-ils saisis, calculés ou figés lors de la commande ?
-4. Quel arrondi monétaire s'applique à la taxe et au total ?
-5. Le panier peut-il changer après le passage au statut `ordered` ?
-6. Faut-il conserver un historique des transitions et leur auteur ?
-7. Quelles actions sont idempotentes ?
+## Questions restant à décider
+
+1. Un retour doit-il devenir une ressource avec lignes, quantités et motif ?
+2. Quel arrondi monétaire s'applique à la taxe et au total ?
+3. Faut-il conserver un historique des transitions et leur auteur ?
+4. Quelles garanties d'idempotence et de concurrence le backend doit-il fournir ?
 
 ## Références d'origine
 

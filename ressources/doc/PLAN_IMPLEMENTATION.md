@@ -13,7 +13,7 @@ documentaire, par tranches petites et vérifiables.
 | Priorité | Tranche | État |
 | --- | --- | --- |
 | 1 | Couvrir `fournisseurs`, `orders` et les onglets `customers` | Terminé |
-| 2 | Formaliser et tester le modèle métier des commandes | À cadrer |
+| 2 | Formaliser et tester le modèle métier des commandes | Terminé |
 | 3 | Stabiliser le contrat du futur DataProvider IBM i | À cadrer |
 | 4 | Ajouter authentification et autorisations | À cadrer |
 | 5 | Traiter la synchronisation des projections après mutation | À cadrer |
@@ -46,8 +46,37 @@ valeurs métier significatives telles que `false`, `0` et `null`.
 - `npm run test` : 30 fichiers, 37 tests réussis ;
 - `npm run build` : réussi.
 
-## Prochaine décision
+## Tranche 2 — Cycle de vie des commandes
 
-La tranche 2 nécessite des choix métier avant de modifier `orders` : transitions de
-statut, calcul des montants, représentation des retours, historique et idempotence. Les
-questions sont recensées dans [Commandes et statuts](./cmagic/ordres_status.md).
+Le modèle validé est :
+
+- une commande en cours peut être livrée ou annulée ;
+- une commande livrée ne peut plus être annulée ;
+- une commande annulée est terminale ;
+- un retour ne peut être signalé que sur une commande livrée et une seule fois ;
+- le retour reste temporairement représenté par un booléen.
+
+Le vocabulaire canonique est enregistré dans [`CONTEXT.md`](../../CONTEXT.md).
+
+### Réalisé
+
+- règles de transition isolées dans une fonction pure ;
+- erreur métier explicite pour toute transition interdite ;
+- tests des transitions autorisées, terminales et du retour unique ;
+- remplacement de l'édition libre de `status` et `returned` par les actions `Livrer`,
+  `Annuler` et `Signaler le retour` ;
+- confirmation avant annulation ;
+- affichage des seules actions autorisées par l'état courant ;
+- mise à jour de la recette et de la documentation CMagic.
+
+### Validation
+
+- tests ciblés du domaine et des actions : 11 tests réussis ;
+- `npm run lint` : réussi ;
+- `npm run test` : 32 fichiers, 48 tests réussis ;
+- `npm run build` : réussi.
+
+## Prochaine tranche
+
+La tranche 3 doit stabiliser le contrat du futur DataProvider IBM i avant d'ajouter une
+nouvelle logique métier dépendante de l'API.

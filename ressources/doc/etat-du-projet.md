@@ -57,7 +57,8 @@ La liste exacte est assemblée dans `src/app/App.tsx`.
 - compteur par statut ;
 - filtre par client ;
 - sélection des colonnes et export ;
-- édition du client, du statut et de l'indicateur de retour ;
+- édition du client et de la date ;
+- transitions contrôlées via les actions Livrer, Annuler et Signaler le retour ;
 - restitution du panier et des totaux.
 
 ### Customers
@@ -93,6 +94,7 @@ notamment :
 - les variantes du rich-text input.
 - la liste et le contrat de ressource `fournisseurs` ;
 - les onglets de statut et le contrat de ressource `orders` ;
+- le cycle de vie et les actions autorisées des commandes ;
 - la liste `customers` et ses données Général, Signalétique et Risque.
 
 Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doivent pas
@@ -111,10 +113,10 @@ Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doiven
 ## Priorités
 
 1. Stabiliser la documentation et distinguer état présent, décisions et cible.
-2. Définir les règles métier des commandes et des futurs processus à statuts.
-3. Formaliser le contrat du futur DataProvider IBM i.
-4. Préparer l'authentification et les autorisations avant toute utilisation réelle.
-5. Décider comment resynchroniser les projections après mutation.
+2. Formaliser le contrat du futur DataProvider IBM i.
+3. Préparer l'authentification et les autorisations avant toute utilisation réelle.
+4. Décider comment resynchroniser les projections après mutation.
+5. Étendre le modèle des commandes aux retours détaillés et à l'historique si nécessaire.
 
 ## Vérification
 

@@ -1,15 +1,9 @@
 import { useRecordContext } from 'ra-core';
 import { AutocompleteInput, Edit, NumberField, ReferenceInput, SimpleForm, TextField } from '@/components/admin';
-import { BooleanInput } from '@/components/admin/boolean-input';
 import { DateInput } from '@/components/admin/date-input';
 import { RecordField } from '@/components/admin/record-field';
+import { OrderActions } from './OrderActions';
 import type { Order } from './order.types';
-
-const statusChoices = [
-  { id: 'ordered', name: 'Commandée' },
-  { id: 'delivered', name: 'Livrée' },
-  { id: 'canceled', name: 'Annulée' },
-];
 
 export const OrderEdit = () => (
   <Edit>
@@ -21,8 +15,6 @@ export const OrderEdit = () => (
           <ReferenceInput source="customer_id" reference="customers" sort={{ field: 'name', order: 'ASC' }}>
             <AutocompleteInput label="Client" />
           </ReferenceInput>
-          <AutocompleteInput source="status" label="Statut" choices={statusChoices} />
-          <BooleanInput source="returned" label="Retournée" />
         </div>
         <div className="space-y-4 rounded-md border p-4">
           <RecordField source="total_ex_taxes" label="Total HT">
@@ -42,6 +34,7 @@ export const OrderEdit = () => (
           </RecordField>
         </div>
       </div>
+      <OrderActions />
       <BasketField />
     </SimpleForm>
   </Edit>
