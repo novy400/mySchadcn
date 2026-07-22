@@ -1,5 +1,6 @@
 import type { EditBaseProps } from "ra-core";
 import {
+  CanAccess,
   EditBase,
   useEditContext,
   useResourceContext,
@@ -97,7 +98,9 @@ export const EditView = ({
   const defaultActions = (
     <>
       {hasShow ? <ShowButton /> : null}
-      <DeleteButton />
+      <CanAccess action="delete" resource={resource} record={context.record}>
+        <DeleteButton />
+      </CanAccess>
     </>
   );
 

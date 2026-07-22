@@ -1,7 +1,7 @@
 import { Edit, NumberInput, SimpleForm, TextInput } from '@/components/admin';
 
 export const TaskEdit = () => (
-  <Edit>
+  <Edit resource="tasks" redirect="/tasks_with_client">
     <SimpleForm>
       <NumberInput source="contact_id" />
       <TextInput source="titre" />

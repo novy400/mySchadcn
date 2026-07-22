@@ -35,3 +35,21 @@ _Avoid_: Suppression
 Action métier appliquée une seule fois à une commande livrée pour signaler qu'elle a été
 retournée.
 _Avoid_: Annulation, remboursement
+
+**Utilisateur**:
+Personne identifiée qui accède à l'administration CRM avec un rôle déterminant ses droits.
+_Avoid_: Compte client, customer
+
+**Lecteur**:
+Utilisateur autorisé à consulter les informations du CRM sans les modifier.
+_Avoid_: Invité, visiteur
+
+**Agent**:
+Utilisateur autorisé à consulter et gérer les clients, contacts, tâches, notes et
+fournisseurs, sans piloter le cycle de vie des commandes.
+_Avoid_: Opérateur, commercial
+
+**Responsable**:
+Utilisateur disposant des droits de l'Agent et autorisé à modifier une commande et à
+déclencher ses actions métier.
+_Avoid_: Administrateur, manager

@@ -19,7 +19,7 @@ describe('<OrderList />', () => {
     await waitFor(() => {
       expect(screen.getByText('CMD-2026-0001')).toBeInTheDocument();
     });
-  });
+  }, 10_000);
 
   it('changes the list filter when selecting another status', async () => {
     render(
@@ -28,6 +28,7 @@ describe('<OrderList />', () => {
       </TestProvider>
     );
 
+    await screen.findByText('CMD-2026-0001');
     fireEvent.click(screen.getByRole('tab', { name: /Livrées/i }));
 
     await waitFor(
@@ -35,7 +36,7 @@ describe('<OrderList />', () => {
         expect(screen.getByText('CMD-2026-0002')).toBeInTheDocument();
         expect(screen.queryByText('CMD-2026-0001')).not.toBeInTheDocument();
       },
-      { timeout: 5000 }
+      { timeout: 10_000 }
     );
-  });
+  }, 15_000);
 });

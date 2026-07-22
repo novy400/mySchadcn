@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { RecordContextProvider } from 'ra-core';
 import { describe, expect, it } from 'vitest';
+import { createAuthProvider, createSessionStorageSessionStore } from '@/app/auth/authProvider';
 import TestProvider from '@/test/TestProvider';
 import { OrderActions } from './OrderActions';
 import type { Order } from './order.types';
@@ -53,5 +54,32 @@ describe('OrderActions', () => {
 
     expect(screen.getByText('Enregistré')).toBeInTheDocument();
     expect(screen.getByText('Aucune action disponible.')).toBeInTheDocument();
+  });
+
+  it("n'affiche aucune transition de commande à un Agent", async () => {
+    const authProvider = createAuthProvider({
+      identityAdapter: {
+        authenticate: async () => ({
+          id: 'agent-test',
+          fullName: 'Agent Test',
+          role: 'agent',
+        }),
+      },
+      sessionStore: createSessionStorageSessionStore(sessionStorage, 'orders.auth.test'),
+    });
+    await authProvider.login({ email: 'agent@test.local', password: 'test' });
+
+    render(
+      <TestProvider resource="orders" authProvider={authProvider}>
+        <RecordContextProvider value={baseOrder}>
+          <OrderActions />
+        </RecordContextProvider>
+      </TestProvider>,
+    );
+
+    expect(await screen.findByText('Aucune action autorisée.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Livrer' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Annuler' })).not.toBeInTheDocument();
+    sessionStorage.removeItem('orders.auth.test');
   });
 });

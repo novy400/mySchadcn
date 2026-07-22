@@ -22,6 +22,7 @@ describe('IBM i resource contracts', () => {
     expect(resourceContracts.tasks_with_client).toMatchObject({
       kind: 'projection',
       sourceResource: 'tasks',
+      mutationResource: 'tasks',
       capabilities: ['read'],
     });
     expect(resourceContracts.contacts_summary).toMatchObject({

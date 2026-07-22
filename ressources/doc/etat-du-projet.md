@@ -16,6 +16,7 @@ Le dépôt contient aujourd'hui :
 - une fiche `customers` composée d'onglets ;
 - deux projections locales : `contacts_summary` et `tasks_with_client` ;
 - des composants admin et UI maintenus localement ;
+- une authentification de démonstration et une politique d'accès à trois rôles ;
 - une suite active de tests Vitest.
 
 ## Ressources enregistrées
@@ -36,6 +37,13 @@ Le dépôt contient aujourd'hui :
 La liste exacte est assemblée dans `src/app/App.tsx`.
 
 ## Fonctionnalités notables
+
+### Accès
+
+- connexion obligatoire avec adapter d'identité remplaçable ;
+- rôles Lecteur, Agent et Responsable ;
+- routes, menus, suppressions et actions de commande filtrés par la même politique ;
+- distinction entre expiration de session (`401`) et refus d'accès (`403`).
 
 ### Dashboard
 
@@ -105,7 +113,7 @@ Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doiven
 - aucune persistance après rechargement complet ;
 - projections calculées au chargement et non resynchronisées automatiquement après les
   mutations FakeRest ;
-- absence d'authentification et de gestion des rôles ;
+- authentification locale non adaptée à la production et autorisations non imposées par un backend ;
 - absence de vrai contrat HTTP avec IBM i ;
 - produits du panier de commande non modélisés comme ressource ;
 - documentation CMagic encore composée en partie de notes exploratoires.

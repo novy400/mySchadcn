@@ -102,6 +102,19 @@ le seam de migration ; les modules CRM restent indépendants du transport.
 
 Voir [Contrat du DataProvider IBM i](./contrat-data-provider-ibmi.md).
 
+## Authentification et autorisations
+
+`src/app/auth` contient la politique d'accès, l'AuthProvider et les adapters d'identité.
+L'application utilise actuellement un adapter local de démonstration et conserve seulement
+l'identité publique dans `sessionStorage`. Le remplacement futur par un adapter IBM i ne
+doit pas modifier les modules CRM.
+
+Les routes React Admin, le menu, les suppressions génériques et les actions métier des
+commandes interrogent la même politique. Le backend de production restera responsable de
+la décision d'autorisation finale pour chaque requête.
+
+Voir [Authentification et autorisations](./authentification-autorisations.md).
+
 Les projections telles que `contacts_summary` et `tasks_with_client` sont des contrats
 d'écran. En production, elles pourront être alimentées par des vues Db2, des services RPG
 ou des endpoints d'agrégation.

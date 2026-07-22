@@ -1,5 +1,5 @@
 import React from 'react';
-import { CoreAdminContext, ResourceContextProvider } from 'ra-core';
+import { CoreAdminContext, ResourceContextProvider, type AuthProvider } from 'ra-core';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router';
 import i18n from 'i18next';
@@ -36,7 +36,12 @@ i18n.init({
   },
 });
 
-const TestProvider: React.FC<{ children: React.ReactNode; resource?: string }> = ({
+const TestProvider: React.FC<{
+  authProvider?: AuthProvider;
+  children: React.ReactNode;
+  resource?: string;
+}> = ({
+  authProvider,
   children,
   resource,
 }) => {
@@ -49,6 +54,7 @@ const TestProvider: React.FC<{ children: React.ReactNode; resource?: string }> =
   return (
     <MemoryRouter>
       <CoreAdminContext
+        authProvider={authProvider}
         dataProvider={dataProvider}
         i18nProvider={i18nProvider}
       >

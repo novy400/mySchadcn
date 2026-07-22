@@ -3,6 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
   useCreatePath,
+  useCanAccess,
   useGetResourceLabel,
   useResourceContext,
   useResourceTranslation,
@@ -38,6 +39,7 @@ export type CreateButtonProps = {
 export const CreateButton = (props: CreateButtonProps) => {
   const { label: labelProp } = props;
   const resource = useResourceContext(props);
+  const access = useCanAccess({ action: "create", resource });
   const createPath = useCreatePath();
   const getResourceLabel = useGetResourceLabel();
   const link = createPath({
@@ -54,6 +56,9 @@ export const CreateButton = (props: CreateButtonProps) => {
     },
     userText: labelProp,
   });
+  if (access.isPending || !access.canAccess) {
+    return null;
+  }
   return (
     <Link
       className={buttonVariants({ variant: "outline" })}

@@ -23,6 +23,14 @@ Ouvrir ensuite l'URL affichee par Vite.
 
 ## Parcours de recette
 
+### 0. Authentification et rôles
+- vérifier que le CRM est inaccessible sans connexion
+- se connecter comme Lecteur et vérifier l'absence des créations, éditions et actions de commande
+- se connecter comme Agent et vérifier la gestion des clients, contacts, tâches, notes et fournisseurs
+- vérifier que l'Agent ne peut ni modifier une commande ni déclencher son cycle de vie
+- se connecter comme Responsable et vérifier les actions autorisées sur les commandes
+- se déconnecter et vérifier le retour à la page de connexion
+
 ### 1. Dashboard
 - verifier le titre `Dashboard CRM`
 - verifier les cartes de synthese

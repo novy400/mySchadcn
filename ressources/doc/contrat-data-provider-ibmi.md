@@ -85,7 +85,8 @@ dans [`resourceContracts.ts`](../../src/app/providers/resourceContracts.ts), pui
 par `resourceContracts.test.ts`.
 
 Point d'attention : la ressource de mutation `tasks` appartient au contrat même si seule
-sa projection `tasks_with_client` est enregistrée dans `App.tsx`.
+sa projection `tasks_with_client` est enregistrée dans `App.tsx`. Les écrans de cette
+projection déclarent `tasks` comme ressource de mutation.
 
 Le filtre `q` est une recherche textuelle insensible à la casse sur les champs textuels
 visibles de la ressource. Sa stratégie exacte côté Db2 doit rester cohérente pour toutes
@@ -132,6 +133,9 @@ Toute erreur HTTP fournit une structure exploitable par l'adapter :
 
 Le DataProvider transforme cette réponse en erreur React Admin tout en conservant
 `status`, `code`, `fieldErrors` et `correlationId`.
+
+Le traitement de `401`, `403` et du contrat de session est détaillé dans
+[Authentification et autorisations](./authentification-autorisations.md).
 
 ## Migration progressive
 

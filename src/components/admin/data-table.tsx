@@ -21,6 +21,7 @@ import {
   useDataTableSortContext,
   useDataTableStoreContext,
   useGetPathForRecordCallback,
+  useCanAccess,
   useRecordContext,
   useResourceContext,
   useStore,
@@ -93,6 +94,7 @@ export function DataTable<RecordType extends RaRecord = RaRecord>(
     children,
     className,
     rowClassName,
+    rowClickAccess,
     bulkActionButtons = defaultBulkActionButtons,
     bulkActionsToolbar,
     ...rest
@@ -117,7 +119,10 @@ export function DataTable<RecordType extends RaRecord = RaRecord>(
           <DataTableRenderContext.Provider value="header">
             <DataTableHead>{columns}</DataTableHead>
           </DataTableRenderContext.Provider>
-          <DataTableBody<RecordType> rowClassName={rowClassName}>
+          <DataTableBody<RecordType>
+            rowClassName={rowClassName}
+            rowClickAccess={rowClickAccess}
+          >
             {columns}
           </DataTableBody>
         </Table>
@@ -187,9 +192,11 @@ const DataTableHead = ({ children }: { children: ReactNode }) => {
 const DataTableBody = <RecordType extends RaRecord = RaRecord>({
   children,
   rowClassName,
+  rowClickAccess,
 }: {
   children: ReactNode;
   rowClassName?: (record: RecordType) => string | undefined;
+  rowClickAccess?: RowClickAccess;
 }) => {
   const data = useDataTableDataContext();
   return (
@@ -199,7 +206,10 @@ const DataTableBody = <RecordType extends RaRecord = RaRecord>({
           value={record}
           key={record.id ?? `row${rowIndex}`}
         >
-          <DataTableRow className={rowClassName?.(record)}>
+          <DataTableRow
+            className={rowClassName?.(record)}
+            rowClickAccess={rowClickAccess}
+          >
             {children}
           </DataTableRow>
         </RecordContextProvider>
@@ -211,9 +221,11 @@ const DataTableBody = <RecordType extends RaRecord = RaRecord>({
 const DataTableRow = ({
   children,
   className,
+  rowClickAccess,
 }: {
   children: ReactNode;
   className?: string;
+  rowClickAccess?: RowClickAccess;
 }) => {
   const { rowClick, handleToggleItem } = useDataTableCallbacksContext();
   const selectedIds = useDataTableSelectedIdsContext();
@@ -231,6 +243,11 @@ const DataTableRow = ({
 
   const navigate = useNavigate();
   const getPathForRecord = useGetPathForRecordCallback();
+  const rowAccess = useCanAccess({
+    action: rowClickAccess?.action ?? (rowClick === "edit" ? "edit" : "show"),
+    resource: rowClickAccess?.resource ?? resource,
+    record,
+  });
 
   const handleToggle = useCallback(
     (event: React.MouseEvent) => {
@@ -242,6 +259,9 @@ const DataTableRow = ({
   );
 
   const handleClick = useCallback(async () => {
+    if (!rowAccess.canAccess || rowAccess.isPending) {
+      return;
+    }
     const temporaryLink =
       typeof rowClick === "function"
         ? rowClick(record.id, resource, record)
@@ -260,13 +280,24 @@ const DataTableRow = ({
     navigate(path, {
       state: { _scrollToTop: true },
     });
-  }, [record, resource, rowClick, navigate, getPathForRecord]);
+  }, [
+    record,
+    resource,
+    rowClick,
+    navigate,
+    getPathForRecord,
+    rowAccess.canAccess,
+    rowAccess.isPending,
+  ]);
 
   return (
     <TableRow
       key={record.id}
       onClick={handleClick}
-      className={cn(rowClick !== false && "cursor-pointer", className)}
+      className={cn(
+        rowClick !== false && rowAccess.canAccess && "cursor-pointer",
+        className,
+      )}
     >
       {hasBulkActions ? (
         <TableCell className="flex w-8" onClick={handleToggle}>
@@ -299,9 +330,15 @@ export interface DataTableProps<
   children: ReactNode;
   className?: string;
   rowClassName?: (record: RecordType) => string | undefined;
+  rowClickAccess?: RowClickAccess;
   bulkActionButtons?: ReactNode;
   bulkActionsToolbar?: ReactNode;
 }
+
+type RowClickAccess = {
+  action: string;
+  resource?: string;
+};
 
 export function DataTableColumn<
   RecordType extends RaRecord<Identifier> = RaRecord<Identifier>,

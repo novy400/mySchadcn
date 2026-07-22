@@ -15,7 +15,7 @@ documentaire, par tranches petites et vérifiables.
 | 1 | Couvrir `fournisseurs`, `orders` et les onglets `customers` | Terminé |
 | 2 | Formaliser et tester le modèle métier des commandes | Terminé |
 | 3 | Stabiliser le contrat du futur DataProvider IBM i | Terminé |
-| 4 | Ajouter authentification et autorisations | À cadrer |
+| 4 | Ajouter authentification et autorisations | Terminé |
 | 5 | Traiter la synchronisation des projections après mutation | À cadrer |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | À évaluer |
 
@@ -110,7 +110,45 @@ Le contrat de transport et d'erreur est documenté dans
 - `npm run build` : réussi ;
 - revue standards et conformité au plan : terminée ; constats corrigés avant clôture.
 
+## Tranche 4 — Authentification et autorisations
+
+### Modèle retenu
+
+- Lecteur : consultation uniquement ;
+- Agent : gestion des clients, contacts, tâches, notes et fournisseurs ;
+- Responsable : droits de l'Agent et pilotage du cycle de vie des commandes ;
+- politique refusant par défaut toute ressource ou action inconnue ;
+- AuthProvider indépendant de l'adapter d'identité ;
+- adapter local public pour le prototype, remplaçable par un adapter REST IBM i ;
+- identité publique conservée dans `sessionStorage`, sans mot de passe ni jeton ;
+- autorisation de production obligatoirement contrôlée par le backend à chaque requête.
+
+Le vocabulaire est enregistré dans [`CONTEXT.md`](../../CONTEXT.md) et le contrat détaillé
+dans [`authentification-autorisations.md`](./authentification-autorisations.md).
+
+### Réalisé
+
+- politique d'accès typée et tests des trois rôles ;
+- AuthProvider avec connexion, déconnexion, identité, permissions, `401`, `403` et `canAccess` ;
+- trois comptes de démonstration clairement signalés comme publics ;
+- application protégée par `requireAuth` avec page de connexion dédiée ;
+- filtrage des routes, menus, suppressions génériques et actions métier des commandes ;
+- filtrage des boutons de création et d'édition ainsi que des clics de ligne selon le rôle ;
+- invalidation d'une ancienne session avant toute nouvelle tentative de connexion ;
+- restauration et fermeture de session serveur via l'adapter d'identité injectable ;
+- routage des mutations de `tasks_with_client` vers la ressource `tasks` ;
+- documentation du futur contrat de session IBM i et des limites du prototype.
+
+### Validation
+
+- tests ciblés de l'authentification, des rôles, de l'application et des commandes :
+  24 tests réussis ;
+- `npm run lint` : réussi ;
+- `npm run test` : 38 fichiers, 77 tests réussis ;
+- `npm run build` : réussi ;
+- revue standards et conformité au plan : terminée ; constats corrigés avant clôture.
+
 ## Prochaine tranche
 
-La tranche 4 doit cadrer l'authentification et les autorisations à partir du contrat
-d'erreur désormais fixé (`401` et `403`).
+La tranche 5 doit traiter la synchronisation des projections après mutation, en commençant
+par `tasks_with_client` désormais explicitement reliée à sa ressource de mutation `tasks`.

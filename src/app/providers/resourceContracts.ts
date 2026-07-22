@@ -30,6 +30,7 @@ export type ResourceContract = {
   };
   relations?: Readonly<Record<string, ResourceName>>;
   sourceResource?: ResourceName;
+  mutationResource?: ResourceName;
   actions?: readonly OrderAction[];
 };
 
@@ -76,6 +77,7 @@ export const resourceContracts = {
     },
     relations: { contact_id: 'contacts', client_id: 'clients' },
     sourceResource: 'tasks',
+    mutationResource: 'tasks',
   },
   notes: {
     kind: 'entity',

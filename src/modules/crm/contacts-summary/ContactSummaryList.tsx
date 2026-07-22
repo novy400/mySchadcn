@@ -29,7 +29,10 @@ const filters = [
 
 export const ContactSummaryList = () => (
   <List resource="contacts_summary" filters={filters} sort={{ field: 'nom', order: 'ASC' }}>
-    <DataTable rowClick={(_, __, record) => `/contacts/${record.id}`}>
+    <DataTable
+      rowClick={(_, __, record) => `/contacts/${record.id}`}
+      rowClickAccess={{ action: 'edit', resource: 'contacts' }}
+    >
       <DataTable.Col source="id">
         <TextField source="id" />
       </DataTable.Col>

@@ -12,12 +12,16 @@ import { contactsSummary } from '../modules/crm/contacts-summary';
 import { fournisseurs } from '../modules/crm/fournisseurs';
 import { customerResource, customerSignalietiqueResource, customerRisqueResource } from '../modules/crm/customers';
 import { orders } from '../modules/crm/orders';
+import { authProvider, DemoLoginPage } from './auth';
 
 function App() {
   return (
     <Admin
+      authProvider={authProvider}
       dataProvider={dataProvider}
       dashboard={Dashboard}
+      loginPage={DemoLoginPage}
+      requireAuth
     >
       <Resource {...clients} />
       <Resource {...contacts} />
