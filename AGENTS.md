@@ -20,10 +20,10 @@ Le projet est un **prototype fonctionnel** base sur un dataset local et des proj
 Ces commandes doivent rester vertes apres toute modification significative :
 
 ```bash
-npm run lint
-npm run test
-npm run build
+npm run check
 ```
+
+Cette commande execute successivement `lint`, `test` et `build`.
 
 L'app doit aussi demarrer avec :
 
@@ -130,9 +130,7 @@ Verifier d'abord le registry / MCP shadcn.
 
 - [ ] changement limite au besoin
 - [ ] fichiers modifies identifies
-- [ ] `npm run lint`
-- [ ] `npm run test`
-- [ ] `npm run build`
+- [ ] `npm run check`
 - [ ] doc mise a jour si necessaire
 
 ## Docs utiles

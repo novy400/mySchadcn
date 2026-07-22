@@ -31,6 +31,7 @@ npm run dev
 Scripts utiles:
 
 - `npm run dev`: lancement local
+- `npm run check`: execute successivement le lint, les tests et le build
 - `npm run build`: verifie TypeScript puis build Vite
 - `npm run lint`: lint ESLint
 - `npm run test`: execute les tests Vitest
@@ -137,9 +138,7 @@ Les anciens fichiers `*.spec.ts(x)` presents dans le repo ne font pas encore par
 ```bash
 npm install
 npm run dev
-npm run lint
-npm run test
-npm run build
+npm run check
 ```
 
 Checklist fonctionnelle minimale :

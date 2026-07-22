@@ -1,0 +1,6 @@
+interface:
+  display_name: "Livrer une tranche mySchadcn"
+  short_description: "Livrer une tranche testee et documentee"
+  default_prompt: "Utilise $deliver-myschadcn-slice pour livrer la prochaine tranche du plan mySchadcn."
+policy:
+  allow_implicit_invocation: true
