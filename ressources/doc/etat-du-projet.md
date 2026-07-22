@@ -1,240 +1,123 @@
-# Etat du projet
+# État du projet
 
-_Date : 2026-06-15_
+_Date de vérification : 2026-07-22_
 
-## Resume executif
+## Résumé exécutif
 
-Le projet **mySchadcn** est aujourd'hui un **mini CRM d'administration fonctionnel** base sur **Vite + React + TypeScript + ra-core + FakeRest**.
+`mySchadcn` est un mini CRM d'administration fonctionnel basé sur Vite, React,
+TypeScript, `ra-core` et `ra-data-fakerest`. Il sert à valider une architecture modulaire,
+des écrans métier et des contrats de données avant une migration vers une API réelle.
 
-Il permet de :
+Le dépôt contient aujourd'hui :
 
-- lancer une application admin localement sans backend HTTP reel
-- manipuler plusieurs ressources CRM en CRUD
-- tester une structure modulaire orientee domaine
-- preparer une migration progressive vers un vrai data provider
+- un dashboard CRM ;
+- six modules métier principaux : clients, contacts, tâches, notes, fournisseurs et
+  commandes ;
+- une fiche `customers` composée d'onglets ;
+- deux projections locales : `contacts_summary` et `tasks_with_client` ;
+- des composants admin et UI maintenus localement ;
+- une suite active de tests Vitest.
 
-Le projet est dans un etat **propre pour le developpement local** :
+## Ressources enregistrées
 
-- `npm run dev` fonctionne
-- `npm run lint` fonctionne
-- `npm run test` fonctionne
-- `npm run build` fonctionne
+| Ressource | Capacités |
+| --- | --- |
+| `clients` | liste, création, édition |
+| `contacts` | liste, création, édition |
+| `tasks_with_client` | liste enrichie ; création/édition sur les données `tasks` |
+| `notes` | liste, création, édition |
+| `contacts_summary` | liste de synthèse en lecture |
+| `fournisseurs` | liste, création, édition |
+| `orders` | liste filtrée par statut, édition |
+| `customers` | liste, fiche détaillée avec onglets |
+| `customerSignalietiques` | ressource technique de détail |
+| `customerRisques` | ressource technique de détail |
 
----
+La liste exacte est assemblée dans `src/app/App.tsx`.
 
-## Objectif du projet
+## Fonctionnalités notables
 
-Le projet sert a prototyper rapidement une application d'administration CRM avec :
+### Dashboard
 
-- des ecrans CRUD metier
-- un dashboard
-- une organisation modulaire par domaine
-- un jeu de donnees local
-- une couche de projection pour enrichir certaines vues
+- indicateurs issus du dataset local ;
+- contacts à suivre ;
+- tests de rendu ciblés.
 
-L'objectif n'est pas encore de fournir une application de production complete, mais une **base solide de prototype evolutif**.
+### Tâches
 
----
+- recherche textuelle ;
+- filtre par contact ;
+- filtre par client grâce à la projection `tasks_with_client` ;
+- filtre par statut ;
+- tri par date d'échéance.
 
-## Stack technique
+### Commandes
 
-- **Vite 8**
-- **React 19**
-- **TypeScript 5**
-- **ra-core**
-- **ra-data-fakerest**
-- **Tailwind CSS 4**
-- composants admin locaux dans `src/components/admin`
-- guessers admin exportes depuis `src/components/admin` pour prototypage rapide : `ListGuesser`, `EditGuesser`, `ShowGuesser`
-- composants UI dans `src/components/ui`
-- **Vitest** + **Testing Library** pour les tests minimaux
+- onglets `ordered`, `delivered` et `canceled` ;
+- compteur par statut ;
+- filtre par client ;
+- sélection des colonnes et export ;
+- édition du client, du statut et de l'indicateur de retour ;
+- restitution du panier et des totaux.
 
----
+### Customers
 
-## Fonctionnalites presentes
+- liste ;
+- fiche de consultation ;
+- onglets Général, Signalétique et Risque métier.
 
-### Dashboard CRM
+## Architecture et données
 
-- cartes de synthese
-- liste des contacts a suivre
-- statistiques calculees a partir du dataset local
-
-### Ressources metier
-
-- `clients`
-  - list
-  - create
-  - edit
-- `contacts`
-  - list
-  - create
-  - edit
-- `tasks`
-  - list
-  - create
-  - edit
-- `notes`
-  - list
-  - create
-  - edit
-- `contacts_summary`
-  - list uniquement
-  - projection enrichie en lecture
-- `customers`
-  - list
-  - show avec onglets
-- ressources techniques associees :
-  - `customerSignalietiques`
-  - `customerRisques`
-
----
-
-## Architecture actuelle
+Le pipeline actuel est :
 
 ```text
-src/
-├─ app/
-│  ├─ App.tsx
-│  └─ providers/
-│     └─ dataProvider.ts
-├─ components/
-│  ├─ admin/
-│  └─ ui/
-├─ data/
-│  ├─ raw/
-│  │  └─ baseData.ts
-│  ├─ projections/
-│  │  └─ buildSummaries.ts
-│  └─ fakerestData.ts
-├─ modules/
-│  └─ crm/
-│     ├─ dashboard/
-│     ├─ clients/
-│     ├─ contacts/
-│     ├─ tasks/
-│     ├─ notes/
-│     ├─ contacts-summary/
-│     └─ customers/
-└─ test/
+baseData.ts
+→ buildSummaries.ts
+→ fakerestData.ts
+→ dataProvider.ts
+→ composants CRM
 ```
 
-### Pipeline de donnees
-
-1. Les donnees brutes sont definies dans `src/data/raw/baseData.ts`
-2. Les projections sont calculees dans `src/data/projections/buildSummaries.ts`
-3. Le dataset final est expose via `src/data/fakerestData.ts`
-4. Le provider est branche dans `src/app/providers/dataProvider.ts`
-
-Ce decoupage est un point fort du projet : il facilite l'evolution vers d'autres providers.
-
----
-
-## Etat qualite / outillage
-
-## Build
-
-Le build de production est operationnel.
-
-```bash
-npm run build
-```
-
-## Lint
-
-Le lint est au vert.
-
-```bash
-npm run lint
-```
+Voir [Architecture actuelle](./architecture-actuelle.md) pour le détail.
 
 ## Tests
 
-Un socle de tests a ete mis en place avec Vitest.
+La suite active sélectionne les fichiers `*.test.ts` et `*.test.tsx`. Elle couvre
+notamment :
 
-Tests actifs actuellement :
+- les projections ;
+- le dashboard ;
+- les listes, créations et éditions des modules clients, contacts, tâches et notes ;
+- plusieurs composants admin, dont `Admin`, `DataTable` et `ResourcePage` ;
+- les principaux sous-composants de `DataTable` ;
+- les variantes du rich-text input.
 
-- `src/data/projections/buildSummaries.test.ts`
-- `src/modules/crm/dashboard/Dashboard.test.tsx`
-
-Commande :
-
-```bash
-npm run test
-```
-
-Mode watch :
-
-```bash
-npm run test:watch
-```
-
-### Note sur les anciens tests `*.spec.ts(x)`
-
-Le repo contient encore de nombreux fichiers `*.spec.ts(x)` herites ou incomplets.
-Ils ne sont pas integres a la suite active pour l'instant car ils dependent d'un outillage non finalise :
-
-- stories manquantes
-- packages de test specifiques non installes
-- dependances rich-text / tiptap non completes
-
-Ils sont pour le moment exclus du flux principal pour garder un socle fiable.
-
----
-
-## Ce qui fonctionne bien
-
-- structure modulaire claire
-- application demarrable localement tres vite
-- separation nette entre donnees brutes et projections
-- dashboard simple et utile
-- base CRM cohérente pour du prototypage
-- build / lint / tests de base operationnels
-- documentation projet deja assez riche dans `ressources/doc`
-
----
+Les anciens fichiers `*.spec.ts(x)` restent hors de la suite active et ne doivent pas
+être présentés comme une couverture opérationnelle.
 
 ## Limites actuelles
 
-### Donnees non persistantes
+- aucune persistance après rechargement complet ;
+- projections calculées au chargement et non resynchronisées automatiquement après les
+  mutations FakeRest ;
+- absence d'authentification et de gestion des rôles ;
+- absence de vrai contrat HTTP avec IBM i ;
+- couverture encore absente ou partielle pour `orders`, `fournisseurs` et les onglets
+  `customers` ;
+- produits du panier de commande non modélisés comme ressource ;
+- documentation CMagic encore composée en partie de notes exploratoires.
 
-Le projet utilise `ra-data-fakerest`.
-Les donnees sont donc :
+## Priorités
 
-- chargees localement
-- modifiables pendant la session
-- reinitialisees au rechargement complet de la page
+1. Stabiliser la documentation et distinguer état présent, décisions et cible.
+2. Ajouter des tests aux modules récemment introduits.
+3. Formaliser le contrat du futur DataProvider IBM i.
+4. Définir les règles métier des commandes et des futurs processus à statuts.
+5. Préparer l'authentification et les autorisations avant toute utilisation réelle.
 
-### Couverture de test encore faible
+## Vérification
 
-Le socle existe, mais la couverture est encore minimale.
-Il manque notamment :
-
-- tests CRUD par ressource
-- tests sur la navigation
-- tests du data provider
-- tests sur les onglets `customers`
-
-### Quelques zones techniques encore fragiles
-
-Certaines parties de `src/components/admin` et `src/components/rich-text-input` ont ete stabilisees surtout par configuration ESLint ciblee, pas encore par refactoring complet.
-
-Cela signifie que :
-
-- le projet est exploitable
-- mais certains composants utilitaires meriteront un nettoyage progressif
-
----
-
-## Comment tester le projet
-
-## Lancement local
-
-```bash
-npm install
-npm run dev
-```
-
-## Verification complete
+Les commandes de référence sont :
 
 ```bash
 npm run lint
@@ -242,128 +125,11 @@ npm run test
 npm run build
 ```
 
-## Recette manuelle rapide
+Le démarrage local utilise :
 
-Verifier au minimum :
+```bash
+npm run dev
+```
 
-- dashboard visible
-- listes `clients`, `contacts`, `tasks`, `notes`
-- vue `contacts_summary`
-- vue `customers` avec onglets
-- creation / edition sur au moins une ressource CRUD
-
-Voir aussi :
-
-- `ressources/doc/recette-fonctionnelle.md`
-
----
-
-## Priorites recommandees
-
-### Priorite 1 - Renforcer la couverture de tests
-
-**Statut :** ✅ En cours / Terminée
-
-Nous avons ajouté des tests pour :
-
-- Tous les modules CRM (clients, contacts, tasks, notes)
-- Les composants principaux (data-table, edit, create, etc.)
-- La couverture est maintenant suffisante pour garantir la stabilité
-
-### Priorite 2 - Refactor progressif des composants techniques
-
-**Statut :** ✅ Terminée
-
-Actions réalisées :
-
-1. Nettoyer `src/components/admin` (composants personnalises)
-   - Modulariser le composant `data-table` en sous-composants
-   - Extraire `DataTableHead`, `DataTableBody`, `DataTableRow`, `DataTableCell`
-   - Réduire la complexité du composant principal
-   - Créer un composant de base commun `ResourcePage` pour `Edit` et `Create`
-   - Réduire le code dupliqué entre `Edit` et `Create`
-   - Simplifier le composant `Admin` en réduisant la complexité de la configuration
-2. Reviser `src/components/rich-text-input` (zone fragile)
-   - Créer une version simplifiée `SimpleRichTextInput`
-   - Réduire les dépendances inutiles
-   - Améliorer la documentation
-3. Reduire les exceptions ESLint dans les composants UI
-
-### Priorite 3 - Preparer la migration vers un backend reel
-
-**Statut :** 🚀 Prête à démarrer
-
-L'application utilise toujours `ra-data-fakerest` comme data provider, ce qui facilite la migration.
-Les écrans sont stables et prêts pour un vrai backend.
-
-### Priorite 4 - Ameliorations fonctionnelles
-
-**Statut :** 🎯 En cours
-
-Actions réalisées :
-
-1. Exporter les guessers de prototypage depuis `src/components/admin` : `ListGuesser`, `EditGuesser`, `ShowGuesser`
-
-Actions prévues :
-
-1. Ajouter un `CreateGuesser` si le besoin de scaffolding create se confirme
-2. Mettre en place un système d'authentification/roles
-3. Ajouter des filtres et tris avancés sur les listes
-
-### Priorite 3 - Preparer la migration vers un backend reel
-
-**Objectif :** Rendre l'application prete pour un vrai data provider REST
-
-**Actions :**
-
-1. Conserver les ecrans existants tout en remplacant FakeRest
-2. Implementer un data provider REST compatible IBM i
-3. Tester la connectivite avec un backend reel
-
-### Priorite 4 - Ameliorations fonctionnelles
-
-**Objectif :** Ajouter des fonctionnalites utiles pour l'experience utilisateur
-
-**Actions :**
-
-1. Utiliser les guessers (`ListGuesser`, `EditGuesser`, `ShowGuesser`) pour accelerer le prototypage des nouvelles ressources
-2. Ajouter un `CreateGuesser` si necessaire
-3. Mettre en place un systeme d'authentification/roles
-4. Ajouter des filtres et tris avances sur les listes
-
----
-
-## Conclusion
-
-Le projet est dans un **excellent état de prototype avance**.
-
-Il est maintenant :
-
-- ✅ demarrable
-- ✅ testable
-- ✅ buildable
-- ✅ lintable
-- ✅ documente
-
-### État actuel
-
-**Tests et qualité :** ✅ Stables avec une bonne couverture
-**Architecture :** ✅ Modulaire et maintenable
-**Composants :** ✅ Refactorisés et simplifiés
-**Documentation :** ✅ À jour et complète
-
-### Prochaines étapes
-
-1. **Améliorations fonctionnelles** (Priorité 4)
-
-   - Utilisation des composants guesser disponibles
-   - Ajout eventuel d'un `CreateGuesser`
-   - Système d'authentification/roles
-   - Filtres et tris avancés
-2. **Migration backend IBM i** (Priorité 3)
-
-   - Remplacement de `ra-data-fakerest` par un data provider IBM i
-   - Conservation des écrans existants
-   - Intégration avec le backend réel
-
-Le projet est prêt pour la prochaine phase d'évolution fonctionnelle, tout en restant facilement adaptable à un backend réel quand le moment sera venu.
+Les statuts « vert » de ces commandes doivent être confirmés par une exécution récente ;
+ils ne sont pas supposés uniquement à partir de ce document.

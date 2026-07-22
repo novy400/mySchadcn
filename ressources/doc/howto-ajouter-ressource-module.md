@@ -89,7 +89,7 @@ Exemple `index.ts`:
 export { deals } from './deal.resource';
 ```
 
-## 3. Declarer la collection dans les donnees FakeRest
+## 4. Declarer la collection dans les donnees FakeRest
 
 Ajouter `deals` dans:
 
@@ -119,7 +119,7 @@ deals: [
 ],
 ```
 
-## 4. Brancher la ressource dans App
+## 5. Brancher la ressource dans App
 
 Dans `src/app/App.tsx`:
 
@@ -136,7 +136,13 @@ import { deals } from '../modules/crm/deals';
 <Resource {...deals} />
 ```
 
-## 5. Verifier le comportement
+## 6. Ajouter des tests cibles
+
+Ajouter au minimum un test `*.test.tsx` pour le comportement principal de la liste et
+un test pour toute logique non triviale. Une ressource avec création ou édition doit aussi
+tester les champs et relations essentiels de ses formulaires.
+
+## 7. Verifier le comportement
 
 Lancer:
 
@@ -150,7 +156,15 @@ Verifier:
 - la liste charge sans erreur
 - create et edit fonctionnent
 
-## 6. Checklist rapide
+Puis exécuter :
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+## 8. Checklist rapide
 
 - dossier module cree
 - `*.types.ts` cree avec `type` + `Pick<RaRecord, 'id'>` (pas `interface`, pas `id: number`)
@@ -161,8 +175,10 @@ Verifier:
 - `BaseData` mis a jour
 - collection ajoutee dans `baseData.ts`
 - ressource ajoutee dans `src/app/App.tsx`
+- tests cibles ajoutes
+- lint, tests et build valides
 
-## 7. Cas particulier: ressource de projection
+## 9. Cas particulier: ressource de projection
 
 Si tu ajoutes une vue enrichie (type `xxx_summary`):
 

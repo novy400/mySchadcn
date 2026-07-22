@@ -40,6 +40,7 @@ Ouvrir ensuite l'URL affichee par Vite.
 
 ### 4. Taches
 - ouvrir la liste
+- vérifier les filtres texte, contact, client et statut
 - creer une tache `OPEN`
 - modifier une tache en `DONE`
 
@@ -56,6 +57,19 @@ Ouvrir ensuite l'URL affichee par Vite.
 - ouvrir la liste `customers`
 - ouvrir une fiche
 - verifier les onglets `General`, `Signalétique`, `Risque métier`
+
+### 8. Fournisseurs
+- ouvrir la liste `fournisseurs`
+- créer un fournisseur
+- modifier ses coordonnées
+
+### 9. Commandes
+- ouvrir la liste `orders`
+- vérifier les onglets Commandées, Livrées et Annulées
+- vérifier les compteurs par statut
+- filtrer par client
+- ouvrir une commande et vérifier le panier et les totaux
+- modifier le statut et l'indicateur de retour
 
 ## Important
 

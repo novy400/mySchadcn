@@ -26,6 +26,15 @@ Exemples actuels:
 
 Si le backend IBM i renvoie des noms differents, prevoir une couche de mapping dans le provider.
 
+Formaliser pour chaque ressource :
+
+- identifiant et représentation ;
+- champs obligatoires, valeurs nulles et formats de date/décimaux ;
+- relations ;
+- filtres, tri et pagination ;
+- capacités autorisées : lecture, création, modification, suppression ou action métier ;
+- format des erreurs fonctionnelles.
+
 ## 2. Poser un provider REST de base
 
 Option simple: utiliser un provider REST existant comme base, puis l'adapter.
@@ -58,6 +67,15 @@ Les APIs IBM i peuvent avoir:
 - des filtres/tri/pagination differents
 
 Adapter ces ecarts dans des methodes surchargees (`getList`, `getOne`, `update`, etc.).
+
+Points à traiter explicitement :
+
+- conversion des dates sans décalage de fuseau involontaire ;
+- décimaux monétaires sans perte de précision ;
+- normalisation UTF-8 des textes provenant de l'IBM i ;
+- concurrence et version d'enregistrement ;
+- authentification, autorisations et expiration de session ;
+- annulation des requêtes lorsque le provider la supporte.
 
 Exemple de surcharge simplifiee:
 
@@ -132,6 +150,10 @@ const dataProvider = {
 };
 ```
 
+Cet extrait est un pseudo-code incomplet. Le provider composite réel doit router toutes
+les méthodes du contrat utilisées par l'application, conserver les signaux d'annulation
+et présenter les mêmes formes de résultats et d'erreurs pour les deux sources.
+
 ## 8. Validation de migration
 
 Checklist:
@@ -141,8 +163,25 @@ Checklist:
 - `id` est toujours present
 - les ressources `*_summary` renvoient les champs attendus
 - aucun changement requis dans `src/modules/crm/*` hors cas specifiques
+- les erreurs 400, 401, 403, 404, 409 et 500 ont un comportement défini
+- les dates et montants sont restitués sans perte
+- les tests de contrat passent contre un environnement IBM i contrôlé
 
-## 9. Variables d'environnement
+## 9. Actions métier et processus
+
+Une transition métier ne doit pas être simulée en production par la seule mise à jour
+libre d'un champ `status`. Pour une action telle que confirmer ou annuler :
+
+- exposer un endpoint explicite ;
+- vérifier les préconditions côté backend ;
+- définir l'idempotence ;
+- retourner l'état résultant et une erreur métier exploitable ;
+- tracer l'utilisateur et la corrélation de l'opération.
+
+Une extension typée du provider ou un client métier dédié peut porter ces appels. La
+méthode `customAction` n'appartient pas au contrat DataProvider standard.
+
+## 10. Variables d'environnement
 
 Ajouter une variable d'URL API:
 
@@ -152,10 +191,24 @@ VITE_API_URL=https://mon-api-ibmi.exemple.com
 
 Puis lire cette valeur dans `dataProvider.ts`.
 
-## 10. Definition de done
+Ne pas versionner de secret dans une variable `VITE_*` : ces variables sont intégrées au
+bundle client. L'URL publique de l'API peut y figurer, mais pas un jeton ou mot de passe.
+
+## 11. Strategie de bascule
+
+- migrer une tranche verticale et la comparer à FakeRest ;
+- journaliser les erreurs et temps de réponse ;
+- prévoir un retour vers le provider précédent ;
+- ne retirer les données locales qu'après recette complète ;
+- documenter la version du contrat backend compatible.
+
+## 12. Definition de done
 
 Migration terminee quand:
 
 - `ra-data-fakerest` n'est plus utilise en production
 - toutes les ressources passent par le provider REST
 - les ecrans CRUD et les vues `*_summary` conservent le meme comportement fonctionnel
+- l'authentification et les autorisations sont validées
+- les tests de contrat et la recette de non-régression sont verts
+- la stratégie de retour arrière a été testée

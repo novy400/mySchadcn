@@ -1,4 +1,6 @@
-# **Filtres avancés pour les tâches**
+# Filtres avancés pour les tâches
+
+_État vérifié le 2026-07-22._
 
 ## Implémentation actuelle
 
@@ -34,11 +36,18 @@ const filters = [
 ];
 ```
 
-## Améliorations possibles
+## État actuel vérifié
 
-Pour une implémentation encore plus complète, on pourrait ajouter :
+Le filtre par client a depuis été ajouté. La liste s'appuie sur la ressource enrichie
+`tasks_with_client`, qui expose `client_id`, `client_name` et `contact_name` en plus des
+champs de la tâche.
 
-1. **Filtre par client** : Utilisation de ReferenceInput avec AutocompleteInput
+Les quatre filtres actifs sont donc :
+
+1. recherche textuelle ;
+2. contact ;
+3. client ;
+4. statut.
 
 Exemple d'implémentation étendue :
 
@@ -74,7 +83,29 @@ const filters = [
 ];
 ```
 
+## Points de vigilance
+
+- `tasks_with_client` est calculée au chargement du dataset FakeRest ;
+- le filtre client dépend de cette projection et non d'un champ de la tâche brute ;
+- une future API devra gérer `q`, `contact_id`, `client_id`, `status`, le tri et la
+  pagination avec les mêmes contrats ;
+- la sauvegarde des requêtes filtrées relève du composant `SavedQueries` et doit être
+  testée séparément de la définition des filtres.
+
 ## Ressources
 
 - Exemple de référence : https://marmelab.com/shadcn-admin-kit/demo/#/reviews
+
+## Captures de travail
+
+- [Référence : filtre avec autocomplétion](./image/filtres-avances-taches/reference-filter-autocomplete.png)
+- [Menu des requêtes sauvegardées](./image/filtres-avances-taches/saved-query-menu.png)
+- [Dialogue de sauvegarde](./image/filtres-avances-taches/saved-query-dialog.png)
+- [Suppression d'une requête sauvegardée](./image/filtres-avances-taches/remove-saved-query.png)
+
+Les captures suivantes documentent des erreurs rencontrées pendant l'exploration. Elles
+ne constituent pas des exemples de code valide :
+
+- [Erreur de typage sur la liste](./image/filtres-avances-taches/typescript-error-list-sort.png)
+- [Erreurs de typage sur les filtres](./image/filtres-avances-taches/typescript-error-filter-components.png)
 - Documentation shadcn-admin-kit pour les filtres

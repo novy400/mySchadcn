@@ -151,11 +151,30 @@ Dans `src/app/App.tsx`:
 npm run dev
 ```
 
-Verifier:
+Vérifier :
 
 - la vue apparait dans la navigation
 - la liste charge les champs enrichis
-- la projection se recalcule via `buildSummaries`
+- la projection est construite via `buildSummaries` au chargement du dataset
+
+Avec FakeRest, cette construction initiale ne garantit pas que la projection sera
+resynchronisée après une mutation de ses collections sources. Tester ce comportement et,
+si nécessaire, recalculer côté provider ou exposer la projection depuis le backend.
+
+Ajouter un test ciblé de la fonction pure couvrant :
+
+- le calcul nominal ;
+- une relation source absente ;
+- une collection vide ;
+- les valeurs `null` ou de repli attendues.
+
+Puis exécuter :
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
 
 ## Checklist
 
@@ -166,3 +185,6 @@ Verifier:
 - projection `xxx_summary` calculee et retournee
 - module `*-summary` cree
 - ressource branchee dans `App.tsx`
+- test de projection ajoute
+- comportement après mutation documenté
+- lint, tests et build valides

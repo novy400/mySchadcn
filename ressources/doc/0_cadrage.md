@@ -1,5 +1,10 @@
 #  IBM i, React-Admin + FakeRest
 
+> **Statut : cadrage historique.** Ce document retrace les idées initiales et contient des
+> propositions déjà réalisées ou abandonnées. Pour l'état du dépôt, consulter
+> [État du projet](./etat-du-projet.md) et
+> [Architecture actuelle](./architecture-actuelle.md).
+
 ## objectif
 Ce projet a pour objectif de fournir un exemple de base pour démarrer une application React-Admin avec une API FakeRest, le tout tournant sur un serveur IBM i. Il est conçu pour être simple et facile à comprendre, tout en démontrant les concepts clés de l'intégration entre React-Admin et une API REST.
 
@@ -43,8 +48,8 @@ Couche 3 : futur data provider REST branché sur IBM i, sans changer les écrans
 | Étape             | But                                     | Outil                                   |
 | ----------------- | --------------------------------------- | --------------------------------------- |
 | Prototype UI      | Valider navigation, listes, formulaires | React-Admin + FakeRest npmjs            |
-| Simulation API    | Tester structure REST réaliste          | JSON Server ou FakeRest npmjs+1         |
-| Industrialisation | Connecter IBM i réel                    | Data provider REST personnalisé npmjs+1 |
+| Simulation API    | Tester une structure REST réaliste      | JSON Server ou FakeRest                  |
+| Industrialisation | Connecter IBM i réel                    | Data provider REST personnalisé          |
 
 > séparer très tôt la conception de l’interface de la complexité d’exposition des données IBM i.
 
@@ -152,7 +157,7 @@ Certaines pages ont besoin de données issues de plusieurs tables, et qu’il ut
 
 | Niveau   | Objectif         | Ce que tu empruntes à Atomic CRM                                                 |
 | -------- | ---------------- | -------------------------------------------------------------------------------- |
-| Niveau 1 | Prototype propre | Modules métier, Resource séparées, types TS, composants réutilisables marmelab+1 |
+| Niveau 1 | Prototype propre | Modules métier, ressources séparées, types TS, composants réutilisables |
 | Niveau 2 | CRM crédible     | Ajout de tasks, notes, deals, vues *_summary simulées                            |
 | Niveau 3 | Pré-prod         | Vrai data provider REST IBM i, agrégats côté backend, sécurité et workflows      |
 
@@ -268,9 +273,9 @@ Je te conseille d’utiliser contacts_summary pour la liste principale, et conta
 
 | Phase              | Où se trouve l’intelligence ?              | Pourquoi                                        |
 | ------------------ | ------------------------------------------ | ----------------------------------------------- |
-| Prototype FakeRest | buildSummaries() côté frontend             | Simule vite le futur backend github+1           |
-| Préparation API    | contrat de données figé (contacts_summary) | Stabilise les écrans et les types linkedin      |
-| Backend IBM i      | vues SQL / service RPG / API agrégée       | Simplifie le client et prépare la prod github+1 |
+| Prototype FakeRest | `buildSummaries()` côté frontend            | Simule rapidement le futur backend              |
+| Préparation API    | contrat de données figé (`contacts_summary`) | Stabilise les écrans et les types                |
+| Backend IBM i      | vues SQL / service RPG / API agrégée        | Simplifie le client et prépare la production     |
 
 
 src/modules/crm/contacts-summary/ContactSummaryList.tsx
@@ -351,10 +356,10 @@ src/
 
 | Point               | Version pédagogique                                     | Version proche d’Atomic CRM                                 |
 | ------------------- | ------------------------------------------------------- | ----------------------------------------------------------- |
-| Question principale | “Quel est le niveau du composant ?” youtube             | “À quoi sert ce composant et dans quel contexte ?” marmelab |
-| Organisation UI     | atoms / molecules / organisms feature-sliced            | ui / admin / modules métier marmelab+1                      |
-| Avantage            | Très claire pour apprendre la composition UI youtube    | Plus pratique pour une vraie app CRM dev+1                  |
-| Risque              | Trop théorique si tu l’appliques partout feature-sliced | Moins “académique”, mais souvent plus concret dev           |
+| Question principale | « Quel est le niveau du composant ? »                    | « À quoi sert ce composant et dans quel contexte ? »        |
+| Organisation UI     | atoms / molecules / organisms                            | UI / admin / modules métier                                 |
+| Avantage            | Claire pour apprendre la composition UI                  | Plus pratique pour une application CRM                      |
+| Risque              | Trop théorique si elle est appliquée partout              | Moins académique, mais souvent plus concret                  |
 
 en priorité la réutilisation de :
 

@@ -1,190 +1,116 @@
-# Workflow de mise à jour depuis upstream
+# Mise à jour depuis shadcn-admin-kit
 
-Ce document résume une méthode simple et sûre pour récupérer les mises à jour du projet source `marmelab/shadcn-admin-kit` dans ce dépôt.
+_Politique active depuis le 2026-07-22._
 
-## Préparation initiale
+## Décision
 
-Si le remote `upstream` n'existe pas encore :
+Le dépôt actuel a divergé de `marmelab/shadcn-admin-kit`. La politique retenue est donc :
+
+- ne pas fusionner globalement `upstream/main` dans la branche principale ;
+- inspecter les changements upstream ;
+- reprendre sélectivement un correctif ou un composant dans une branche dédiée ;
+- conserver les adaptations métier dans `src/modules` ;
+- valider systématiquement lint, tests et build.
+
+Un redémarrage complet depuis une nouvelle version upstream constitue un projet de
+migration distinct. Il ne doit pas être confondu avec la maintenance courante.
+
+## Configuration initiale
 
 ```bash
 git remote add upstream https://github.com/marmelab/shadcn-admin-kit
-```
-
-Vérifier les remotes :
-
-```bash
 git remote -v
 ```
 
-## Convention de branche principale
+Si le remote existe déjà, ne pas l'ajouter une seconde fois.
 
-Le dépôt local peut utiliser `main` comme branche principale, ce qui est cohérent avec `upstream/main`.
-
-Renommer la branche locale `master` en `main` :
-
-```bash
-git branch -m master main
-git push -u origin main
-```
-
-Ensuite, changer la branche par défaut sur GitHub dans **Settings > Branches**, puis supprimer l'ancienne branche distante si nécessaire :
-
-```bash
-git push origin --delete master
-```
-
-## Routine de mise à jour
-
-### 1. Récupérer les nouveautés upstream
+## Inspecter l'écart
 
 ```bash
 git fetch upstream
-```
-
-Cette commande ne modifie pas le code local. Elle met seulement à jour les références distantes comme `upstream/main`.
-
-### 2. Mesurer l'écart
-
-```bash
 git rev-list --left-right --count HEAD...upstream/main
-```
-
-Exemple de sortie :
-
-```text
-32    850
-```
-
-Lecture pratique :
-- premier nombre : commits présents dans `upstream/main` et absents localement
-- second nombre : commits présents localement et absents dans `upstream/main`
-
-> Sous PowerShell, ne pas ajouter `\` en fin de ligne.
-
-### 3. Voir les commits upstream à intégrer
-
-```bash
 git log --oneline --graph --decorate HEAD..upstream/main -20
-```
-
-### 4. Voir les fichiers touchés
-
-```bash
 git diff --stat HEAD..upstream/main
 ```
 
-Pour inspecter un fichier précis :
+Pour `git rev-list --left-right --count HEAD...upstream/main` :
+
+- le premier nombre compte les commits propres à `HEAD` ;
+- le second compte les commits propres à `upstream/main`.
+
+## Reprise recommandée d'un changement
+
+### 1. Créer une branche dédiée
 
 ```bash
-git diff HEAD..upstream/main -- src/components/ui/data-table.tsx
+git switch main
+git pull --ff-only origin main
+git switch -c sync/upstream-composant
 ```
 
-## Trois stratégies d'intégration
-
-### A. Merge complet recommandé dans une branche de test
-
-À utiliser quand les changements semblent peu risqués.
+### 2. Examiner le changement
 
 ```bash
-git checkout main
-git checkout -b merge/upstream-main
-git merge upstream/main
+git diff HEAD..upstream/main -- chemin/du/fichier.tsx
 ```
 
-Puis vérifier le projet :
+Le chemin doit correspondre à l'arborescence réelle de l'upstream. Il ne faut pas
+supposer qu'un composant se trouve dans `components/ui` sans le vérifier.
+
+### 3. Choisir la méthode
+
+Pour un commit autonome et compris :
+
+```bash
+git cherry-pick <sha>
+```
+
+Pour reprendre la version upstream d'un fichier puis l'adapter :
+
+```bash
+git restore --source upstream/main -- chemin/du/fichier.tsx
+```
+
+La reprise d'un fichier entier est à éviter si elle écrase des adaptations locales. Dans
+ce cas, appliquer manuellement les différences utiles.
+
+### 4. Valider
 
 ```bash
 npm install
 npm run lint
 npm run test
-npm run dev
+npm run build
 ```
 
-Si tout est correct :
+Effectuer ensuite une recette manuelle ciblée sur le composant repris.
 
-```bash
-git checkout main
-git merge merge/upstream-main
-```
+## Répartition des responsabilités
 
-### B. Cherry-pick d'un commit précis
+- `src/components/ui` : primitives proches de shadcn/ui ; changements locaux prudents ;
+- `src/components/admin` : implémentation admin locale issue du kit et adaptée au dépôt ;
+- `src/modules` : écrans et logique de présentation métier ;
+- `src/data/projections` : transformations et projections locales.
 
-À utiliser quand un commit upstream t'intéresse particulièrement.
+Le dossier `src/components/custom` mentionné dans d'anciens documents n'existe pas dans
+l'architecture actuelle. Il ne constitue donc pas une convention active.
 
-```bash
-git log --oneline upstream/main
-git cherry-pick <sha_commit>
-```
+## Opérations interdites dans le flux courant
 
-### C. Récupération sélective d'un fichier
+- merge global avec `--allow-unrelated-histories` ;
+- remplacement massif de `src/components/admin` ou `src/components/ui` ;
+- reprise d'un exemple `example-*` comme composant final sans adaptation ;
+- intégration sans exécuter la suite de validation.
 
-À utiliser quand tu veux remettre un composant dans l'état upstream.
+## Migration complète vers une nouvelle base
 
-```bash
-git checkout upstream/main -- src/components/ui/data-table.tsx
-git commit -m "sync data-table depuis upstream"
-```
+Si le coût des reprises sélectives devient trop élevé, créer un nouveau dépôt ou une
+branche de migration à partir d'une version précise du kit, puis réintégrer progressivement :
 
-## Règle d'architecture pour limiter les conflits
+1. les modules métier ;
+2. le pipeline de données ;
+3. les composants locaux indispensables ;
+4. les tests ;
+5. la documentation.
 
-Pour garder les mises à jour simples :
-
-- `src/components/ui/` → zone la plus proche d'upstream, à modifier le moins possible
-- `src/components/custom/` → wrappers et personnalisations locales
-- `src/modules/` → logique métier et écrans applicatifs
-
-Principe recommandé :
-- éviter de modifier directement les composants de base quand un wrapper suffit
-- placer les adaptations métier dans `modules`
-- placer les variantes d'UI dans `components/custom`
-
-## Commandes utiles
-
-Lister les branches locales :
-
-```bash
-git branch
-```
-
-Lister les branches distantes :
-
-```bash
-git branch -r
-```
-
-Voir les remotes :
-
-```bash
-git remote -v
-```
-
-Voir l'état courant :
-
-```bash
-git status
-```
-
-## Routine conseillée avant chaque mise à jour
-
-```bash
-git checkout main
-git pull origin main
-git fetch upstream
-git rev-list --left-right --count HEAD...upstream/main
-git log --oneline --graph --decorate HEAD..upstream/main -20
-git diff --stat HEAD..upstream/main
-```
-
-Ensuite :
-- si peu de changements et peu de risques → merge dans une branche de test
-- si un seul correctif t'intéresse → cherry-pick
-- si un seul composant t'intéresse → récupération sélective du fichier
-
-## Conseil pratique
-
-Sur ce projet, la meilleure stratégie est souvent :
-1. `fetch upstream`
-2. regarder l'écart
-3. tester un merge complet dans une branche intermédiaire
-4. valider avec lint/tests/dev
-5. fusionner dans `main` seulement après validation
+Cette décision doit faire l'objet d'un cadrage et d'une recette propres.

@@ -1,6 +1,7 @@
-# Mini tutoriel : Vite + Admin modulaire + FakeRest (version a jour)
+# Mini tutoriel : Vite + Admin modulaire + FakeRest
 
-Ce tutoriel resume la facon dont le projet est actuellement structure dans ce repo.
+Ce tutoriel présente le pattern de base. La photographie exhaustive du dépôt est tenue
+dans [État du projet](./etat-du-projet.md).
 
 ## 1) Installation
 
@@ -24,7 +25,8 @@ src/data/raw/baseData.ts
   -> src/app/providers/dataProvider.ts
 ```
 
-Le dataset final contient des collections CRUD (`clients`, `contacts`, `tasks`, `notes`) et une projection de lecture (`contacts_summary`).
+Le dataset final contient des collections CRUD et les projections de lecture
+`contacts_summary` et `tasks_with_client`.
 
 ## 4) Ressources CRM en place
 
@@ -33,6 +35,10 @@ Le dataset final contient des collections CRUD (`clients`, `contacts`, `tasks`, 
 - `tasks`
 - `notes`
 - `contacts_summary`
+- `tasks_with_client`
+- `fournisseurs`
+- `orders`
+- `customers`, `customerSignalietiques`, `customerRisques`
 
 ## 5) Exemple de data provider
 
@@ -55,18 +61,22 @@ import dataProvider from './providers/dataProvider';
 import { Dashboard } from '../modules/crm/dashboard/Dashboard';
 import { clients } from '../modules/crm/clients';
 import { contacts } from '../modules/crm/contacts';
-import { tasks } from '../modules/crm/tasks';
+import { tasksWithClient } from '../modules/crm/tasks';
 import { notes } from '../modules/crm/notes';
 import { contactsSummary } from '../modules/crm/contacts-summary';
+import { fournisseurs } from '../modules/crm/fournisseurs';
+import { orders } from '../modules/crm/orders';
 
 function App() {
   return (
     <Admin dataProvider={dataProvider} dashboard={Dashboard}>
       <Resource {...clients} />
       <Resource {...contacts} />
-      <Resource {...tasks} />
+      <Resource {...tasksWithClient} />
       <Resource {...notes} />
       <Resource {...contactsSummary} />
+      <Resource {...fournisseurs} />
+      <Resource {...orders} />
     </Admin>
   );
 }

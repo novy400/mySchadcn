@@ -1,6 +1,7 @@
-# Starter variante 2 : mini CRM modulaire (etat reel du repo)
+# Starter variante 2 : mini CRM modulaire
 
-Ce document decrit la version actuellement implementee dans ce depot (avril 2026), et non plus un simple squelette theorique.
+> **Statut : tutoriel historique.** Les exemples restent utiles, mais la liste complète des
+> modules et ressources est maintenue dans [État du projet](./etat-du-projet.md).
 
 ## Objectif
 
@@ -40,7 +41,10 @@ src/
 │     ├─ contacts/
 │     ├─ tasks/
 │     ├─ notes/
-│     └─ contacts-summary/
+│     ├─ contacts-summary/
+│     ├─ customers/
+│     ├─ fournisseurs/
+│     └─ orders/
 └─ main.tsx
 ```
 
@@ -68,6 +72,10 @@ export default dataProvider;
 - `tasks` (list, edit, create)
 - `notes` (list, edit, create)
 - `contacts_summary` (list seulement)
+- `tasks_with_client` (liste enrichie des tâches)
+- `fournisseurs` (list, edit, create)
+- `orders` (list, edit)
+- `customers` et ses ressources techniques de détail
 
 ## Exemple de liste metier (pattern actuel)
 
@@ -136,18 +144,22 @@ import dataProvider from './providers/dataProvider';
 import { Dashboard } from '../modules/crm/dashboard/Dashboard';
 import { clients } from '../modules/crm/clients';
 import { contacts } from '../modules/crm/contacts';
-import { tasks } from '../modules/crm/tasks';
+import { tasksWithClient } from '../modules/crm/tasks';
 import { notes } from '../modules/crm/notes';
 import { contactsSummary } from '../modules/crm/contacts-summary';
+import { fournisseurs } from '../modules/crm/fournisseurs';
+import { orders } from '../modules/crm/orders';
 
 function App() {
   return (
     <Admin dataProvider={dataProvider} dashboard={Dashboard}>
       <Resource {...clients} />
       <Resource {...contacts} />
-      <Resource {...tasks} />
+      <Resource {...tasksWithClient} />
       <Resource {...notes} />
       <Resource {...contactsSummary} />
+      <Resource {...fournisseurs} />
+      <Resource {...orders} />
     </Admin>
   );
 }
