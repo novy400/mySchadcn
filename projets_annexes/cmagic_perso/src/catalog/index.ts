@@ -16,6 +16,7 @@ export {
 } from './resource-contract.js';
 export { generateRpgReadModule } from './rpg-read.js';
 export { generateCatalogDdl } from './ddl.js';
+export { generateCatalogRules } from './rules.js';
 export type {
     CatalogCapability,
     CatalogCompilation,

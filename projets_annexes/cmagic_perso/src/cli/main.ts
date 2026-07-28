@@ -48,6 +48,7 @@ export const generateCatalogAction = async (
         );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
         console.log(chalk.green(`Db2 DDL generated: ${artifact.ddl}`));
+        console.log(chalk.green(`BOB rules generated: ${artifact.rules}`));
     }
 };
 
@@ -73,7 +74,7 @@ export default function (): void {
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
         .description(
-            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read modules and Db2 DDL'
+            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read modules, Db2 DDL and BOB rules'
         )
         .action(generateCatalogAction);
 

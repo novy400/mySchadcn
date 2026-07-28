@@ -7,6 +7,10 @@ import { generateCatalogDdl } from './ddl.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
 import { generateRpgReadModule } from './rpg-read.js';
+import {
+    catalogRpgReadSourceName,
+    generateCatalogRules
+} from './rules.js';
 
 export type GeneratedCatalogArtifactPaths = {
     spec: string;
@@ -14,6 +18,7 @@ export type GeneratedCatalogArtifactPaths = {
     resourceContract: string;
     rpgRead: string;
     ddl: string;
+    rules: string;
 };
 
 export class CatalogCompilationError extends Error {
@@ -57,8 +62,12 @@ export const generateCatalogArtifacts = (
                 resourceDirectory,
                 `${spec.resource}.resource-contract.ts`
             ),
-            rpgRead: path.join(resourceDirectory, `${spec.resource}.read.sqlrpgle`),
-            ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`)
+            rpgRead: path.join(
+                resourceDirectory,
+                catalogRpgReadSourceName(spec.resource)
+            ),
+            ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`),
+            rules: path.join(resourceDirectory, 'Rules.mk')
         };
 
         writeArtifact(artifacts.spec, `${JSON.stringify(spec, null, 2)}\n`);
@@ -69,6 +78,7 @@ export const generateCatalogArtifacts = (
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(artifacts.ddl, generateCatalogDdl(spec));
+        writeArtifact(artifacts.rules, generateCatalogRules(spec));
 
         return artifacts;
     });

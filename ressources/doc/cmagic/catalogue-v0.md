@@ -11,8 +11,8 @@ source .cmagic -> CatalogSpec validé -> modèles de rendu -> templates Handleba
 
 `CatalogSpec` est la frontière stable. Le générateur adapte ce contrat en modèles de
 rendu, puis Handlebars produit les artefacts dans leur langage natif. Les futurs
-générateurs `Rules.mk`, ILEastic et IWS feront de même au lieu de relire directement
-l'AST Langium ou d'assembler du code ligne par ligne en TypeScript.
+générateurs ILEastic et IWS feront de même au lieu de relire directement l'AST Langium
+ou d'assembler du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
@@ -35,7 +35,8 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.openapi.json` ;
 - `{resource}.resource-contract.ts` ;
 - `{resource}.read.sqlrpgle` ;
-- `{resource}.ddl.sql`.
+- `{resource}.ddl.sql` ;
+- `Rules.mk`.
 
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
 
@@ -168,10 +169,27 @@ La représentation `Y/N` est également utilisée dans les structures RPG de lec
 déclarée comme caractère dans `CMAGIC_supportedFields`, afin que DDL et module RPG
 restent cohérents sur IBM i 7.4.
 
+## Règle BOB générée
+
+Le sixième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie le
+module de lecture réellement généré à BOB :
+
+```make
+SERVICE.MODULE: services.read.sqlrpgle
+```
+
+Le nom d'objet est dérivé du nom de l'entité en majuscules. La génération échoue si ce
+nom ne respecte pas le format IBM i d'un nom système de 1 à 10 caractères ; il n'est
+jamais tronqué silencieusement.
+
+Cette première règle ne déclare volontairement ni `.SRVPGM`, ni module REST, ni module
+IWS : leurs sources et binders ne font pas encore partie des artefacts générés. Les
+dépendances seront ajoutées avec ces artefacts, pour que `Rules.mk` reste compilable et
+ne référence que des fichiers présents.
+
 ## Hors périmètre de la tranche
 
 - publication ILEastic et wrapper IWS ;
-- génération des fichiers `Rules.mk` ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
@@ -179,6 +197,6 @@ restent cohérents sur IBM i 7.4.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-Le prochain artefact sera ajouté comme template autonome pour les fichiers `Rules.mk`,
-avant la publication ILEastic ou IWS et la vérification du contrat HTTP de bout en bout
-depuis le DataProvider de `mySchadcn`.
+Le prochain artefact pourra être le binder du service program de lecture, avant la
+publication ILEastic ou IWS et la vérification du contrat HTTP de bout en bout depuis le
+DataProvider de `mySchadcn`.
