@@ -1,0 +1,44 @@
+.vscode/**
+.vscode-test/**
+.gitignore
+langium-quickstart.md
+# Sources TypeScript (gardez seulement les .js compilés)
+src/**
+*.ts
+!out/**/*.js
+
+# Fichiers de développement
+.vscode/**
+.vscode-test/**
+.gitignore
+.gitattributes
+tsconfig.json
+webpack.config.js
+.eslintrc.json
+
+# Dependencies de dev
+node_modules/@types/**
+node_modules/typescript/**
+node_modules/@typescript-eslint/**
+node_modules/langium-cli/**
+
+# Tests
+test/**
+**/*.test.js
+**/*.spec.js
+
+# Documentation de développement
+README.md
+CHANGELOG.md
+.github/**
+
+# Fichiers temporaires
+*.log
+.DS_Store
+Thumbs.db
+
+# Gardez seulement les fichiers essentiels
+!package.json
+!out/**
+!syntaxes/**
+!language-configuration.json
