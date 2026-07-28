@@ -3,6 +3,7 @@
   "entity": "Service",
   "resource": "services",
   "table": "DEPARTMENT",
+  "ileasticObject": "SERVREST",
   "identifier": "id",
   "capabilities": [
     "list",

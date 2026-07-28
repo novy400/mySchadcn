@@ -47,7 +47,7 @@ Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichie
 ## Syntaxe v0
 
 ```cmagic
-entity Service resource "services" table "DEPARTMENT" {
+entity Service resource "services" table "DEPARTMENT" ileasticObject "SERVREST" {
     id: String(3) column "DEPTNO" key required searchable sortable filter(EQ, LIKE),
     nom: String(36) column "DEPTNAME" required searchable sortable filter(EQ, LIKE),
     idManageur: String(6) column "MGRNO" filter(EQ),
@@ -84,6 +84,8 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 `table`. Elle doit alors respecter les règles suivantes :
 
 - `resource` et `table` sont tous deux obligatoires ;
+- `ileasticObject` est facultatif ; lorsqu'il est présent, il contient un nom système
+  IBM i de 1 à 10 caractères, normalisé en majuscules et distinct du module de lecture ;
 - exactement un champ porte le marqueur `key` et ce champ public s'appelle `id` ;
 - chaque champ possède un mapping `column` ;
 - une capacité de liste exige une vue `list` non vide ;
@@ -206,10 +208,10 @@ Les erreurs de validation sont produites par CREST. Une recherche rejetée renvo
 erreur client, un identifiant absent renvoie `404`, et une erreur d'accès aux données ou
 de sérialisation renvoie `500`. Aucune route de mutation ni route IWS n'est générée.
 
-Le module de transport est livré comme source et contrat d'inclusion, mais n'est pas
-encore ajouté à `Rules.mk`. Le générateur ne choisit pas implicitement un nom d'objet
-IBM i abrégé pour ce second module : cette convention, ou un nom système explicite dans
-le DSL, doit être décidée avant l'intégration BOB.
+Lorsque l'entité déclare `ileasticObject`, le module de transport est également ajouté
+à `Rules.mk` sous ce nom système explicite. Le générateur ne déduit, n'abrège et ne
+tronque jamais ce second nom d'objet IBM i. Sans cette propriété, les sources ILEastic
+restent générées, mais aucune cible BOB de transport n'est créée.
 
 ## DDL Db2 généré
 
@@ -258,19 +260,23 @@ le module de lecture et le binder réellement générés :
 ```make
 SERVICE.MODULE: services.read.sqlrpgle
 SERVICE.SRVPGM: services.bnd SERVICE.MODULE
+SERVREST.MODULE: services.ileastic.sqlrpgle
 ```
 
 Le nom d'objet est dérivé du nom de l'entité en majuscules. La génération échoue si ce
 nom ne respecte pas le format IBM i d'un nom système de 1 à 10 caractères ; il n'est
 jamais tronqué silencieusement.
 
-La règle ne déclare encore ni module ILEastic, ni module IWS. Le source ILEastic est
-présent, mais son nom d'objet IBM i n'est pas encore fixé ; `Rules.mk` reste donc centré
-sur le service program de lecture et ne crée aucune cible ambiguë.
+La cible `SERVREST.MODULE` provient directement de
+`ileasticObject "SERVREST"`. Elle est facultative et doit être distincte de
+`SERVICE.MODULE`. Cette règle compile le transport ; elle ne génère ni programme
+serveur ILEastic, ni binder pour ce module. Le programme serveur qui appelle
+`Service_registerRoutes` devra donc ajouter explicitement `SERVREST.MODULE` à ses
+dépendances de lien.
 
 ## Hors périmètre de la tranche
 
-- intégration du module ILEastic dans BOB et wrapper IWS ;
+- génération ou paramétrage du programme serveur ILEastic et wrapper IWS ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
@@ -278,6 +284,6 @@ sur le service program de lecture et ne crée aucune cible ambiguë.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine verticale pourra fixer le nom d'objet du module ILEastic et l'intégrer à
-BOB, avant le wrapper IWS et la vérification du contrat HTTP de bout en bout depuis le
-DataProvider de `mySchadcn`.
+La prochaine verticale pourra intégrer `SERVREST.MODULE` à un programme serveur
+ILEastic généré ou paramétré, avant le wrapper IWS et la vérification du contrat HTTP
+de bout en bout depuis le DataProvider de `mySchadcn`.

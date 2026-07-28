@@ -1,4 +1,4 @@
-entity Service resource "services" table "DEPARTMENT" {
+entity Service resource "services" table "DEPARTMENT" ileasticObject "SERVREST" {
     id: String(3) column "DEPTNO" key required searchable sortable filter(EQ, LIKE),
     nom: String(36) column "DEPTNAME" required searchable sortable filter(EQ, LIKE),
     idManageur: String(6) column "MGRNO" filter(EQ),

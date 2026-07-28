@@ -27,6 +27,7 @@ describe('CMagic Catalogue v0', () => {
                 entity: 'Service',
                 resource: 'services',
                 table: 'DEPARTMENT',
+                ileasticObject: 'SERVREST',
                 identifier: 'id',
                 capabilities: ['list', 'get'],
                 fields: [
@@ -224,6 +225,30 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
+    test('validates explicit ILEastic IBM i object names', async () => {
+        const model = await parseCMagicString(`
+            entity BadRest resource "bad-rest" table "BADREST"
+                ileasticObject "TOO-LONG-NAME" {
+                id: Int column "ID" key required
+            }
+            operations for BadRest { GET }
+
+            entity Collision resource "collisions" table "COLLISION"
+                ileasticObject "COLLISION" {
+                id: Int column "ID" key required
+            }
+            operations for Collision { GET }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_ILEASTIC_OBJECT_INVALID',
+            'CATALOG_ILEASTIC_OBJECT_COLLISION'
+        ]);
+    });
+
     test('generates the OpenAPI and frontend contract from the same CatalogSpec', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
@@ -378,6 +403,9 @@ describe('CMagic Catalogue v0', () => {
             );
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
                 'SERVICE.SRVPGM: services.bnd SERVICE.MODULE'
+            );
+            expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
+                'SERVREST.MODULE: services.ileastic.sqlrpgle'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

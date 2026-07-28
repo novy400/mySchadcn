@@ -9,6 +9,7 @@ Entity:
     'entity' name=ID
     ('resource' resourceName=STRING)?
     ('table' tableName=STRING)?
+    ('ileasticObject' ileasticObjectName=STRING)?
     '{'
         (fields+=Field (',')?)*
     '}';

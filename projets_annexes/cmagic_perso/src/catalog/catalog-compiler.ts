@@ -14,6 +14,11 @@ import type {
     CatalogFilterOperator,
     CatalogSpec
 } from './catalog-spec.js';
+import {
+    isIbmIObjectName,
+    isSameIbmIObjectName,
+    normalizeIbmIObjectName
+} from './ibmi-object-name.js';
 
 const capabilityAliases: Readonly<Record<string, CatalogCapability>> = {
     SEARCH: 'list',
@@ -141,6 +146,30 @@ const compileEntity = (
                 'CATALOG_TABLE_REQUIRED',
                 entity,
                 `L'entité catalogue ${entity.name} doit déclarer une table.`
+            )
+        );
+    }
+    const ileasticObject =
+        entity.ileasticObjectName === undefined
+            ? undefined
+            : normalizeIbmIObjectName(entity.ileasticObjectName);
+    if (ileasticObject !== undefined && !isIbmIObjectName(ileasticObject)) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_ILEASTIC_OBJECT_INVALID',
+                entity,
+                `L'objet ILEastic ${ileasticObject || 'vide'} doit être un nom système IBM i de 1 à 10 caractères.`
+            )
+        );
+    } else if (
+        ileasticObject !== undefined &&
+        isSameIbmIObjectName(ileasticObject, entity.name)
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_ILEASTIC_OBJECT_COLLISION',
+                entity,
+                `L'objet ILEastic ${ileasticObject} doit être différent du module de lecture.`
             )
         );
     }
@@ -360,6 +389,7 @@ const compileEntity = (
         entity: entity.name,
         resource: entity.resourceName,
         table: entity.tableName,
+        ...(ileasticObject === undefined ? {} : { ileasticObject }),
         identifier: 'id',
         capabilities,
         fields
