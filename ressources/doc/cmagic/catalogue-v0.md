@@ -16,6 +16,25 @@ La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMEN
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
 avant d'ajouter les mutations.
 
+## Génération
+
+Depuis `projets_annexes/cmagic_perso` :
+
+```powershell
+npm install
+npm run build
+node bin/cli.js generate-catalog examples/service-catalogue.cmagic `
+  --destination examples/generated-catalog
+```
+
+La commande écrit, dans un sous-dossier portant le nom de la ressource :
+
+- `{resource}.catalog-spec.json` ;
+- `{resource}.openapi.json` ;
+- `{resource}.resource-contract.ts`.
+
+Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
+
 ## Syntaxe v0
 
 ```cmagic
@@ -45,6 +64,10 @@ Les mots-clés historiques restent acceptés. Pour une entité catalogue, les al
 | `UPDATE` | `CHANGE` | modification |
 | `CREATE` | `CREATE` | création |
 | `DELETE` | `DELETE` | suppression |
+
+Les alias de mutation sont reconnus par la grammaire pour préserver la compatibilité,
+mais Catalogue v0 refuse leur compilation tant que les générateurs de mutation ne sont
+pas dans le périmètre.
 
 ## Règles de validation
 

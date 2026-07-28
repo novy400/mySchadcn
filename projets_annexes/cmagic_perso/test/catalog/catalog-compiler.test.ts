@@ -121,7 +121,7 @@ describe('CMagic Catalogue v0', () => {
             'CATALOG_KEY_REQUIRED',
             'CATALOG_COLUMN_REQUIRED',
             'CATALOG_FILTER_OPERATOR_INVALID',
-            'CATALOG_LIST_FIELD_UNKNOWN'
+            'CATALOG_VIEW_FIELD_UNKNOWN'
         ]);
     });
 
@@ -141,6 +141,24 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
+    test('rejects non-text search fields and unknown fields in every view', async () => {
+        const model = await parseCMagicString(`
+            entity InvalidSearch resource "invalid-search" table "INVALIDS" {
+                id: Int column "ID" key required searchable
+            }
+            view summary for InvalidSearch { id, missing }
+            operations for InvalidSearch { GET }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_SEARCH_FIELD_INVALID',
+            'CATALOG_VIEW_FIELD_UNKNOWN'
+        ]);
+    });
+
     test('generates the OpenAPI and frontend contract from the same CatalogSpec', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
@@ -155,8 +173,18 @@ describe('CMagic Catalogue v0', () => {
         expect(openApi.paths).toHaveProperty('/api/services/{id}');
         expect(openApi.paths['/api/services'].get?.parameters).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ name: 'page', in: 'query', required: false }),
-                expect.objectContaining({ name: 'perPage', in: 'query', required: false }),
+                expect.objectContaining({
+                    name: 'page',
+                    in: 'query',
+                    required: false,
+                    schema: expect.objectContaining({ minimum: 1 })
+                }),
+                expect.objectContaining({
+                    name: 'perPage',
+                    in: 'query',
+                    required: false,
+                    schema: expect.objectContaining({ minimum: 1 })
+                }),
                 expect.objectContaining({ name: 'sort', in: 'query', required: false }),
                 expect.objectContaining({ name: 'order', in: 'query', required: false }),
                 expect.objectContaining({ name: 'q', in: 'query', required: false }),
@@ -232,25 +260,18 @@ describe('CMagic Catalogue v0', () => {
         }
     });
 
-    test('describes mutation aliases consistently in both generated contracts', async () => {
+    test('rejects mutations that are outside Catalogue v0', async () => {
         const model = await parseCMagicString(`
             entity Mutable resource "mutables" table "MUTABLE" {
                 id: Int column "ID" key required
             }
             operations for Mutable { CREATE, UPDATE, DELETE }
         `);
-        const [spec] = buildCatalogSpecs(model).specs;
+        const compilation = buildCatalogSpecs(model);
 
-        const openApi = generateOpenApiDocument(spec);
-        const resourceContract = generateResourceContract(spec);
-
-        expect(openApi.paths['/api/mutables']).toHaveProperty('post');
-        expect(openApi.paths['/api/mutables/{id}']).toHaveProperty('patch');
-        expect(openApi.paths['/api/mutables/{id}']).toHaveProperty('delete');
-        expect(resourceContract.capabilities).toEqual([
-            'create',
-            'update',
-            'delete'
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_CAPABILITY_UNSUPPORTED'
         ]);
     });
 });

@@ -213,9 +213,48 @@ const compileEntity = (
                 )
             );
         }
+        if (field.searchable && fieldType?.kind !== 'string') {
+            diagnostics.push(
+                diagnostic(
+                    'CATALOG_SEARCH_FIELD_INVALID',
+                    entity,
+                    `La recherche q exige un champ de type String.`,
+                    field
+                )
+            );
+        }
     }
 
     const capabilities = getCapabilities(model, entity);
+    const unsupportedCapabilities = capabilities.filter(
+        capability => capability !== 'list' && capability !== 'get'
+    );
+    if (unsupportedCapabilities.length > 0) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_CAPABILITY_UNSUPPORTED',
+                entity,
+                `Catalogue v0 ne supporte pas encore: ${unsupportedCapabilities.join(', ')}.`
+            )
+        );
+    }
+
+    const fieldNames = new Set(entity.fields.map(field => field.name));
+    const entityViews = model.views.filter(view => view.entity.ref === entity);
+    for (const view of entityViews) {
+        for (const fieldName of view.fields) {
+            if (!fieldNames.has(fieldName)) {
+                diagnostics.push({
+                    severity: 'error',
+                    code: 'CATALOG_VIEW_FIELD_UNKNOWN',
+                    message: `Le champ ${fieldName} de la vue ${view.name} n'existe pas.`,
+                    entity: entity.name,
+                    field: fieldName
+                });
+            }
+        }
+    }
+
     const listView = model.views.find(
         view => view.entity.ref === entity && view.name.toLowerCase() === 'list'
     );
@@ -236,19 +275,6 @@ const compileEntity = (
                     `La vue list doit exposer au moins un champ.`
                 )
             );
-        } else {
-            const fieldNames = new Set(entity.fields.map(field => field.name));
-            for (const fieldName of listView.fields) {
-                if (!fieldNames.has(fieldName)) {
-                    diagnostics.push({
-                        severity: 'error',
-                        code: 'CATALOG_LIST_FIELD_UNKNOWN',
-                        message: `Le champ ${fieldName} de la vue list n'existe pas.`,
-                        entity: entity.name,
-                        field: fieldName
-                    });
-                }
-            }
         }
     }
 

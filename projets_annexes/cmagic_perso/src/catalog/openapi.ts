@@ -9,6 +9,7 @@ type OpenApiSchema = {
     type?: string;
     format?: string;
     maxLength?: number;
+    minimum?: number;
     enum?: string[];
     properties?: Record<string, OpenApiSchema>;
     required?: string[];
@@ -29,15 +30,11 @@ type OpenApiParameter = {
 type OpenApiOperation = {
     operationId: string;
     parameters: OpenApiParameter[];
-    requestBody?: unknown;
     responses: Record<string, unknown>;
 };
 
 type OpenApiPath = {
-    get?: OpenApiOperation;
-    post?: OpenApiOperation;
-    patch?: OpenApiOperation;
-    delete?: OpenApiOperation;
+    get: OpenApiOperation;
 };
 
 export type OpenApiDocument = {
@@ -96,8 +93,8 @@ const listParameters = (spec: CatalogSpec): OpenApiParameter[] => {
 
     const fieldsByName = new Map(spec.fields.map(field => [field.name, field]));
     const parameters: OpenApiParameter[] = [
-        queryParameter('page', { type: 'integer' }),
-        queryParameter('perPage', { type: 'integer' }),
+        queryParameter('page', { type: 'integer', minimum: 1 }),
+        queryParameter('perPage', { type: 'integer', minimum: 1 }),
         queryParameter('sort', { type: 'string', enum: spec.list.sortFields }),
         queryParameter('order', { type: 'string', enum: ['ASC', 'DESC'] })
     ];
@@ -135,14 +132,6 @@ export const generateOpenApiDocument = (spec: CatalogSpec): OpenApiDocument => {
     const itemPath = `/api/${spec.resource}/{id}`;
     const recordReference = {
         $ref: `#/components/schemas/${spec.entity}`
-    };
-    const recordRequestBody = {
-        required: true,
-        content: {
-            'application/json': {
-                schema: recordReference
-            }
-        }
     };
     const recordResponse = (description: string): unknown => ({
         description,
@@ -207,53 +196,6 @@ export const generateOpenApiDocument = (spec: CatalogSpec): OpenApiDocument => {
                 parameters: [identifierParameter],
                 responses: {
                     '200': recordResponse(`${spec.entity} trouvé`),
-                    '404': {
-                        description: `${spec.entity} inconnu`
-                    }
-                }
-            }
-        };
-    }
-
-    if (spec.capabilities.includes('create')) {
-        paths[collectionPath] = {
-            ...paths[collectionPath],
-            post: {
-                operationId: `create${spec.entity}`,
-                parameters: [],
-                requestBody: recordRequestBody,
-                responses: {
-                    '201': recordResponse(`${spec.entity} créé`)
-                }
-            }
-        };
-    }
-
-    if (spec.capabilities.includes('update')) {
-        paths[itemPath] = {
-            ...paths[itemPath],
-            patch: {
-                operationId: `update${spec.entity}`,
-                parameters: [identifierParameter],
-                requestBody: recordRequestBody,
-                responses: {
-                    '200': recordResponse(`${spec.entity} modifié`),
-                    '404': {
-                        description: `${spec.entity} inconnu`
-                    }
-                }
-            }
-        };
-    }
-
-    if (spec.capabilities.includes('delete')) {
-        paths[itemPath] = {
-            ...paths[itemPath],
-            delete: {
-                operationId: `delete${spec.entity}`,
-                parameters: [identifierParameter],
-                responses: {
-                    '200': recordResponse(`${spec.entity} supprimé`),
                     '404': {
                         description: `${spec.entity} inconnu`
                     }
