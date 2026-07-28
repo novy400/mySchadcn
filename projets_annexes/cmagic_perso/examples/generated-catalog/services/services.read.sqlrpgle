@@ -1,25 +1,9 @@
 **free
 // Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
-/include 'cmagic.rpgleinc'
-/include 'global.rpgleinc'
+/include 'services.read.rpgleinc'
 /include 'sqlstates.rpginc'
 /include 'llist/llist_h.rpgle'
-
-dcl-ds service_item_t qualified template;
-  id varchar(3);
-  nom varchar(36);
-  idmanageur varchar(6);
-  idserviceadmin varchar(3);
-  site varchar(16);
-end-ds;
-dcl-ds service_detail_t qualified template;
-  id varchar(3);
-  nom varchar(36);
-  idmanageur varchar(6);
-  idserviceadmin varchar(3);
-  site varchar(16);
-end-ds;
 
 exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
 

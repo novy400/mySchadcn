@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { Model } from '../language/generated/ast.js';
 import {
     catalogBinderSourceName,
+    catalogRpgReadInterfaceSourceName,
     catalogRpgReadSourceName
 } from './artifact-names.js';
 import { generateCatalogBinder } from './binder.js';
@@ -11,6 +12,7 @@ import type { CatalogDiagnostic } from './catalog-spec.js';
 import { generateCatalogDdl } from './ddl.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
+import { generateCatalogReadInterface } from './read-interface.js';
 import { generateRpgReadModule } from './rpg-read.js';
 import { generateCatalogRules } from './rules.js';
 
@@ -19,6 +21,7 @@ export type GeneratedCatalogArtifactPaths = {
     openApi: string;
     resourceContract: string;
     rpgRead: string;
+    rpgReadInterface: string;
     ddl: string;
     binder: string;
     rules: string;
@@ -69,6 +72,10 @@ export const generateCatalogArtifacts = (
                 resourceDirectory,
                 catalogRpgReadSourceName(spec.resource)
             ),
+            rpgReadInterface: path.join(
+                resourceDirectory,
+                catalogRpgReadInterfaceSourceName(spec.resource)
+            ),
             ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`),
             binder: path.join(
                 resourceDirectory,
@@ -82,6 +89,10 @@ export const generateCatalogArtifacts = (
         writeArtifact(
             artifacts.resourceContract,
             generateResourceContractSource(spec)
+        );
+        writeArtifact(
+            artifacts.rpgReadInterface,
+            generateCatalogReadInterface(spec)
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(artifacts.ddl, generateCatalogDdl(spec));

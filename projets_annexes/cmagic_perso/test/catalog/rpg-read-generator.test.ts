@@ -15,6 +15,13 @@ describe('Catalogue RPG read generator', () => {
         expect(source).toContain('dcl-proc service_getSupportedFields export;');
         expect(source).toContain('dcl-proc service_get export;');
         expect(source).not.toContain('_local');
+        expect(source).toContain("/include 'services.read.rpgleinc'");
+        expect(source).not.toContain(
+            'dcl-ds service_item_t qualified template;'
+        );
+        expect(source).not.toContain(
+            'dcl-ds service_detail_t qualified template;'
+        );
 
         expect(source).toContain(
             'service_getSupportedFields(lSupportedFields : lErrors)'

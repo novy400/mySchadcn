@@ -1,0 +1,40 @@
+**free
+/if defined(SERVICE_READ_H_DEFINED)
+/eof
+/endif
+/define SERVICE_READ_H_DEFINED
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+dcl-ds service_item_t qualified template;
+  id varchar(3);
+  nom varchar(36);
+  idmanageur varchar(6);
+  idserviceadmin varchar(3);
+  site varchar(16);
+end-ds;
+
+dcl-pr service_getSupportedFields ind extproc(*dclcase);
+  pSupportedFields likeDS(CMAGIC_supportedFields);
+  pErrors likeDS(GLOBAL_listError);
+end-pr;
+
+dcl-pr service_search ind extproc(*dclcase);
+  pContext likeDS(CMAGIC_context) const;
+  pTotalCount like(CMAGIC_totalCount);
+  pItems pointer;
+  pErrors likeDS(GLOBAL_listError);
+end-pr;
+dcl-ds service_detail_t qualified template;
+  id varchar(3);
+  nom varchar(36);
+  idmanageur varchar(6);
+  idserviceadmin varchar(3);
+  site varchar(16);
+end-ds;
+
+dcl-pr service_get ind extproc(*dclcase);
+  pId varchar(3) const;
+  pDetail likeDS(service_detail_t);
+  pErrors likeDS(GLOBAL_listError);
+end-pr;

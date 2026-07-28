@@ -8,25 +8,9 @@
 {{/inline}}
 // Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
-/include 'cmagic.rpgleinc'
-/include 'global.rpgleinc'
+/include '{{readInterfaceSource}}'
 /include 'sqlstates.rpginc'
 /include 'llist/llist_h.rpgle'
-
-{{#if procedures.hasList}}
-dcl-ds {{entityName}}_item_t qualified template;
-{{#each itemFields}}
-  {{rpgName}} {{rpgType}};
-{{/each}}
-end-ds;
-{{/if}}
-{{#if procedures.hasGet}}
-dcl-ds {{entityName}}_detail_t qualified template;
-{{#each detailFields}}
-  {{rpgName}} {{rpgType}};
-{{/each}}
-end-ds;
-{{/if}}
 
 exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
 
@@ -43,10 +27,11 @@ dcl-proc {{procedures.rejectQuery}};
 end-proc;
 
 {{#if procedures.hasList}}
-dcl-proc {{procedures.getSupportedFields}} export;
-  dcl-pi *n ind;
-    pSupportedFields likeDS(CMAGIC_supportedFields);
-    pErrors likeDS(GLOBAL_listError);
+dcl-proc {{procedureSignatures.getSupportedFields.name}} export;
+  dcl-pi *n {{procedureSignatures.getSupportedFields.returnType}};
+{{#each procedureSignatures.getSupportedFields.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
   end-pi;
   dcl-s lIt int(10) inz(0);
   dcl-s ErrorHappened ind;
@@ -72,12 +57,11 @@ dcl-proc {{procedures.getSupportedFields}} export;
     endif;
 end-proc;
 
-dcl-proc {{procedures.search}} export;
-  dcl-pi *n ind;
-    pContext likeDS(CMAGIC_context) const;
-    pTotalCount like(CMAGIC_totalCount);
-    pItems pointer;
-    pErrors likeDS(GLOBAL_listError);
+dcl-proc {{procedureSignatures.search.name}} export;
+  dcl-pi *n {{procedureSignatures.search.returnType}};
+{{#each procedureSignatures.search.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
   end-pi;
   dcl-ds lErrors likeDS(GLOBAL_listError) inz;
   dcl-ds lRequestedContext likeDS(CMAGIC_context) inz;
@@ -195,11 +179,11 @@ end-proc;
 {{/if}}
 
 {{#if procedures.hasGet}}
-dcl-proc {{procedures.get}} export;
-  dcl-pi *n ind;
-    pId {{id.rpgType}} const;
-    pDetail likeDS({{entityName}}_detail_t);
-    pErrors likeDS(GLOBAL_listError);
+dcl-proc {{procedureSignatures.get.name}} export;
+  dcl-pi *n {{procedureSignatures.get.returnType}};
+{{#each procedureSignatures.get.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
   end-pi;
   clear pDetail;
   clear pErrors;

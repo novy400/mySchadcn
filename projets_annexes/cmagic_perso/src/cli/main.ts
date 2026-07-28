@@ -46,6 +46,11 @@ export const generateCatalogAction = async (
         console.log(
             chalk.green(`resource contract generated: ${artifact.resourceContract}`)
         );
+        console.log(
+            chalk.green(
+                `RPG read interface generated: ${artifact.rpgReadInterface}`
+            )
+        );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
         console.log(chalk.green(`Db2 DDL generated: ${artifact.ddl}`));
         console.log(chalk.green(`binder generated: ${artifact.binder}`));
@@ -75,7 +80,7 @@ export default function (): void {
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
         .description(
-            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read modules, Db2 DDL, binders and BOB rules'
+            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read interfaces and modules, Db2 DDL, binders and BOB rules'
         )
         .action(generateCatalogAction);
 

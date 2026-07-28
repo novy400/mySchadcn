@@ -1,5 +1,6 @@
 export { buildCatalogSpecs } from './catalog-compiler.js';
 export { generateCatalogBinder } from './binder.js';
+export { generateCatalogReadInterface } from './read-interface.js';
 export {
     CatalogCompilationError,
     generateCatalogArtifacts,

@@ -4,9 +4,9 @@ export type CatalogReadProcedures = {
     hasList: boolean;
     hasGet: boolean;
     rejectQuery: string;
-    search?: string;
-    getSupportedFields?: string;
-    get?: string;
+    search: string;
+    getSupportedFields: string;
+    get: string;
     exports: string[];
 };
 
@@ -24,8 +24,9 @@ export const catalogReadProcedures = (
         hasList,
         hasGet,
         rejectQuery: `${prefix}_reject_query`,
-        ...(hasList ? { search, getSupportedFields } : {}),
-        ...(hasGet ? { get } : {}),
+        search,
+        getSupportedFields,
+        get,
         exports: [
             ...(hasList ? [search, getSupportedFields] : []),
             ...(hasGet ? [get] : [])

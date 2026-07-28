@@ -286,7 +286,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the seven deterministic catalogue artifacts', async () => {
+    test('writes the eight deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -318,6 +318,11 @@ describe('CMagic Catalogue v0', () => {
                     'services',
                     'services.read.sqlrpgle'
                 ),
+                rpgReadInterface: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.read.rpgleinc'
+                ),
                 ddl: path.join(
                     temporaryDirectory,
                     'services',
@@ -343,6 +348,9 @@ describe('CMagic Catalogue v0', () => {
             expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
                 'dcl-proc service_search export;'
             );
+            expect(
+                fs.readFileSync(artifacts.rpgReadInterface, 'utf-8')
+            ).toContain('dcl-pr service_search ind extproc(*dclcase);');
             expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
                 'cmagic_computeSqlClauses(lContext : lSupportedFields'
             );

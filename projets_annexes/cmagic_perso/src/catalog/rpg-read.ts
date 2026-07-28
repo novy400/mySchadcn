@@ -13,6 +13,7 @@ import {
     catalogReadProcedures,
     type CatalogReadProcedures
 } from './read-procedures.js';
+import { catalogRpgReadInterfaceSourceName } from './artifact-names.js';
 
 const templateName = 'catalog-read.sqlrpgle.hbs';
 
@@ -29,13 +30,34 @@ type FieldTemplateModel = FieldTypeTemplateModel & {
     required: boolean;
 };
 
-type CatalogReadTemplateModel = {
+type ProcedureParameterTemplateModel = {
+    name: string;
+    type: string;
+    isConst: boolean;
+};
+
+type ProcedureSignatureTemplateModel = {
+    name: string;
+    returnType: 'ind';
+    parameters: ProcedureParameterTemplateModel[];
+};
+
+type ReadProcedureSignaturesTemplateModel = {
+    getSupportedFields: ProcedureSignatureTemplateModel;
+    search: ProcedureSignatureTemplateModel;
+    get: ProcedureSignatureTemplateModel;
+};
+
+export type CatalogReadTemplateModel = {
     entityName: string;
     entityDisplayName: string;
+    includeGuard: string;
+    readInterfaceSource: string;
     table: string;
     hasList: boolean;
     hasGet: boolean;
     procedures: CatalogReadProcedures;
+    procedureSignatures: ReadProcedureSignaturesTemplateModel;
     itemFields: FieldTemplateModel[];
     detailFields: FieldTemplateModel[];
     supportedFields: FieldTemplateModel[];
@@ -125,7 +147,53 @@ const requireList = (spec: CatalogSpec): CatalogListSpec => {
     return spec.list;
 };
 
-const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
+const parameter = (
+    name: string,
+    type: string,
+    isConst = false
+): ProcedureParameterTemplateModel => ({
+    name,
+    type,
+    isConst
+});
+
+const buildProcedureSignatures = (
+    procedures: CatalogReadProcedures,
+    id: FieldTemplateModel,
+    entityName: string
+): ReadProcedureSignaturesTemplateModel => ({
+    getSupportedFields: {
+        name: procedures.getSupportedFields,
+        returnType: 'ind',
+        parameters: [
+            parameter('pSupportedFields', 'likeDS(CMAGIC_supportedFields)'),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    },
+    search: {
+        name: procedures.search,
+        returnType: 'ind',
+        parameters: [
+            parameter('pContext', 'likeDS(CMAGIC_context)', true),
+            parameter('pTotalCount', 'like(CMAGIC_totalCount)'),
+            parameter('pItems', 'pointer'),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    },
+    get: {
+        name: procedures.get,
+        returnType: 'ind',
+        parameters: [
+            parameter('pId', id.rpgType, true),
+            parameter('pDetail', `likeDS(${entityName}_detail_t)`),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    }
+});
+
+export const buildCatalogReadTemplateModel = (
+    spec: CatalogSpec
+): CatalogReadTemplateModel => {
     assertSqlObjectIdentifier(spec.table);
     for (const field of spec.fields) {
         assertSqlColumnIdentifier(field.column);
@@ -138,18 +206,26 @@ const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
     const list = procedures.hasList ? requireList(spec) : undefined;
     const itemFields =
         list?.fields.map(name => requireField(fieldsByName, name, 'list')) ?? [];
+    const entityName = spec.entity.toLowerCase();
 
     requireFields(fieldsByName, list?.searchFields ?? [], 'search');
     requireFields(fieldsByName, list?.filterFields ?? [], 'filter');
     requireFields(fieldsByName, list?.sortFields ?? [], 'sort');
 
     return {
-        entityName: spec.entity.toLowerCase(),
+        entityName,
         entityDisplayName: spec.entity,
+        includeGuard: `${spec.entity.toUpperCase()}_READ_H_DEFINED`,
+        readInterfaceSource: catalogRpgReadInterfaceSourceName(spec.resource),
         table: spec.table,
         hasList: procedures.hasList,
         hasGet: procedures.hasGet,
         procedures,
+        procedureSignatures: buildProcedureSignatures(
+            procedures,
+            id,
+            entityName
+        ),
         itemFields,
         detailFields: fields,
         supportedFields: itemFields,
@@ -163,4 +239,8 @@ export const generateRpgReadModule = (
     spec: CatalogSpec,
     templatesDirectory?: string
 ): string =>
-    renderTemplate(templateName, buildTemplateModel(spec), templatesDirectory);
+    renderTemplate(
+        templateName,
+        buildCatalogReadTemplateModel(spec),
+        templatesDirectory
+    );

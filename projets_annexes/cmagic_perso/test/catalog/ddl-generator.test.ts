@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
     generateCatalogDdl,
+    generateCatalogReadInterface,
     generateRpgReadModule,
     type CatalogSpec
 } from '../../src/catalog/index.js';
@@ -142,6 +143,7 @@ describe('Catalogue DDL generator', () => {
         };
 
         const source = generateCatalogDdl(spec);
+        const rpgInterface = generateCatalogReadInterface(spec);
         const rpgSource = generateRpgReadModule(spec);
 
         expect(source).toContain('ID INTEGER NOT NULL');
@@ -156,7 +158,7 @@ describe('Catalogue DDL generator', () => {
             "CHECK (STATUS IN ('ACTIVE', 'INACTIVE'))"
         );
         expect(source).toContain("CHECK (ENABLED IN ('Y', 'N'))");
-        expect(rpgSource).toContain('enabled char(1);');
+        expect(rpgInterface).toContain('enabled char(1);');
         expect(rpgSource).toMatch(
             /name = 'enabled';[\s\S]*sqlField = 'ENABLED';[\s\S]*dataType = 'C';/
         );

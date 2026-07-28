@@ -34,6 +34,7 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.catalog-spec.json` ;
 - `{resource}.openapi.json` ;
 - `{resource}.resource-contract.ts` ;
+- `{resource}.read.rpgleinc` ;
 - `{resource}.read.sqlrpgle` ;
 - `{resource}.ddl.sql` ;
 - `{resource}.bnd` ;
@@ -105,9 +106,26 @@ Le contrat est aligné sur le DataProvider IBM i de `mySchadcn` :
 - le runtime RPG v0 applique la liste blanche plus large décrite ci-dessous ;
 - l'identifiant public reste `id`, même si la colonne Db2 s'appelle `DEPTNO`.
 
+## Interface RPG de lecture générée
+
+Le quatrième artefact, produit par
+`src/templates/catalog-read.rpgleinc.hbs`, est le contrat public partagé entre le module
+catalogue et ses futurs adaptateurs de transport. Il contient :
+
+- les structures template `{entity}_item_t` et `{entity}_detail_t` nécessaires aux
+  capacités déclarées ;
+- les prototypes `{entity}_search` et `{entity}_getSupportedFields` pour `LIST` ;
+- le prototype `{entity}_get` pour `GET` ;
+- les includes CMagic et Global nécessaires aux types des paramètres.
+
+Le fichier possède un garde d'inclusion et ne déclare aucune procédure de mutation. Les
+types et noms de procédures sont issus du même modèle de rendu que le module RPG et son
+binder ; un wrapper ILEastic pourra donc inclure ce contrat sans recopier leurs
+signatures.
+
 ## Module RPG de lecture généré
 
-Le quatrième artefact implémente directement les capacités de lecture déclarées :
+Le cinquième artefact implémente directement les capacités de lecture déclarées :
 
 - une procédure publique `{entity}_search` si `LIST` est présent ;
 - une procédure publique `{entity}_getSupportedFields` qui décrit la projection à
@@ -118,10 +136,11 @@ Le quatrième artefact implémente directement les capacités de lecture déclar
 - une requête de liste paginée et une requête de comptage préparées dynamiquement.
 
 Le squelette du module se trouve dans
-`src/templates/catalog-read.sqlrpgle.hbs`. Le TypeScript ne porte que l'adaptation
-`CatalogSpec` vers un modèle de rendu typé : noms validés, types RPG, champs de
-projection et métadonnées `CMAGIC_supportedFields`. Le rendu passe par le même moteur
-Handlebars que les générateurs historiques de copybook, service et SQL.
+`src/templates/catalog-read.sqlrpgle.hbs` et inclut le fichier
+`{resource}.read.rpgleinc` généré. Le TypeScript ne porte que l'adaptation `CatalogSpec`
+vers un modèle de rendu typé partagé : noms validés, types RPG, champs de projection et
+métadonnées `CMAGIC_supportedFields`. Le rendu passe par le même moteur Handlebars que
+les générateurs historiques de copybook, service et SQL.
 
 Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
 La procédure `{entity}_search` suit le contrat utilisé par `service_search` dans
@@ -148,7 +167,7 @@ n'appartient pas au template d'entité.
 
 ## DDL Db2 généré
 
-Le cinquième artefact est produit par
+Le sixième artefact est produit par
 `src/templates/catalog.ddl.sql.hbs`. Il génère un `CREATE TABLE` déterministe à partir
 des mappings du `CatalogSpec` :
 
@@ -172,7 +191,7 @@ restent cohérents sur IBM i 7.4.
 
 ## Binder du service program généré
 
-Le sixième artefact est produit par `src/templates/catalog.bnd.hbs`. Il crée une
+Le septième artefact est produit par `src/templates/catalog.bnd.hbs`. Il crée une
 signature courante `{OBJECT}.0.0.1` et n'exporte que les procédures réellement présentes
 dans le module RPG :
 
@@ -187,7 +206,7 @@ encore été publié.
 
 ## Règle BOB générée
 
-Le septième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie à BOB
+Le huitième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie à BOB
 le module de lecture et le binder réellement générés :
 
 ```make

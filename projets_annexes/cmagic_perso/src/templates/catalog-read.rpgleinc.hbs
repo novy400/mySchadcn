@@ -1,0 +1,41 @@
+**free
+{{! Public RPG read interface generated from CatalogSpec. }}
+/if defined({{includeGuard}})
+/eof
+/endif
+/define {{includeGuard}}
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+{{#if procedures.hasList}}
+dcl-ds {{entityName}}_item_t qualified template;
+{{#each itemFields}}
+  {{rpgName}} {{rpgType}};
+{{/each}}
+end-ds;
+
+dcl-pr {{procedureSignatures.getSupportedFields.name}} {{procedureSignatures.getSupportedFields.returnType}} extproc(*dclcase);
+{{#each procedureSignatures.getSupportedFields.parameters}}
+  {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+end-pr;
+
+dcl-pr {{procedureSignatures.search.name}} {{procedureSignatures.search.returnType}} extproc(*dclcase);
+{{#each procedureSignatures.search.parameters}}
+  {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+end-pr;
+{{/if}}
+{{#if procedures.hasGet}}
+dcl-ds {{entityName}}_detail_t qualified template;
+{{#each detailFields}}
+  {{rpgName}} {{rpgType}};
+{{/each}}
+end-ds;
+
+dcl-pr {{procedureSignatures.get.name}} {{procedureSignatures.get.returnType}} extproc(*dclcase);
+{{#each procedureSignatures.get.parameters}}
+  {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+end-pr;
+{{/if}}
