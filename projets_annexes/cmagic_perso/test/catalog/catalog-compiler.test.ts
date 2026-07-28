@@ -286,7 +286,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the six deterministic catalogue artifacts', async () => {
+    test('writes the seven deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -323,6 +323,11 @@ describe('CMagic Catalogue v0', () => {
                     'services',
                     'services.ddl.sql'
                 ),
+                binder: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.bnd'
+                ),
                 rules: path.join(
                     temporaryDirectory,
                     'services',
@@ -344,8 +349,11 @@ describe('CMagic Catalogue v0', () => {
             expect(fs.readFileSync(artifacts.ddl, 'utf-8')).toContain(
                 'CREATE TABLE DEPARTMENT'
             );
+            expect(fs.readFileSync(artifacts.binder, 'utf-8')).toContain(
+                "EXPORT SYMBOL('service_getSupportedFields')"
+            );
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
-                'SERVICE.MODULE: services.read.sqlrpgle'
+                'SERVICE.SRVPGM: services.bnd SERVICE.MODULE'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

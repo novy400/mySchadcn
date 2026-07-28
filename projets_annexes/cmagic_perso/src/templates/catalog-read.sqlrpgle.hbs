@@ -1,7 +1,7 @@
 **free
 {{! Catalogue read module. CatalogSpec is adapted to this template by rpg-read.ts. }}
 {{#*inline "failQuery"}}
-    {{@root.entityName}}_reject_query(
+    {{@root.procedures.rejectQuery}}(
       pErrors : 'sql' : '{{message}}');
     list_dispose(lItems);
     return *off;
@@ -13,14 +13,14 @@ ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
 /include 'sqlstates.rpginc'
 /include 'llist/llist_h.rpgle'
 
-{{#if hasList}}
+{{#if procedures.hasList}}
 dcl-ds {{entityName}}_item_t qualified template;
 {{#each itemFields}}
   {{rpgName}} {{rpgType}};
 {{/each}}
 end-ds;
 {{/if}}
-{{#if hasGet}}
+{{#if procedures.hasGet}}
 dcl-ds {{entityName}}_detail_t qualified template;
 {{#each detailFields}}
   {{rpgName}} {{rpgType}};
@@ -30,7 +30,7 @@ end-ds;
 
 exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
 
-dcl-proc {{entityName}}_reject_query;
+dcl-proc {{procedures.rejectQuery}};
   dcl-pi *n;
     pErrors likeDS(GLOBAL_listError);
     pField varchar(32) const;
@@ -42,8 +42,8 @@ dcl-proc {{entityName}}_reject_query;
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
-{{#if hasList}}
-dcl-proc {{entityName}}_getSupportedFields export;
+{{#if procedures.hasList}}
+dcl-proc {{procedures.getSupportedFields}} export;
   dcl-pi *n ind;
     pSupportedFields likeDS(CMAGIC_supportedFields);
     pErrors likeDS(GLOBAL_listError);
@@ -72,7 +72,7 @@ dcl-proc {{entityName}}_getSupportedFields export;
     endif;
 end-proc;
 
-dcl-proc {{entityName}}_search export;
+dcl-proc {{procedures.search}} export;
   dcl-pi *n ind;
     pContext likeDS(CMAGIC_context) const;
     pTotalCount like(CMAGIC_totalCount);
@@ -101,7 +101,7 @@ dcl-proc {{entityName}}_search export;
     lRequestedContext.sort(1).order = '{{defaultSortOrder}}';
   endif;
 
-  if not {{entityName}}_getSupportedFields(lSupportedFields : lErrors);
+  if not {{procedures.getSupportedFields}}(lSupportedFields : lErrors);
     pErrors = lErrors;
     return *off;
   endif;
@@ -194,8 +194,8 @@ dcl-proc {{entityName}}_search export;
 end-proc;
 {{/if}}
 
-{{#if hasGet}}
-dcl-proc {{entityName}}_get export;
+{{#if procedures.hasGet}}
+dcl-proc {{procedures.get}} export;
   dcl-pi *n ind;
     pId {{id.rpgType}} const;
     pDetail likeDS({{entityName}}_detail_t);
@@ -213,12 +213,12 @@ dcl-proc {{entityName}}_get export;
     WHERE {{id.column}} = :pId
     fetch first 1 row only;
   if sqlState = SQL_NOT_FOUND;
-    {{entityName}}_reject_query(
+    {{procedures.rejectQuery}}(
       pErrors : 'id' : '{{entityDisplayName}} not found');
     return *off;
   endif;
   if sqlState <> SQL_OK;
-    {{entityName}}_reject_query(
+    {{procedures.rejectQuery}}(
       pErrors : 'sql' : 'Unable to read {{entityDisplayName}}');
     return *off;
   endif;

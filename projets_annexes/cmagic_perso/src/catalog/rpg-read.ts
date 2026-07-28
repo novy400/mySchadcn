@@ -9,6 +9,10 @@ import {
     assertSqlColumnIdentifier,
     assertSqlObjectIdentifier
 } from './sql-identifier.js';
+import {
+    catalogReadProcedures,
+    type CatalogReadProcedures
+} from './read-procedures.js';
 
 const templateName = 'catalog-read.sqlrpgle.hbs';
 
@@ -31,6 +35,7 @@ type CatalogReadTemplateModel = {
     table: string;
     hasList: boolean;
     hasGet: boolean;
+    procedures: CatalogReadProcedures;
     itemFields: FieldTemplateModel[];
     detailFields: FieldTemplateModel[];
     supportedFields: FieldTemplateModel[];
@@ -126,12 +131,11 @@ const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
         assertSqlColumnIdentifier(field.column);
     }
 
-    const hasList = spec.capabilities.includes('list');
-    const hasGet = spec.capabilities.includes('get');
+    const procedures = catalogReadProcedures(spec);
     const fields = spec.fields.map(fieldModel);
     const fieldsByName = new Map(fields.map(field => [field.name, field]));
     const id = requireField(fieldsByName, spec.identifier, 'identifier');
-    const list = hasList ? requireList(spec) : undefined;
+    const list = procedures.hasList ? requireList(spec) : undefined;
     const itemFields =
         list?.fields.map(name => requireField(fieldsByName, name, 'list')) ?? [];
 
@@ -143,8 +147,9 @@ const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
         entityName: spec.entity.toLowerCase(),
         entityDisplayName: spec.entity,
         table: spec.table,
-        hasList,
-        hasGet,
+        hasList: procedures.hasList,
+        hasGet: procedures.hasGet,
+        procedures,
         itemFields,
         detailFields: fields,
         supportedFields: itemFields,

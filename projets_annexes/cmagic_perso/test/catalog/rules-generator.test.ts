@@ -5,14 +5,16 @@ import { generateCatalogRules } from '../../src/catalog/index.js';
 import { compileServiceCatalog } from './test-utils.js';
 
 describe('Catalogue Rules.mk generator', () => {
-    test('generates the BOB rule for the catalog read module', async () => {
+    test('generates the BOB rules for the read service program', async () => {
         const source = generateCatalogRules(await compileServiceCatalog());
 
         expect(source).toContain('# Service catalogue read module');
         expect(source).toContain(
             'SERVICE.MODULE: services.read.sqlrpgle'
         );
-        expect(source).not.toContain('.SRVPGM:');
+        expect(source).toContain(
+            'SERVICE.SRVPGM: services.bnd SERVICE.MODULE'
+        );
         expect(source).not.toContain('REST.MODULE:');
         expect(source).not.toContain('IWS.MODULE:');
     });
@@ -36,7 +38,7 @@ describe('Catalogue Rules.mk generator', () => {
         try {
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog.Rules.mk.hbs'),
-                '{{objectName}}|{{rpgReadSource}}\n',
+                '{{objectName}}|{{rpgReadSource}}|{{binderSource}}\n',
                 'utf-8'
             );
 
@@ -45,7 +47,7 @@ describe('Catalogue Rules.mk generator', () => {
                     await compileServiceCatalog(),
                     temporaryDirectory
                 )
-            ).toBe('SERVICE|services.read.sqlrpgle\n');
+            ).toBe('SERVICE|services.read.sqlrpgle|services.bnd\n');
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

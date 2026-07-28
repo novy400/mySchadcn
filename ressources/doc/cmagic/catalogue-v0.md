@@ -36,6 +36,7 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.resource-contract.ts` ;
 - `{resource}.read.sqlrpgle` ;
 - `{resource}.ddl.sql` ;
+- `{resource}.bnd` ;
 - `Rules.mk`.
 
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
@@ -169,23 +170,39 @@ La représentation `Y/N` est également utilisée dans les structures RPG de lec
 déclarée comme caractère dans `CMAGIC_supportedFields`, afin que DDL et module RPG
 restent cohérents sur IBM i 7.4.
 
+## Binder du service program généré
+
+Le sixième artefact est produit par `src/templates/catalog.bnd.hbs`. Il crée une
+signature courante `{OBJECT}.0.0.1` et n'exporte que les procédures réellement présentes
+dans le module RPG :
+
+- `LIST` exporte `{entity}_search` et `{entity}_getSupportedFields` ;
+- `GET` exporte `{entity}_get` ;
+- aucune procédure de mutation n'est ajoutée à Catalogue v0.
+
+Le binder initial ne contient pas de niveau `PGMLVL(*PRV)`. Les signatures précédentes
+devront être conservées lors d'une future évolution incompatible du contrat exporté ;
+le générateur ne peut pas inventer un historique pour un service program qui n'a pas
+encore été publié.
+
 ## Règle BOB générée
 
-Le sixième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie le
-module de lecture réellement généré à BOB :
+Le septième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie à BOB
+le module de lecture et le binder réellement générés :
 
 ```make
 SERVICE.MODULE: services.read.sqlrpgle
+SERVICE.SRVPGM: services.bnd SERVICE.MODULE
 ```
 
 Le nom d'objet est dérivé du nom de l'entité en majuscules. La génération échoue si ce
 nom ne respecte pas le format IBM i d'un nom système de 1 à 10 caractères ; il n'est
 jamais tronqué silencieusement.
 
-Cette première règle ne déclare volontairement ni `.SRVPGM`, ni module REST, ni module
-IWS : leurs sources et binders ne font pas encore partie des artefacts générés. Les
-dépendances seront ajoutées avec ces artefacts, pour que `Rules.mk` reste compilable et
-ne référence que des fichiers présents.
+La règle ne déclare encore ni module REST, ni module IWS : leurs sources et binders ne
+font pas partie des artefacts générés. Ces dépendances seront ajoutées avec leurs
+artefacts, pour que `Rules.mk` reste compilable et ne référence que des fichiers
+présents.
 
 ## Hors périmètre de la tranche
 
@@ -197,6 +214,6 @@ ne référence que des fichiers présents.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-Le prochain artefact pourra être le binder du service program de lecture, avant la
-publication ILEastic ou IWS et la vérification du contrat HTTP de bout en bout depuis le
+La prochaine verticale pourra générer le wrapper de publication ILEastic en lecture,
+avant le wrapper IWS et la vérification du contrat HTTP de bout en bout depuis le
 DataProvider de `mySchadcn`.
