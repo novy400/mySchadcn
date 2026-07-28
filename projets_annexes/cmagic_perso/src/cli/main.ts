@@ -46,6 +46,7 @@ export const generateCatalogAction = async (
         console.log(
             chalk.green(`resource contract generated: ${artifact.resourceContract}`)
         );
+        console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
     }
 };
 
@@ -70,7 +71,9 @@ export default function (): void {
         .command('generate-catalog')
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
-        .description('generates CatalogSpec, OpenAPI and frontend resource contracts')
+        .description(
+            'generates CatalogSpec, OpenAPI, frontend contracts and RPG read modules'
+        )
         .action(generateCatalogAction);
 
     program.parse(process.argv);

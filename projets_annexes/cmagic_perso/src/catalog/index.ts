@@ -14,6 +14,7 @@ export {
     generateResourceContractSource,
     type GeneratedResourceContract
 } from './resource-contract.js';
+export { generateRpgReadModule } from './rpg-read.js';
 export type {
     CatalogCapability,
     CatalogCompilation,

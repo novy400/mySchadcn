@@ -221,7 +221,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the three deterministic catalogue artifacts', async () => {
+    test('writes the four deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -247,6 +247,11 @@ describe('CMagic Catalogue v0', () => {
                     temporaryDirectory,
                     'services',
                     'services.resource-contract.ts'
+                ),
+                rpgRead: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.read.sqlrpgle'
                 )
             });
             expect(JSON.parse(fs.readFileSync(artifacts.spec, 'utf-8'))).toEqual(
@@ -254,6 +259,9 @@ describe('CMagic Catalogue v0', () => {
             );
             expect(fs.readFileSync(artifacts.resourceContract, 'utf-8')).toContain(
                 'export const servicesResourceContract ='
+            );
+            expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
+                'dcl-proc service_list export;'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

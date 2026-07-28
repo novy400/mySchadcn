@@ -5,11 +5,13 @@ import { buildCatalogSpecs } from './catalog-compiler.js';
 import type { CatalogDiagnostic } from './catalog-spec.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
+import { generateRpgReadModule } from './rpg-read.js';
 
 export type GeneratedCatalogArtifactPaths = {
     spec: string;
     openApi: string;
     resourceContract: string;
+    rpgRead: string;
 };
 
 export class CatalogCompilationError extends Error {
@@ -52,7 +54,8 @@ export const generateCatalogArtifacts = (
             resourceContract: path.join(
                 resourceDirectory,
                 `${spec.resource}.resource-contract.ts`
-            )
+            ),
+            rpgRead: path.join(resourceDirectory, `${spec.resource}.read.sqlrpgle`)
         };
 
         writeArtifact(artifacts.spec, `${JSON.stringify(spec, null, 2)}\n`);
@@ -61,6 +64,7 @@ export const generateCatalogArtifacts = (
             artifacts.resourceContract,
             generateResourceContractSource(spec)
         );
+        writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
 
         return artifacts;
     });

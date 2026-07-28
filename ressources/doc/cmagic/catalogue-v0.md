@@ -6,11 +6,11 @@ Cette première tranche transforme une entité catalogue décrite en CMagic en u
 indépendant des générateurs RPG historiques :
 
 ```text
-source .cmagic -> CatalogSpec validé -> OpenAPI + ResourceContract TypeScript
+source .cmagic -> CatalogSpec validé -> OpenAPI + ResourceContract TypeScript + module RPG
 ```
 
-`CatalogSpec` est la frontière stable. Les futurs générateurs RPG, ILEastic et IWS
-consommeront ce contrat au lieu de relire directement l'AST Langium.
+`CatalogSpec` est la frontière stable. Le générateur RPG le consomme déjà ; les futurs
+générateurs ILEastic et IWS feront de même au lieu de relire directement l'AST Langium.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
@@ -31,7 +31,8 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 
 - `{resource}.catalog-spec.json` ;
 - `{resource}.openapi.json` ;
-- `{resource}.resource-contract.ts`.
+- `{resource}.resource-contract.ts` ;
+- `{resource}.read.sqlrpgle`.
 
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
 
@@ -93,14 +94,33 @@ Le contrat est aligné sur le DataProvider IBM i de `mySchadcn` :
 - la recherche `q` porte sur les champs textuels marqués `searchable` ;
 - l'identifiant public reste `id`, même si la colonne Db2 s'appelle `DEPTNO`.
 
+## Module RPG de lecture généré
+
+Le quatrième artefact implémente directement les capacités de lecture déclarées :
+
+- une procédure publique `{entity}_list` si `LIST` est présent ;
+- une procédure publique `{entity}_get` si `GET` est présent ;
+- aucune procédure parallèle suffixée `_local` ;
+- des structures RPG dérivées des champs de liste et de détail ;
+- une pagination et un total cohérents au moyen de `COUNT(*) OVER()`.
+
+Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
+Filtres et tris sont compilés sous forme de branches statiques limitées aux champs
+autorisés. Les valeurs, l'identifiant, l'offset et la taille de page sont transmis à
+Db2 par variables hôtes : le générateur n'émet ni `PREPARE`, ni interpolation de
+valeurs dans le SQL.
+
+La recherche libre `q` est acceptée seulement lorsqu'au moins un champ de la liste est
+marqué `searchable`. Elle est transportée par le contexte CMagic comme un filtre
+réservé, puis appliquée aux seules colonnes de recherche déclarées.
+
 ## Hors périmètre de la tranche
 
-- génération ou remplacement des procédures RPG historiques ;
 - publication ILEastic et wrapper IWS ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
-- exécution de SQL dynamique.
+- exécution de SQL dynamique ;
+- compilation et exécution du module généré sur un IBM i réel.
 
-La tranche suivante pourra générer un module RPG de lecture pour `Service`. Elle devra
-construire les filtres à partir de métadonnées autorisées et lier les valeurs, sans
-interpolation directe dans le SQL.
+La tranche suivante pourra publier ce module derrière ILEastic ou IWS et vérifier le
+contrat HTTP de bout en bout depuis le DataProvider de `mySchadcn`.
