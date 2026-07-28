@@ -17,6 +17,8 @@ describe('Catalogue RPG read interface generator', () => {
         expect(source).toContain('dcl-ds service_item_t qualified template;');
         expect(source).toContain('  id varchar(3);');
         expect(source).toContain('  nom varchar(36);');
+        expect(source).toContain('  idManageur varchar(6);');
+        expect(source).not.toContain('  idmanageur varchar(6);');
         expect(source).toContain('dcl-ds service_detail_t qualified template;');
         expect(source).toContain(
             'dcl-pr service_getSupportedFields ind extproc(*dclcase);'

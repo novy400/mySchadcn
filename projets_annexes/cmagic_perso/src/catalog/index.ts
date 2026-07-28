@@ -1,5 +1,7 @@
 export { buildCatalogSpecs } from './catalog-compiler.js';
 export { generateCatalogBinder } from './binder.js';
+export { generateCatalogIleasticInterface } from './ileastic-interface.js';
+export { generateCatalogIleasticWrapper } from './ileastic.js';
 export { generateCatalogReadInterface } from './read-interface.js';
 export {
     CatalogCompilationError,

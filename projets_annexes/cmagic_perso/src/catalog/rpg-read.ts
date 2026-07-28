@@ -113,7 +113,7 @@ const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
 const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => ({
     ...fieldTypeModel(field.type),
     name: field.name,
-    rpgName: field.name.toLowerCase(),
+    rpgName: field.name,
     column: field.column,
     required: field.required
 });

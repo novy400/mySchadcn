@@ -52,6 +52,14 @@ export const generateCatalogAction = async (
             )
         );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
+        console.log(
+            chalk.green(
+                `ILEastic interface generated: ${artifact.ileasticInterface}`
+            )
+        );
+        console.log(
+            chalk.green(`ILEastic wrapper generated: ${artifact.ileastic}`)
+        );
         console.log(chalk.green(`Db2 DDL generated: ${artifact.ddl}`));
         console.log(chalk.green(`binder generated: ${artifact.binder}`));
         console.log(chalk.green(`BOB rules generated: ${artifact.rules}`));
@@ -80,7 +88,7 @@ export default function (): void {
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
         .description(
-            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read interfaces and modules, Db2 DDL, binders and BOB rules'
+            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read and ILEastic artifacts, Db2 DDL, binders and BOB rules'
         )
         .action(generateCatalogAction);
 

@@ -3,6 +3,8 @@ import path from 'node:path';
 import type { Model } from '../language/generated/ast.js';
 import {
     catalogBinderSourceName,
+    catalogIleasticInterfaceSourceName,
+    catalogIleasticSourceName,
     catalogRpgReadInterfaceSourceName,
     catalogRpgReadSourceName
 } from './artifact-names.js';
@@ -10,6 +12,8 @@ import { generateCatalogBinder } from './binder.js';
 import { buildCatalogSpecs } from './catalog-compiler.js';
 import type { CatalogDiagnostic } from './catalog-spec.js';
 import { generateCatalogDdl } from './ddl.js';
+import { generateCatalogIleasticInterface } from './ileastic-interface.js';
+import { generateCatalogIleasticWrapper } from './ileastic.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
 import { generateCatalogReadInterface } from './read-interface.js';
@@ -22,6 +26,8 @@ export type GeneratedCatalogArtifactPaths = {
     resourceContract: string;
     rpgRead: string;
     rpgReadInterface: string;
+    ileastic: string;
+    ileasticInterface: string;
     ddl: string;
     binder: string;
     rules: string;
@@ -76,6 +82,14 @@ export const generateCatalogArtifacts = (
                 resourceDirectory,
                 catalogRpgReadInterfaceSourceName(spec.resource)
             ),
+            ileastic: path.join(
+                resourceDirectory,
+                catalogIleasticSourceName(spec.resource)
+            ),
+            ileasticInterface: path.join(
+                resourceDirectory,
+                catalogIleasticInterfaceSourceName(spec.resource)
+            ),
             ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`),
             binder: path.join(
                 resourceDirectory,
@@ -95,6 +109,14 @@ export const generateCatalogArtifacts = (
             generateCatalogReadInterface(spec)
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
+        writeArtifact(
+            artifacts.ileasticInterface,
+            generateCatalogIleasticInterface(spec)
+        );
+        writeArtifact(
+            artifacts.ileastic,
+            generateCatalogIleasticWrapper(spec)
+        );
         writeArtifact(artifacts.ddl, generateCatalogDdl(spec));
         writeArtifact(artifacts.binder, generateCatalogBinder(spec));
         writeArtifact(artifacts.rules, generateCatalogRules(spec));

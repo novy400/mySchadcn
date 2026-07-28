@@ -10,9 +10,9 @@ source .cmagic -> CatalogSpec validé -> modèles de rendu -> templates Handleba
 ```
 
 `CatalogSpec` est la frontière stable. Le générateur adapte ce contrat en modèles de
-rendu, puis Handlebars produit les artefacts dans leur langage natif. Les futurs
-générateurs ILEastic et IWS feront de même au lieu de relire directement l'AST Langium
-ou d'assembler du code ligne par ligne en TypeScript.
+rendu, puis Handlebars produit les artefacts dans leur langage natif. Les générateurs
+ILEastic et, plus tard, IWS font de même au lieu de relire directement l'AST Langium ou
+d'assembler du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
@@ -36,6 +36,8 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.resource-contract.ts` ;
 - `{resource}.read.rpgleinc` ;
 - `{resource}.read.sqlrpgle` ;
+- `{resource}.ileastic.rpgleinc` ;
+- `{resource}.ileastic.sqlrpgle` ;
 - `{resource}.ddl.sql` ;
 - `{resource}.bnd` ;
 - `Rules.mk`.
@@ -120,8 +122,7 @@ catalogue et ses futurs adaptateurs de transport. Il contient :
 
 Le fichier possède un garde d'inclusion et ne déclare aucune procédure de mutation. Les
 types et noms de procédures sont issus du même modèle de rendu que le module RPG et son
-binder ; un wrapper ILEastic pourra donc inclure ce contrat sans recopier leurs
-signatures.
+binder ; le wrapper ILEastic inclut donc ce contrat sans recopier leurs signatures.
 
 ## Module RPG de lecture généré
 
@@ -165,9 +166,54 @@ nettoyé. Avant un usage en production, le runtime CMagic devra aussi garantir
 l'échappement ou la liaison de toutes les valeurs de filtre ; cette responsabilité
 n'appartient pas au template d'entité.
 
+## Interface et wrapper ILEastic générés
+
+Les sixième et septième artefacts publient les lectures du catalogue avec ILEastic :
+
+- `{resource}.ileastic.rpgleinc` expose uniquement
+  `{entity}_registerRoutes(IL_config)`, point d'entrée destiné au programme serveur ;
+- `{resource}.ileastic.sqlrpgle` contient les handlers et l'enregistrement des routes
+  `GET /api/{resource}` et `GET /api/{resource}/{id}` selon les capacités déclarées ;
+- le handler `LIST` appelle successivement `{entity}_getSupportedFields`,
+  `CREST_initRestRequest` puis `{entity}_search` ;
+- le handler `GET` utilise `CREST_initSimpleRestRequest`, convertit l'identifiant vers
+  son type RPG sans troncature silencieuse, valide les domaines booléen et enum, puis
+  appelle `{entity}_get` ;
+- `DATA-GEN` et noxDB sérialisent les structures déclarées dans
+  `{resource}.read.rpgleinc` sans redéfinir une structure REST parallèle et en
+  conservant la casse des noms de champs publics ; les valeurs RPG `Y/N` sont
+  normalisées en booléens JSON `true/false` dans les nœuds noxDB ;
+- la liste chaînée rendue par `{entity}_search` est libérée par le handler après
+  sérialisation.
+
+Le format de succès implémente directement le contrat HTTP généré :
+
+```json
+{ "data": [], "total": 0 }
+```
+
+pour `LIST`, et :
+
+```json
+{ "data": {} }
+```
+
+pour `GET`. Le wrapper historique d'`applicationTemplate`, qui renvoie un tableau brut
+et place le total dans un en-tête, sert uniquement de référence pour les appels
+ILEastic, CREST et CMagic ; son format de réponse n'est pas repris.
+
+Les erreurs de validation sont produites par CREST. Une recherche rejetée renvoie une
+erreur client, un identifiant absent renvoie `404`, et une erreur d'accès aux données ou
+de sérialisation renvoie `500`. Aucune route de mutation ni route IWS n'est générée.
+
+Le module de transport est livré comme source et contrat d'inclusion, mais n'est pas
+encore ajouté à `Rules.mk`. Le générateur ne choisit pas implicitement un nom d'objet
+IBM i abrégé pour ce second module : cette convention, ou un nom système explicite dans
+le DSL, doit être décidée avant l'intégration BOB.
+
 ## DDL Db2 généré
 
-Le sixième artefact est produit par
+Le huitième artefact est produit par
 `src/templates/catalog.ddl.sql.hbs`. Il génère un `CREATE TABLE` déterministe à partir
 des mappings du `CatalogSpec` :
 
@@ -191,7 +237,7 @@ restent cohérents sur IBM i 7.4.
 
 ## Binder du service program généré
 
-Le septième artefact est produit par `src/templates/catalog.bnd.hbs`. Il crée une
+Le neuvième artefact est produit par `src/templates/catalog.bnd.hbs`. Il crée une
 signature courante `{OBJECT}.0.0.1` et n'exporte que les procédures réellement présentes
 dans le module RPG :
 
@@ -206,7 +252,7 @@ encore été publié.
 
 ## Règle BOB générée
 
-Le huitième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie à BOB
+Le dixième artefact est produit par `src/templates/catalog.Rules.mk.hbs`. Il relie à BOB
 le module de lecture et le binder réellement générés :
 
 ```make
@@ -218,14 +264,13 @@ Le nom d'objet est dérivé du nom de l'entité en majuscules. La génération �
 nom ne respecte pas le format IBM i d'un nom système de 1 à 10 caractères ; il n'est
 jamais tronqué silencieusement.
 
-La règle ne déclare encore ni module REST, ni module IWS : leurs sources et binders ne
-font pas partie des artefacts générés. Ces dépendances seront ajoutées avec leurs
-artefacts, pour que `Rules.mk` reste compilable et ne référence que des fichiers
-présents.
+La règle ne déclare encore ni module ILEastic, ni module IWS. Le source ILEastic est
+présent, mais son nom d'objet IBM i n'est pas encore fixé ; `Rules.mk` reste donc centré
+sur le service program de lecture et ne crée aucune cible ambiguë.
 
 ## Hors périmètre de la tranche
 
-- publication ILEastic et wrapper IWS ;
+- intégration du module ILEastic dans BOB et wrapper IWS ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
@@ -233,6 +278,6 @@ présents.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine verticale pourra générer le wrapper de publication ILEastic en lecture,
-avant le wrapper IWS et la vérification du contrat HTTP de bout en bout depuis le
+La prochaine verticale pourra fixer le nom d'objet du module ILEastic et l'intégrer à
+BOB, avant le wrapper IWS et la vérification du contrat HTTP de bout en bout depuis le
 DataProvider de `mySchadcn`.

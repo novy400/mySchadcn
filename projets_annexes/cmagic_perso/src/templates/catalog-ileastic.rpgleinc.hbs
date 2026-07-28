@@ -1,0 +1,13 @@
+**free
+{{! Public ILEastic route registration interface generated from CatalogSpec. }}
+/if defined({{includeGuard}})
+/eof
+/endif
+/define {{includeGuard}}
+/include 'ileastic/ileastic.rpgle'
+
+dcl-pr {{procedureSignatures.registerRoutes.name}} extproc(*dclcase);
+{{#each procedureSignatures.registerRoutes.parameters}}
+  {{name}} {{type}};
+{{/each}}
+end-pr;

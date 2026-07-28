@@ -9,8 +9,8 @@
 dcl-ds service_item_t qualified template;
   id varchar(3);
   nom varchar(36);
-  idmanageur varchar(6);
-  idserviceadmin varchar(3);
+  idManageur varchar(6);
+  idServiceAdmin varchar(3);
   site varchar(16);
 end-ds;
 
@@ -28,8 +28,8 @@ end-pr;
 dcl-ds service_detail_t qualified template;
   id varchar(3);
   nom varchar(36);
-  idmanageur varchar(6);
-  idserviceadmin varchar(3);
+  idManageur varchar(6);
+  idServiceAdmin varchar(3);
   site varchar(16);
 end-ds;
 
