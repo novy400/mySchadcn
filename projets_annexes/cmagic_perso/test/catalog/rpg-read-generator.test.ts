@@ -81,6 +81,18 @@ describe('Catalogue RPG read generator', () => {
                 ? { ...service.list, searchFields: [] }
                 : undefined
         });
+        const listWithoutSiteFilter = generateRpgReadModule({
+            ...service,
+            capabilities: ['list'],
+            list: service.list
+                ? {
+                      ...service.list,
+                      filterFields: service.list.filterFields.filter(
+                          field => field !== 'site'
+                      )
+                  }
+                : undefined
+        });
 
         expect(getOnly).not.toContain('dcl-proc service_list export;');
         expect(getOnly).toContain('dcl-proc service_get export;');
@@ -89,6 +101,10 @@ describe('Catalogue RPG read generator', () => {
         expect(listWithoutSearch).not.toContain(
             "when %trim(lFilter.field) = 'q';"
         );
+        expect(listWithoutSiteFilter).not.toContain(
+            "when %trim(lFilter.field) = 'site';"
+        );
+        expect(listWithoutSiteFilter).not.toContain('lUseSiteEq');
     });
 
     test('renders the artifact through a replaceable Handlebars template', async () => {

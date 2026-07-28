@@ -163,11 +163,11 @@ const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => ({
     required: field.required
 });
 
-const requireField = (
-    fieldsByName: Map<string, FieldTemplateModel>,
+const requireField = <Field>(
+    fieldsByName: Map<string, Field>,
     fieldName: string,
     role: string
-): FieldTemplateModel => {
+): Field => {
     const field = fieldsByName.get(fieldName);
     if (!field) {
         throw new Error(`Catalog ${role} field not found: ${fieldName}`);
@@ -197,6 +197,9 @@ const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
     const hasGet = spec.capabilities.includes('get');
     const fields = spec.fields.map(fieldModel);
     const fieldsByName = new Map(fields.map(field => [field.name, field]));
+    const fieldSpecsByName = new Map(
+        spec.fields.map(field => [field.name, field])
+    );
     const id = requireField(fieldsByName, spec.identifier, 'identifier');
     const list = hasList ? requireList(spec) : undefined;
     const itemFields =
@@ -208,7 +211,8 @@ const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
         list?.sortFields.map(name => requireField(fieldsByName, name, 'sort')) ?? [];
 
     const filterFields = hasList
-        ? spec.fields
+        ? (list?.filterFields ?? [])
+              .map(name => requireField(fieldSpecsByName, name, 'filter'))
               .map(field => ({
                   name: field.name,
                   filters: field.filterOperators.map(operator => {
