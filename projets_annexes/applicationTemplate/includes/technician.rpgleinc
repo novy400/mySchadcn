@@ -1,0 +1,172 @@
+**free
+/if defined(TECHNICIAN_H_DEFINED)       
+/eof                               
+/endif                             
+/define TECHNICIAN_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ------------------------------------------------------------------//
+// Technician entity definitions for TechServ project              //
+// Episode 2: Your First API - Technicians CRUD                   //
+// ------------------------------------------------------------------//
+
+dcl-enum technician_specialty_enum qualified;
+  hvac 'HVAC';
+  electrical 'ELECTRICAL';
+  plumbing 'PLUMBING';
+  general 'GENERAL';
+end-enum;
+
+dcl-enum technician_certification_enum qualified;
+  junior 'JUNIOR';
+  senior 'SENIOR';
+  expert 'EXPERT';
+end-enum;
+
+dcl-enum technician_status_enum qualified;
+  active 'ACTIVE';
+  on_leave 'ON_LEAVE';
+  inactive 'INACTIVE';
+end-enum;
+
+///
+// Technician Detail template - Full record for GET /api/technicians/{id}
+///
+dcl-ds technician_detail_t template qualified;
+  id int(10);
+  firstName varchar(50);
+  lastName varchar(50);
+  email varchar(100);
+  phone varchar(20);
+  specialty varchar(50);  // HVAC, ELECTRICAL, PLUMBING, GENERAL
+  certificationLevel varchar(20);  // JUNIOR, SENIOR, EXPERT
+  status varchar(20);  // ACTIVE, ON_LEAVE, INACTIVE
+  hireDate date;
+  hourlyRate packed(10:2);
+  createdAt timestamp;
+  updatedAt timestamp;
+end-ds;
+
+///
+// Technician List Item template - Simplified for GET /api/technicians collection
+///
+dcl-ds technician_item_t template qualified;
+  id like(technician_detail_t.id);
+  firstName like(technician_detail_t.firstName);
+  lastName like(technician_detail_t.lastName);
+  email like(technician_detail_t.email);
+  phone like(technician_detail_t.phone);
+  specialty like(technician_detail_t.specialty);
+  status like(technician_detail_t.status);
+end-ds;
+
+///
+// Technician Input template - For POST/PUT operations
+///
+dcl-ds technician_input_t template qualified;
+  firstName like(technician_detail_t.firstName);
+  lastName like(technician_detail_t.lastName);
+  email like(technician_detail_t.email);
+  phone like(technician_detail_t.phone);
+  specialty like(technician_detail_t.specialty);
+  certificationLevel like(technician_detail_t.certificationLevel);
+  status like(technician_detail_t.status);
+  hireDate like(technician_detail_t.hireDate);
+  hourlyRate like(technician_detail_t.hourlyRate);
+end-ds;
+
+// ------------------------------------------------------------------//
+// Prototypes for technician business logic                        //
+// ------------------------------------------------------------------//
+
+// Technician CRUD operations
+dcl-pr technician_getList;
+  pContext likeds(CMAGIC_context);
+  pItems likeds(technician_item_t) dim(CMAGIC_MAX_ITEMS);
+  pCount int(10);
+end-pr;
+
+dcl-pr technician_getById;
+  pId int(10) const;
+  pTechnician likeds(technician_detail_t);
+  pFound ind;
+end-pr;
+
+dcl-pr technician_create;
+  pInput likeds(technician_input_t) const;
+  pTechnician likeds(technician_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr technician_update;
+  pId int(10) const;
+  pInput likeds(technician_input_t) const;
+  pTechnician likeds(technician_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr technician_delete;
+  pId int(10) const;
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+// Validation functions
+dcl-pr technician_validateInput;
+  pInput likeds(technician_input_t) const;
+  pValid ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr technician_isValidEmail;
+  pEmail varchar(100) const;
+  pValid ind;
+end-pr;
+
+dcl-pr technician_isValidSpecialty;
+  pSpecialty varchar(50) const;
+  pValid ind;
+end-pr;
+
+dcl-pr technician_isValidStatus;
+  pStatus varchar(20) const;
+  pValid ind;
+end-pr;
+
+// ------------------------------------------------------------------//
+// REST API prototypes for technician routes                       //
+// ------------------------------------------------------------------//
+
+// HTTP Handlers
+dcl-pr technician_handleGetList;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr technician_handleGetById;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr technician_handleCreate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr technician_handleUpdate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr technician_handleDelete;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+// Route registration
+dcl-pr technician_registerRoutes;
+  pILEastic pointer const;
+end-pr;

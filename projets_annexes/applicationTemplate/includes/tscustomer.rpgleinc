@@ -1,0 +1,172 @@
+**free
+/if defined(TSCUSTOMER_H_DEFINED)       
+/eof                               
+/endif                             
+/define TSCUSTOMER_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ------------------------------------------------------------------//
+// Customer entity definitions for TechServ project                //
+// Episode 4: Business Entity - Customers with Validation          //
+// Note: Using TSCUSTOMER prefix to avoid conflict with existing   //
+//       customer entity                                            //
+// ------------------------------------------------------------------//
+
+dcl-enum tscustomer_status_enum qualified;
+  prospect 'PROSPECT';
+  active 'ACTIVE';
+  suspended 'SUSPENDED';
+  inactive 'INACTIVE';
+end-enum;
+
+///
+// Customer Detail template - Full record for GET /api/customers/{id}
+///
+dcl-ds tscustomer_detail_t template qualified;
+  id int(10);
+  companyName varchar(100);
+  contactName varchar(100);
+  email varchar(100);
+  phone varchar(20);
+  mobile varchar(20);
+  address varchar(200);
+  city varchar(50);
+  postalCode varchar(10);
+  country varchar(50);
+  status varchar(20);  // PROSPECT, ACTIVE, SUSPENDED, INACTIVE
+  paymentTerms int(10);  // Jours
+  createdAt timestamp;
+  updatedAt timestamp;
+end-ds;
+
+///
+// Customer List Item template - For GET /api/customers collection
+///
+dcl-ds tscustomer_item_t template qualified;
+  id like(tscustomer_detail_t.id);
+  companyName like(tscustomer_detail_t.companyName);
+  contactName like(tscustomer_detail_t.contactName);
+  email like(tscustomer_detail_t.email);
+  phone like(tscustomer_detail_t.phone);
+  city like(tscustomer_detail_t.city);
+  status like(tscustomer_detail_t.status);
+end-ds;
+
+///
+// Customer Input template - For POST/PUT operations
+///
+dcl-ds tscustomer_input_t template qualified;
+  companyName like(tscustomer_detail_t.companyName);
+  contactName like(tscustomer_detail_t.contactName);
+  email like(tscustomer_detail_t.email);
+  phone like(tscustomer_detail_t.phone);
+  mobile like(tscustomer_detail_t.mobile);
+  address like(tscustomer_detail_t.address);
+  city like(tscustomer_detail_t.city);
+  postalCode like(tscustomer_detail_t.postalCode);
+  country like(tscustomer_detail_t.country);
+  status like(tscustomer_detail_t.status);
+  paymentTerms like(tscustomer_detail_t.paymentTerms);
+end-ds;
+
+// ------------------------------------------------------------------//
+// Prototypes for customer business logic                          //
+// ------------------------------------------------------------------//
+
+// Customer CRUD operations
+dcl-pr tscustomer_getList;
+  pContext likeds(CMAGIC_context);
+  pItems likeds(tscustomer_item_t) dim(CMAGIC_MAX_ITEMS);
+  pCount int(10);
+end-pr;
+
+dcl-pr tscustomer_getById;
+  pId int(10) const;
+  pCustomer likeds(tscustomer_detail_t);
+  pFound ind;
+end-pr;
+
+dcl-pr tscustomer_create;
+  pInput likeds(tscustomer_input_t) const;
+  pCustomer likeds(tscustomer_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr tscustomer_update;
+  pId int(10) const;
+  pInput likeds(tscustomer_input_t) const;
+  pCustomer likeds(tscustomer_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr tscustomer_delete;
+  pId int(10) const;
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+// Validation functions
+dcl-pr tscustomer_validateInput;
+  pInput likeds(tscustomer_input_t) const;
+  pValid ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr tscustomer_isValidEmail;
+  pEmail varchar(100) const;
+  pValid ind;
+end-pr;
+
+dcl-pr tscustomer_isValidPhone;
+  pPhone varchar(20) const;
+  pValid ind;
+end-pr;
+
+dcl-pr tscustomer_isValidStatus;
+  pStatus varchar(20) const;
+  pValid ind;
+end-pr;
+
+dcl-pr tscustomer_canTransitionTo;
+  pFromStatus varchar(20) const;
+  pToStatus varchar(20) const;
+  pValid ind;
+end-pr;
+
+// ------------------------------------------------------------------//
+// REST API prototypes for customer routes                         //
+// ------------------------------------------------------------------//
+
+// HTTP Handlers
+dcl-pr tscustomer_handleGetList;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr tscustomer_handleGetById;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr tscustomer_handleCreate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr tscustomer_handleUpdate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr tscustomer_handleDelete;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+// Route registration
+dcl-pr tscustomer_registerRoutes;
+  pILEastic pointer const;
+end-pr;

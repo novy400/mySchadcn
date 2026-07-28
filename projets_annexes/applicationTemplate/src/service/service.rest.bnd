@@ -1,0 +1,7 @@
+STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVREST.0.0.1')
+  EXPORT SYMBOL('service_getlist_rest')
+  EXPORT SYMBOL('service_getone_rest')
+  EXPORT SYMBOL('service_create_rest')
+  EXPORT SYMBOL('service_update_rest')
+  EXPORT SYMBOL('service_delete_rest')
+ENDPGMEXP

@@ -1,0 +1,586 @@
+[
+  {
+    "EMPNO": "000010",
+    "PROJNO": "AD3100",
+    "ACTNO": 10,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-07-01"
+  },
+  {
+    "EMPNO": "000070",
+    "PROJNO": "AD3110",
+    "ACTNO": 10,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000230",
+    "PROJNO": "AD3111",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-03-15"
+  },
+  {
+    "EMPNO": "000230",
+    "PROJNO": "AD3111",
+    "ACTNO": 60,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-15",
+    "EMENDATE": "1982-04-15"
+  },
+  {
+    "EMPNO": "000230",
+    "PROJNO": "AD3111",
+    "ACTNO": 70,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-15",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000230",
+    "PROJNO": "AD3111",
+    "ACTNO": 80,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-04-15",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000230",
+    "PROJNO": "AD3111",
+    "ACTNO": 180,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-15",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000240",
+    "PROJNO": "AD3111",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-02-15",
+    "EMENDATE": "1982-09-15"
+  },
+  {
+    "EMPNO": "000240",
+    "PROJNO": "AD3111",
+    "ACTNO": 80,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-09-15",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-02-01"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-02-01",
+    "EMENDATE": "1982-03-15"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1983-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-02-01",
+    "EMENDATE": "1982-03-15"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-03-15",
+    "EMENDATE": "1982-08-15"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-08-15",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 80,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-08-15",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 80,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-15",
+    "EMENDATE": "1982-12-01"
+  },
+  {
+    "EMPNO": "000250",
+    "PROJNO": "AD3112",
+    "ACTNO": 180,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-08-15",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-06-15",
+    "EMENDATE": "1982-07-01"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-07-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-03-01"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-04-15"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-04-15"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-04-15",
+    "EMENDATE": "1982-06-01"
+  },
+  {
+    "EMPNO": "000260",
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-06-01",
+    "EMENDATE": "1982-07-01"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-04-01"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-04-01",
+    "EMENDATE": "1982-09-01"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-09-01",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "EMPTIME": 0.75,
+    "EMSTDATE": "1982-09-01",
+    "EMENDATE": "1982-10-15"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-10-15",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-03-01"
+  },
+  {
+    "EMPNO": "000270",
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-04-01"
+  },
+  {
+    "EMPNO": "000030",
+    "PROJNO": "IF1000",
+    "ACTNO": 10,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-06-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000130",
+    "PROJNO": "IF1000",
+    "ACTNO": 90,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000130",
+    "PROJNO": "IF1000",
+    "ACTNO": 100,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000140",
+    "PROJNO": "IF1000",
+    "ACTNO": 90,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000030",
+    "PROJNO": "IF2000",
+    "ACTNO": 10,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000140",
+    "PROJNO": "IF2000",
+    "ACTNO": 100,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-03-01"
+  },
+  {
+    "EMPNO": "000140",
+    "PROJNO": "IF2000",
+    "ACTNO": 100,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-07-01"
+  },
+  {
+    "EMPNO": "000140",
+    "PROJNO": "IF2000",
+    "ACTNO": 110,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-03-01",
+    "EMENDATE": "1982-07-01"
+  },
+  {
+    "EMPNO": "000140",
+    "PROJNO": "IF2000",
+    "ACTNO": 110,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-01-01"
+  },
+  {
+    "EMPNO": "000010",
+    "PROJNO": "MA2100",
+    "ACTNO": 10,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-11-01"
+  },
+  {
+    "EMPNO": "000110",
+    "PROJNO": "MA2100",
+    "ACTNO": 20,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-03-01"
+  },
+  {
+    "EMPNO": "000010",
+    "PROJNO": "MA2110",
+    "ACTNO": 10,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000200",
+    "PROJNO": "MA2111",
+    "ACTNO": 50,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-06-15"
+  },
+  {
+    "EMPNO": "000200",
+    "PROJNO": "MA2111",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-06-15",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000220",
+    "PROJNO": "MA2111",
+    "ACTNO": 40,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000150",
+    "PROJNO": "MA2112",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-07-15"
+  },
+  {
+    "EMPNO": "000150",
+    "PROJNO": "MA2112",
+    "ACTNO": 180,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-07-15",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000170",
+    "PROJNO": "MA2112",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-06-01"
+  },
+  {
+    "EMPNO": "000170",
+    "PROJNO": "MA2112",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-06-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000190",
+    "PROJNO": "MA2112",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-10-01"
+  },
+  {
+    "EMPNO": "000190",
+    "PROJNO": "MA2112",
+    "ACTNO": 80,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-10-01"
+  },
+  {
+    "EMPNO": "000160",
+    "PROJNO": "MA2113",
+    "ACTNO": 60,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-07-15",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000170",
+    "PROJNO": "MA2113",
+    "ACTNO": 80,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000180",
+    "PROJNO": "MA2113",
+    "ACTNO": 70,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-04-01",
+    "EMENDATE": "1982-06-15"
+  },
+  {
+    "EMPNO": "000210",
+    "PROJNO": "MA2113",
+    "ACTNO": 80,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000210",
+    "PROJNO": "MA2113",
+    "ACTNO": 180,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-10-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000050",
+    "PROJNO": "OP1000",
+    "ACTNO": 10,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000090",
+    "PROJNO": "OP1010",
+    "ACTNO": 10,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000280",
+    "PROJNO": "OP1010",
+    "ACTNO": 130,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000290",
+    "PROJNO": "OP1010",
+    "ACTNO": 130,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000300",
+    "PROJNO": "OP1010",
+    "ACTNO": 130,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000310",
+    "PROJNO": "OP1010",
+    "ACTNO": 130,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000050",
+    "PROJNO": "OP2010",
+    "ACTNO": 10,
+    "EMPTIME": 0.75,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000100",
+    "PROJNO": "OP2010",
+    "ACTNO": 10,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000320",
+    "PROJNO": "OP2011",
+    "ACTNO": 140,
+    "EMPTIME": 0.75,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000320",
+    "PROJNO": "OP2011",
+    "ACTNO": 150,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000330",
+    "PROJNO": "OP2012",
+    "ACTNO": 140,
+    "EMPTIME": 0.25,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000330",
+    "PROJNO": "OP2012",
+    "ACTNO": 160,
+    "EMPTIME": 0.75,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000340",
+    "PROJNO": "OP2013",
+    "ACTNO": 140,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000340",
+    "PROJNO": "OP2013",
+    "ACTNO": 170,
+    "EMPTIME": 0.5,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1983-02-01"
+  },
+  {
+    "EMPNO": "000020",
+    "PROJNO": "PL2100",
+    "ACTNO": 30,
+    "EMPTIME": 1,
+    "EMSTDATE": "1982-01-01",
+    "EMENDATE": "1982-09-15"
+  }
+]

@@ -1,0 +1,7 @@
+STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('EMPREST.0.0.1')
+  EXPORT SYMBOL('employee_getlist_rest')
+  EXPORT SYMBOL('employee_getone_rest')
+  EXPORT SYMBOL('employee_create_rest')
+  EXPORT SYMBOL('employee_update_rest')
+  EXPORT SYMBOL('employee_delete_rest')
+ENDPGMEXP

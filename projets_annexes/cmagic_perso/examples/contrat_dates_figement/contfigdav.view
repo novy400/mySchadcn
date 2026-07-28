@@ -1,0 +1,92 @@
+-- =====================================================
+-- Vue: V_CONTRAT_FIGEMENT_DETAIL
+-- Description: Vue détaillée des contrats figés avec 
+--              informations clients, agences et motifs
+-- =====================================================
+
+CREATE OR REPLACE VIEW contrat_date_figement_calcul 
+FOR SYSTEM NAME CONTFIGDAV (
+  ID , 
+	CODEETABLISSEMENT FOR COLUMN CODETA     , 
+	NOMETABLISSEMENT FOR COLUMN NOMETA , 
+	CODEAGENCE FOR COLUMN CODAGE, 
+	NOMAGENCE FOR COLUMN NOMAGE, 
+	NUMEROCLIENT FOR COLUMN CODCLI , 
+	NOMCLIENT FOR COLUMN NOMCLI, 
+	NUMEROCONTRAT FOR COLUMN NUMCON , 
+	POSITIONCONTRAT FOR COLUMN POSCON , 
+	DATEECHEANCECONTRAT FOR COLUMN DAECON, 
+	MONTANTCONTRAT FOR COLUMN MNTCON , 
+	CODEOPPOSITION FOR COLUMN OPPCON , 
+	LIBELLEOPPOSITION FOR COLUMN LIBOPP , 
+	DATEOPPOSITION FOR COLUMN DATOPP , 
+  DATEFIGEMENTCONTRAT FOR COLUMN DATFIG     , 
+	MOTIFFIGEMENT FOR COLUMN MOTIF 
+)
+AS
+SELECT 
+    fig.ID,
+    fig.CODEETABLISSEMENT,
+    ets.NOMETA nomEtablissement,
+    ctr.AGECON codeAgence,
+    age.NOMAGE nomAgence,
+    ctr.CLICON numeroClient,
+    cli.NOMCLI nomClient,
+    ctr.NUMCON numeroContrat,
+    ctr.POSCON positionContrat,
+    ctr.DAECON dateEcheanceContrat,
+    ctr.MNTCON montantContrat,
+    ctr.OPPCON codeOpposition,
+    opp.LIBOPM libelleOpposition,
+    ctr.DOPCON dateOpposition,
+    fig.DATEFIGEMENTCONTRAT,
+    fig.MOTIFFIGEMENT
+FROM CONTFIGDAT fig
+    LEFT JOIN CONTRAT ctr
+        ON fig.CODEETABLISSEMENT = ctr.ETACON 
+        AND fig.NUMEROCONTRAT = ctr.NUMCON
+    LEFT JOIN CLIENTS cli
+        ON cli.ETACLI = fig.CODEETABLISSEMENT 
+        AND cli.CODCLI = ctr.CLICON
+    LEFT JOIN ETABLIS ets
+        ON ets.CODETA = fig.CODEETABLISSEMENT 
+    LEFT JOIN AGENCES age
+        ON age.CODETA = fig.CODEETABLISSEMENT 
+        AND age.CODAGE = ctr.AGECON  
+    LEFT JOIN OPMOTIF opp
+        ON opp.CODOPM = ctr.OPPCON;
+
+-- =====================================================
+-- Commentaires sur les colonnes (optionnel)
+-- =====================================================
+
+LABEL ON COLUMN CONTFIGDAV
+(
+    ID                    TEXT IS 'Identifiant unique du figement',
+    CODEETABLISSEMENT     TEXT IS 'Code établissement',
+    nomEtablissement      TEXT IS 'Nom établissement',
+    codeAgence            TEXT IS 'Code agence contrat',
+    nomAgence             TEXT IS 'Nom agence',
+    numeroClient            TEXT IS 'id client',
+    nomClient             TEXT IS 'Nom client',
+    numeroContrat         TEXT IS 'Numéro contrat',
+    positionContrat       TEXT IS 'Position contrat',
+    dateEcheanceContrat   TEXT IS 'Date échéance contrat',
+    montantContrat        TEXT IS 'Montant contrat',
+    codeOpposition        TEXT IS 'Code opération/motif',
+    libelleOpposition     TEXT IS 'Libellé opération/motif',
+    DATEFIGEMENTCONTRAT   TEXT IS 'Date de figement du contrat',
+    MOTIFFIGEMENT         TEXT IS 'Motif du figement'
+);
+
+-- =====================================================
+-- Exemple d'utilisation
+-- =====================================================
+
+-- Consultation simple
+-- SELECT * FROM CONTFIGDAV WHERE ID = 12345;
+
+-- Avec filtre sur établissement
+-- SELECT * FROM CONTFIGDAV 
+-- WHERE CODEETABLISSEMENT = '001' 
+-- ORDER BY DATEFIGEMENTCONTRAT DESC;

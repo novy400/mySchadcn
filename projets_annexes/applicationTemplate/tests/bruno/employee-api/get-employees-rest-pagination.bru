@@ -1,0 +1,87 @@
+meta {
+  name: Get Employees with REST Standard Pagination
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}{{apiPath}}/employees?_page=1&_limit=5
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+
+  test("Response should be an array", function() {
+    const employees = res.getBody();
+    expect(employees).to.be.an('array');
+  });
+
+  test("Should respect _limit parameter (max 5 employees)", function() {
+    const employees = res.getBody();
+    expect(employees.length).to.be.at.most(5);
+  });
+
+  test("X-Total-Count header should be present and valid", function() {
+    const totalCount = res.getHeader('x-total-count');
+    expect(totalCount).to.exist;
+    const count = parseInt(totalCount);
+    expect(count).to.be.a('number');
+    expect(count).to.be.greaterThan(0);
+  });
+
+  test("Access-Control-Expose-Headers should include X-Total-Count", function() {
+    const exposeHeaders = res.getHeader('access-control-expose-headers');
+    expect(exposeHeaders).to.contain('X-Total-Count');
+  });
+
+  test("CORS headers should be present", function() {
+    expect(res.getHeader('access-control-allow-origin')).to.exist;
+  });
+
+  test("REST standard pagination (_page=1, _limit=5)", function() {
+    const employees = res.getBody();
+    const totalCount = parseInt(res.getHeader('x-total-count'));
+    
+    // Page 1 avec limit 5
+    if (totalCount >= 5) {
+      expect(employees).to.have.lengthOf(5);
+    } else {
+      expect(employees).to.have.lengthOf(totalCount);
+    }
+    
+    // Vérifier que ce sont bien les premiers employés (page 1)
+    if (employees.length > 0) {
+      expect(employees[0]).to.have.property('id');
+    }
+  });
+
+  test("Each employee should have required fields", function() {
+    const employees = res.getBody();
+    employees.forEach(function(employee) {
+      expect(employee).to.have.property('id');
+      expect(employee).to.have.property('nom');
+      expect(employee).to.have.property('prenom');
+      expect(employee).to.have.property('service');
+      expect(employee).to.have.property('salaire');
+    });
+  });
+
+  test("Employee IDs should be unique in results", function() {
+    const employees = res.getBody();
+    const ids = employees.map(emp => emp.id);
+    const uniqueIds = [...new Set(ids)];
+    expect(uniqueIds).to.have.lengthOf(ids.length);
+  });
+}

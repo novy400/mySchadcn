@@ -1,0 +1,1054 @@
+{{!-- src/templates/service.sqlrpgle.tpl --}}
+**FREE
+// ============================================
+// {{name}} Service - Code unifié (généré + manuel)
+// Source : {{@root.sourceFile}}
+// Générée par CMagic v1.0 - Sprint 2
+// ============================================
+ctl-opt nomain
+        option(*nodebugio:*srcstmt:*nounref)
+        alwnull(*usrctl)
+        bnddir('QC2LE':'CKOOL');
+
+/include '{{lowercase name}}.rpgleinc'
+
+// ========================================
+// API PUBLIQUE - PROCÉDURES EXPORTÉES
+// ========================================
+
+{{#each operations}}
+{{#if (eq this 'CREATE')}}
+// Création nouveau {{../name}}
+dcl-proc {{lowercase ../name}}_create export;
+  dcl-pi *N ind;
+    pDetail likeds({{lowercase ../name}}_detail_t) const;
+    pId likeDS({{lowercase ../name}}_id_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lDetailBefore likeds({{lowercase ../name}}_detail_t);
+      dcl-ds lDetailAfter likeds({{lowercase ../name}}_detail_t);
+      dcl-ds lId likeDS({{lowercase ../name}}_id_t);
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pId;
+      clear pErrors;
+      clear lId;
+      clear lErrors;
+    // traitement de la création
+      // contrôle de l'action
+        clear lDetailBefore;
+        clear lDetailAfter;
+        clear lErrors;
+        lDetailBefore = pDetail;
+        lDetailAfter = pDetail;
+        if not {{lowercase ../name}}_isValid({{lowercase ../name}}_listeAction.creation
+          : lDetailBefore: lDetailAfter: lErrors);
+          pErrors = lErrors;
+          return *off;
+        endif;
+      // création métier
+        clear lId;
+        clear lErrors;
+        if not {{lowercase ../name}}_create_local(pDetail:lId:lErrors);
+          pErrors = lErrors;
+          return *off;
+        endif;
+    // finalisation
+      pId = lId;
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'DISPLAY')}}
+dcl-proc {{lowercase ../name}}_getByID export;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pDetail likeds({{lowercase ../name}}_detail_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pDetail;
+      clear pErrors;
+    // traitement
+      if not {{lowercase ../name}}_getByID_local(pId:pDetail:lErrors);
+            pErrors = lErrors;
+            return *off;
+      endif; 
+    // finalisation  
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'CHANGE')}}
+dcl-proc {{lowercase ../name}}_change export;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pDetail likeds({{lowercase ../name}}_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lDetailBefore likeds({{lowercase ../name}}_detail_t);
+      dcl-ds lDetailAfter likeds({{lowercase ../name}}_detail_t);
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pErrors;
+    // traitement de la modification
+      // contrôle de l'action - récupération de l'existant
+        if not {{lowercase ../name}}_getByID_local(pId:lDetailBefore:lErrors);
+          pErrors = lErrors;
+          return *off;
+        endif;
+        lDetailAfter = pDetail;
+        clear lErrors;
+        if not {{lowercase ../name}}_isValid_local({{lowercase ../name}}_listeAction.modification
+          : lDetailBefore: lDetailAfter: lErrors);
+          pErrors = lErrors;
+          return *off;
+        endif;
+      // modification métier
+        clear lErrors;
+        if not {{lowercase ../name}}_change_local(pId:pDetail:lErrors);
+          pErrors = lErrors;
+          return *off;
+        endif;
+    // finalisation
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'DELETE')}}
+dcl-proc {{lowercase ../name}}_delete export;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pErrors;
+    // traitement
+      if not {{lowercase ../name}}_delete_local(pId:lErrors);
+            pErrors = lErrors;
+            return *off;
+      endif; 
+    // finalisation  
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'SEARCH')}}
+dcl-proc {{lowercase ../name}}_search export;
+  dcl-pi *N ind;
+    pContext likeDS(CMAGIC_context) const;
+    pTotalCount like(CMAGIC_totalCount);
+    pItems pointer;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pTotalCount;
+      clear pItems;
+      clear pErrors;
+    // traitement
+      if not {{lowercase ../name}}_search_local(pContext:pTotalCount:pItems:lErrors);
+            pErrors = lErrors;
+            return *off;
+      endif; 
+    // finalisation  
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+{{/each}}
+
+dcl-proc {{lowercase this.name}}_isValid export;
+  dcl-pi *N ind;
+    pAction like(GLOBAL_codeAction) Const; // in {{lowercase this.name}}_listeAction
+    pBeforeDetail likeds({{lowercase this.name}}_detail_t) Const;
+    pAfterDetail likeds({{lowercase this.name}}_detail_t) Const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear lErrors;
+    // traitement
+      if not {{lowercase this.name}}_isValid_local(pAction
+              :pBeforeDetail:pAfterDetail:lErrors);
+            pErrors = lErrors;
+            return *off;
+      endif; 
+    // finalisation  
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+
+dcl-proc {{lowercase this.name}}_display export;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase this.name}}_id_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    // variables locales 
+      dcl-s ErrorHappened ind;
+      dcl-ds lErrors likeDS(GLOBAL_listError);
+    // initialisation
+      clear pErrors;
+    // traitement
+      if not {{lowercase this.name}}_display_local(pId:lErrors);
+            pErrors = lErrors;
+            return *off;
+      endif; 
+    // finalisation  
+      return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+
+// ========================================
+// ZONE MANUELLE - PRÉSERVÉE
+// ========================================
+// [CMAGIC:MANUAL_START]
+
+{{#each operations}}
+{{#if (eq this 'CREATE')}}
+// Implémentation interne - Création
+dcl-proc {{lowercase ../name}}_create_local;
+  dcl-pi *N ind;
+    pDetail likeds({{lowercase ../name}}_detail_t) const;
+    pId likeDS({{lowercase ../name}}_id_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lDetail likeDs({{lowercase ../name}}_t);
+    dcl-ds lError likeds(errorItem) inz;
+    dcl-s lNewId like(pId.id);
+  
+    // initialisation
+    clear pId;
+    clear pErrors;
+    clear lDetail;
+    lDetail = pDetail.detail;
+  
+    // TODO: Implémenter la logique de création en base
+    monitor;
+      // Exemple d'insertion SQL
+      // exec sql INSERT INTO {{toUpperCase ../name}} ...
+      
+      pId.id = 1; // placeholder - utiliser IDENTITY_VAL_LOCAL() dans vrai code
+      return *on;
+      
+    on-error;
+      lError.message = 'Erreur lors de la création en base';
+      lError.field = '';
+      GLOBAL_addError(pErrors : lError);
+      return *off;
+    endmon;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'DISPLAY')}}
+// Implémentation interne - Récupération par ID
+dcl-proc {{lowercase ../name}}_getByID_local;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pDetail likeds({{lowercase ../name}}_detail_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lDetail likeDs({{lowercase ../name}}_t);
+    dcl-ds lError likeds(errorItem) inz;
+  
+    // initialisation
+    clear pDetail;
+    clear pErrors;
+    clear lDetail;
+  
+    // TODO: Implémenter la logique de récupération
+    monitor;
+      // Exemple de SELECT SQL
+      // exec sql SELECT * FROM {{toUpperCase ../name}} WHERE ID = :pId.id INTO :lDetail;
+      
+      if sqlcode = 100;
+        lError.message = '{{../name}} non trouvé';
+        lError.field = 'id';
+        GLOBAL_addError(pErrors : lError);
+        return *off;
+      endif;
+      
+      pDetail.detail = lDetail;
+      return *on;
+      
+    on-error;
+      lError.message = 'Erreur lors de la récupération';
+      lError.field = '';
+      GLOBAL_addError(pErrors : lError);
+      return *off;
+    endmon;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'CHANGE')}}
+// Implémentation interne - Mise à jour
+dcl-proc {{lowercase ../name}}_change_local;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pDetail likeds({{lowercase ../name}}_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lDetail likeDs({{lowercase ../name}}_t);
+    dcl-ds lError likeds(errorItem) inz;
+  
+    // initialisation
+    clear pErrors;
+    clear lDetail;
+    lDetail = pDetail.detail;
+  
+    // TODO: Implémenter la logique de mise à jour
+    monitor;
+      // Exemple d'UPDATE SQL
+      // exec sql UPDATE {{toUpperCase ../name}} SET ... WHERE ID = :pId.id;
+      
+      if sqlcode = 100;
+        lError.message = '{{../name}} non trouvé pour mise à jour';
+        lError.field = 'id';
+        GLOBAL_addError(pErrors : lError);
+        return *off;
+      endif;
+      
+      return *on;
+      
+    on-error;
+      lError.message = 'Erreur lors de la mise à jour';
+      lError.field = '';
+      GLOBAL_addError(pErrors : lError);
+      return *off;
+    endmon;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'DELETE')}}
+// Implémentation interne - Suppression
+dcl-proc {{lowercase ../name}}_delete_local;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase ../name}}_id_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lError likeds(errorItem) inz;
+  
+    // initialisation
+    clear pErrors;
+  
+    // TODO: Implémenter la logique de suppression
+    monitor;
+      // Exemple de DELETE SQL
+      // exec sql DELETE FROM {{toUpperCase ../name}} WHERE ID = :pId.id;
+      
+      if sqlcode = 100;
+        lError.message = '{{../name}} non trouvé pour suppression';
+        lError.field = 'id';
+        GLOBAL_addError(pErrors : lError);
+        return *off;
+      endif;
+      
+      return *on;
+      
+    on-error;
+      lError.message = 'Erreur lors de la suppression';
+      lError.field = '';
+      GLOBAL_addError(pErrors : lError);
+      return *off;
+    endmon;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+
+{{#if (eq this 'SEARCH')}}
+// Implémentation interne - Recherche
+dcl-proc {{lowercase ../name}}_search_local;
+  dcl-pi *N ind;
+    pContext likeDS(CMAGIC_context) const;
+    pTotalCount like(CMAGIC_totalCount);
+    pItems pointer;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lError likeds(errorItem) inz;
+  
+    // initialisation
+    clear pTotalCount;
+    clear pItems;
+    clear pErrors;
+  
+    // TODO: Implémenter la logique de recherche
+    monitor;
+      // Compter le total
+      // exec sql SELECT COUNT(*) INTO :pTotalCount FROM {{toUpperCase ../name}};
+      
+      // TODO: Implémenter la pagination et filtres
+      // TODO: Construire la liste des résultats
+      
+      return *on;
+      
+    on-error;
+      lError.message = 'Erreur lors de la recherche';
+      lError.field = '';
+      GLOBAL_addError(pErrors : lError);
+      return *off;
+    endmon;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+{{/each}}
+
+// Implémentation interne - Validation
+dcl-proc {{lowercase this.name}}_isValid_local;
+  dcl-pi *N ind;
+    pAction like(GLOBAL_codeAction) Const;
+    pBeforeDetail likeds({{lowercase this.name}}_detail_t) Const;
+    pAfterDetail likeds({{lowercase this.name}}_detail_t) Const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lError likeds(errorItem) inz;
+  
+    // initialisation
+    clear pErrors;
+  
+    // TODO: Implémenter les validations métier
+    
+    // Validations communes
+{{#each this.fields}}
+{{#if this.required}}
+    // Validation champ requis: {{this.name}}
+    select;
+      when pAction = {{lowercase ../this.name}}_listeAction.creation or 
+           pAction = {{lowercase ../this.name}}_listeAction.modification;
+        // TODO: Ajouter validation pour {{this.name}}
+    endsl;
+{{/if}}
+{{/each}}
+  
+    // Si des erreurs, retourner *off
+    if pErrors.count > 0;
+      return *off;
+    endif;
+    
+    return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+
+// Implémentation interne - Affichage
+dcl-proc {{lowercase this.name}}_display_local;
+  dcl-pi *N ind;
+    pId likeDS({{lowercase this.name}}_id_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+    dcl-s ErrorHappened ind;
+    dcl-ds lDetail likeds({{lowercase this.name}}_detail_t);
+    dcl-ds lErrors likeDS(GLOBAL_listError);
+  
+    // initialisation
+    clear pErrors;
+  
+    // Récupérer les détails
+    if not {{lowercase this.name}}_getByID_local(pId : lDetail : lErrors);
+      pErrors = lErrors;
+      return *off;
+    endif;
+    
+    // TODO: Implémenter l'affichage (écran, rapport, etc.)
+    
+    return *on;
+  
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      return *off;
+    endif;
+end-proc;
+
+// [CMAGIC:MANUAL_END]
+///
+DCL-PROC {{lowercase ../name}}_getByID EXPORT;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    detail LIKEDS({{lowercase ../name}}_detail_t);
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  // Variables locales
+  DCL-S ErrorHappened IND;
+  DCL-DS lErrors LIKEDS(GLOBAL_listError);
+  
+  // Initialisation
+  CLEAR detail;
+  CLEAR errors;
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_display_validation]
+  // Zone manuelle pour validation paramètres DISPLAY
+  // Exemple: vérification ID valide, droits accès, etc.
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_display_validation]
+  
+  // Traitement
+  IF NOT {{lowercase ../name}}_getByID_local(id : detail : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Finalisation
+  RETURN *ON;
+  
+  ON-EXIT ErrorHappened;
+    IF ErrorHappened;
+      RETURN *OFF;
+    ENDIF;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'CHANGE')}}
+///
+// Mise à jour {{../name}} existant
+//
+// @param **in** id {{../name}} ID
+// @param **in** detail {{../name}} detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @tag {{../name}}
+// @tag CMAGIC
+///
+DCL-PROC {{lowercase ../name}}_change EXPORT;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    detail LIKEDS({{lowercase ../name}}_detail_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  // Variables locales
+  DCL-S ErrorHappened IND;
+  DCL-DS lDetailBefore LIKEDS({{lowercase ../name}}_detail_t);
+  DCL-DS lDetailAfter LIKEDS({{lowercase ../name}}_detail_t);
+  DCL-DS lErrors LIKEDS(GLOBAL_listError);
+  
+  // Initialisation
+  CLEAR errors;
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_change_validation]
+  // Zone manuelle pour validation métier spécifique CHANGE
+  // Exemple: vérification version, verrouillage, etc.
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_change_validation]
+  
+  // Traitement de la modification
+  // Contrôle de l'action
+  CLEAR lDetailBefore;
+  CLEAR lDetailAfter;
+  CLEAR lErrors;
+  
+  // Récupération de l'état avant modification
+  IF NOT {{lowercase ../name}}_getByID_local(id : lDetailBefore : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  lDetailAfter = detail;
+  
+  IF NOT {{lowercase ../name}}_isValid({{lowercase ../name}}_listeAction.modification
+         : lDetailBefore : lDetailAfter : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Modification métier
+  CLEAR lErrors;
+  IF NOT {{lowercase ../name}}_change_local(id : detail : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Finalisation
+  RETURN *ON;
+  
+  ON-EXIT ErrorHappened;
+    IF ErrorHappened;
+      RETURN *OFF;
+    ENDIF;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'DELETE')}}
+///
+// Suppression {{../name}}
+//
+// @param **in** id {{../name}} ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @tag {{../name}}
+// @tag CMAGIC
+///
+DCL-PROC {{lowercase ../name}}_delete EXPORT;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  // Variables locales
+  DCL-S ErrorHappened IND;
+  DCL-DS lDetailBefore LIKEDS({{lowercase ../name}}_detail_t);
+  DCL-DS lDetailAfter LIKEDS({{lowercase ../name}}_detail_t);
+  DCL-DS lErrors LIKEDS(GLOBAL_listError);
+  
+  // Initialisation
+  CLEAR errors;
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_delete_validation]
+  // Zone manuelle pour validation métier spécifique DELETE
+  // Exemple: vérification dépendances, cascade, etc.
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_delete_validation]
+  
+  // Traitement de la suppression
+  // Contrôle de l'action
+  CLEAR lDetailBefore;
+  CLEAR lDetailAfter;
+  CLEAR lErrors;
+  
+  // Récupération de l'état avant suppression
+  IF NOT {{lowercase ../name}}_getByID_local(id : lDetailBefore : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  CLEAR lDetailAfter;
+  
+  IF NOT {{lowercase ../name}}_isValid({{lowercase ../name}}_listeAction.suppression
+         : lDetailBefore : lDetailAfter : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Suppression métier
+  CLEAR lErrors;
+  IF NOT {{lowercase ../name}}_delete_local(id : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Finalisation
+  RETURN *ON;
+  
+  ON-EXIT ErrorHappened;
+    IF ErrorHappened;
+      RETURN *OFF;
+    ENDIF;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'SEARCH')}}
+///
+// Recherche {{../name}}
+//
+// @param **in** criteria {{../name}} search criteria
+// @param **out** resultList list of results
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @tag {{../name}}
+// @tag CMAGIC
+///
+DCL-PROC {{lowercase ../name}}_search EXPORT;
+  DCL-PI *N IND;
+    criteria LIKEDS({{lowercase ../name}}_search_t) CONST;
+    resultList LIKEDS(GLOBAL_List);
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  // Variables locales
+  DCL-S ErrorHappened IND;
+  DCL-DS lErrors LIKEDS(GLOBAL_listError);
+  
+  // Initialisation
+  CLEAR errors;
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_search_validation]
+  // Zone manuelle pour validation critères SEARCH
+  // Exemple: vérification critères, limites, etc.
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_search_validation]
+  
+  // Traitement
+  IF NOT {{lowercase ../name}}_search_local(criteria : resultList : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Finalisation
+  RETURN *ON;
+  
+  ON-EXIT ErrorHappened;
+    IF ErrorHappened;
+      RETURN *OFF;
+    ENDIF;
+END-PROC;
+{{/if}}
+{{/each}}
+
+// ========================================
+// PROCÉDURES DE VALIDATION
+// ========================================
+
+DCL-PROC {{lowercase name}}_isValid EXPORT;
+  DCL-PI *N IND;
+    action LIKE(GLOBAL_codeAction) CONST; // in {{lowercase name}}_listeAction
+    beforeDetail LIKEDS({{lowercase name}}_detail_t) CONST;
+    afterDetail LIKEDS({{lowercase name}}_detail_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  // Variables locales
+  DCL-S ErrorHappened IND;
+  DCL-DS lErrors LIKEDS(GLOBAL_listError);
+  
+  // Initialisation
+  CLEAR lErrors;
+  
+  // [CMAGIC:MANUAL_START:{{lowercase name}}_isValid_implementation]
+  // Zone manuelle pour validation métier personnalisée
+  // Exemple: règles business spécifiques selon l'action
+  // [CMAGIC:MANUAL_END:{{lowercase name}}_isValid_implementation]
+  
+  // Traitement
+  IF NOT {{lowercase name}}_isValid_local(action : beforeDetail : afterDetail : lErrors);
+    errors = lErrors;
+    RETURN *OFF;
+  ENDIF;
+  
+  // Finalisation
+  RETURN *ON;
+  
+  ON-EXIT ErrorHappened;
+    IF ErrorHappened;
+      RETURN *OFF;
+    ENDIF;
+END-PROC;
+
+// ========================================
+// IMPLÉMENTATION INTERNE
+// ========================================
+
+{{#each operations}}
+{{#if (eq this 'CREATE')}}
+// ----------------------------------------
+// CREATE Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase ../name}}_create_local;
+  DCL-PI *N IND;
+    detail LIKEDS({{lowercase ../name}}_detail_t) CONST;
+    id LIKEDS({{lowercase ../name}}_id_t);
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*OFF);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_create_implementation]
+  // TODO: Implémentation CREATE personnalisée
+  //
+  // Exemple d'implémentation :
+  // EXEC SQL
+  //   INSERT INTO {{toUpperCase ../name}}P (
+  //     NAME, EMAIL, CREATED_AT, UPDATED_AT
+  //   ) VALUES (
+  //     :detail.detail.name,
+  //     :detail.detail.email,
+  //     CURRENT_TIMESTAMP,
+  //     CURRENT_TIMESTAMP
+  //   );
+  //
+  // IF SQLSTATE = '00000';
+  //   EXEC SQL VALUES IDENTITY_VAL_LOCAL() INTO :id.id;
+  //   lOK = *ON;
+  // ELSE;
+  //   // Gestion erreur SQL
+  //   GLOBAL_addError(errors : 'CREATE_ERROR' : 'Erreur création {{../name}}');
+  // ENDIF;
+  
+  lOK = *ON; // TODO: Remplacer par vraie implémentation
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_create_implementation]
+  
+  RETURN lOK;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'DISPLAY')}}
+// ----------------------------------------
+// DISPLAY Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase ../name}}_getByID_local;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    detail LIKEDS({{lowercase ../name}}_detail_t);
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*OFF);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_display_implementation]
+  // TODO: Implémentation DISPLAY personnalisée
+  //
+  // Exemple d'implémentation :
+  // EXEC SQL
+  //   SELECT ID, NAME, EMAIL, CREATED_AT, UPDATED_AT
+  //   INTO :detail.detail.id, :detail.detail.name, :detail.detail.email,
+  //        :detail.audit.createdat, :detail.audit.updatedat
+  //   FROM {{toUpperCase ../name}}P
+  //   WHERE ID = :id.id;
+  //
+  // IF SQLSTATE = '00000';
+  //   lOK = *ON;
+  // ELSEIF SQLSTATE = '02000';
+  //   GLOBAL_addError(errors : 'NOT_FOUND' : '{{../name}} non trouvé');
+  // ELSE;
+  //   GLOBAL_addError(errors : 'READ_ERROR' : 'Erreur lecture {{../name}}');
+  // ENDIF;
+  
+  lOK = *ON; // TODO: Remplacer par vraie implémentation
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_display_implementation]
+  
+  RETURN lOK;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'CHANGE')}}
+// ----------------------------------------
+// CHANGE Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase ../name}}_change_local;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    detail LIKEDS({{lowercase ../name}}_detail_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*OFF);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_change_implementation]
+  // TODO: Implémentation CHANGE personnalisée
+  //
+  // Exemple d'implémentation :
+  // EXEC SQL
+  //   UPDATE {{toUpperCase ../name}}P
+  //   SET NAME = :detail.detail.name,
+  //       EMAIL = :detail.detail.email,
+  //       UPDATED_AT = CURRENT_TIMESTAMP
+  //   WHERE ID = :id.id;
+  //
+  // IF SQLSTATE = '00000';
+  //   lOK = *ON;
+  // ELSEIF SQLSTATE = '02000';
+  //   GLOBAL_addError(errors : 'NOT_FOUND' : '{{../name}} non trouvé pour modification');
+  // ELSE;
+  //   GLOBAL_addError(errors : 'UPDATE_ERROR' : 'Erreur modification {{../name}}');
+  // ENDIF;
+  
+  lOK = *ON; // TODO: Remplacer par vraie implémentation
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_change_implementation]
+  
+  RETURN lOK;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'DELETE')}}
+// ----------------------------------------
+// DELETE Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase ../name}}_delete_local;
+  DCL-PI *N IND;
+    id LIKEDS({{lowercase ../name}}_id_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*OFF);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_delete_implementation]
+  // TODO: Implémentation DELETE personnalisée
+  //
+  // Exemple d'implémentation :
+  // EXEC SQL
+  //   DELETE FROM {{toUpperCase ../name}}P
+  //   WHERE ID = :id.id;
+  //
+  // IF SQLSTATE = '00000';
+  //   lOK = *ON;
+  // ELSEIF SQLSTATE = '02000';
+  //   GLOBAL_addError(errors : 'NOT_FOUND' : '{{../name}} non trouvé pour suppression');
+  // ELSE;
+  //   GLOBAL_addError(errors : 'DELETE_ERROR' : 'Erreur suppression {{../name}}');
+  // ENDIF;
+  
+  lOK = *ON; // TODO: Remplacer par vraie implémentation
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_delete_implementation]
+  
+  RETURN lOK;
+END-PROC;
+{{/if}}
+
+{{#if (eq this 'SEARCH')}}
+// ----------------------------------------
+// SEARCH Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase ../name}}_search_local;
+  DCL-PI *N IND;
+    criteria LIKEDS({{lowercase ../name}}_search_t) CONST;
+    resultList LIKEDS(GLOBAL_List);
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*OFF);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase ../name}}_search_implementation]
+  // TODO: Implémentation SEARCH personnalisée
+  //
+  // Exemple d'implémentation :
+  // DCL-DS l{{../name}} LIKEDS({{lowercase ../name}}_detail_t);
+  // 
+  // EXEC SQL
+  //   DECLARE {{lowercase ../name}}_cursor CURSOR FOR
+  //   SELECT ID, NAME, EMAIL, CREATED_AT, UPDATED_AT
+  //   FROM {{toUpperCase ../name}}P
+  //   WHERE NAME LIKE :criteria.name || '%'
+  //   ORDER BY NAME;
+  //
+  // EXEC SQL OPEN {{lowercase ../name}}_cursor;
+  //
+  // DOW SQLSTATE = '00000';
+  //   EXEC SQL FETCH {{lowercase ../name}}_cursor
+  //   INTO :l{{../name}}.detail.id, :l{{../name}}.detail.name, :l{{../name}}.detail.email,
+  //        :l{{../name}}.audit.createdat, :l{{../name}}.audit.updatedat;
+  //        
+  //   IF SQLSTATE = '00000';
+  //     GLOBAL_list_add(resultList : %ADDR(l{{../name}}) : %SIZE({{lowercase ../name}}_detail_t));
+  //   ENDIF;
+  // ENDDO;
+  //
+  // EXEC SQL CLOSE {{lowercase ../name}}_cursor;
+  // lOK = *ON;
+  
+  lOK = *ON; // TODO: Remplacer par vraie implémentation
+  // [CMAGIC:MANUAL_END:{{lowercase ../name}}_search_implementation]
+  
+  RETURN lOK;
+END-PROC;
+{{/if}}
+{{/each}}
+
+// ----------------------------------------
+// Validation Implementation - Internal
+// ----------------------------------------
+DCL-PROC {{lowercase name}}_isValid_local;
+  DCL-PI *N IND;
+    action LIKE(GLOBAL_codeAction) CONST;
+    beforeDetail LIKEDS({{lowercase name}}_detail_t) CONST;
+    afterDetail LIKEDS({{lowercase name}}_detail_t) CONST;
+    errors LIKEDS(GLOBAL_listError);
+  END-PI;
+  
+  DCL-S lOK IND INZ(*ON);
+  
+  // [CMAGIC:MANUAL_START:{{lowercase name}}_isValid_local_implementation]
+  // TODO: Implémentation validation personnalisée
+  //
+  // Exemple d'implémentation selon l'action :
+  // SELECT action;
+  //   WHEN {{lowercase name}}_listeAction.creation;
+  //     // Validation spécifique à la création
+  //     IF afterDetail.detail.name = '';
+  //       GLOBAL_addError(errors : 'REQUIRED_FIELD' : 'Nom requis');
+  //       lOK = *OFF;
+  //     ENDIF;
+  //     
+  //   WHEN {{lowercase name}}_listeAction.modification;
+  //     // Validation spécifique à la modification
+  //     IF beforeDetail.detail.id <> afterDetail.detail.id;
+  //       GLOBAL_addError(errors : 'ID_MISMATCH' : 'ID ne peut être modifié');
+  //       lOK = *OFF;
+  //     ENDIF;
+  //     
+  //   WHEN {{lowercase name}}_listeAction.suppression;
+  //     // Validation spécifique à la suppression
+  //     // Ex: vérifier pas de dépendances
+  //     
+  //   OTHER;
+  //     GLOBAL_addError(errors : 'INVALID_ACTION' : 'Action non supportée');
+  //     lOK = *OFF;
+  // ENDSL;
+  
+  // [CMAGIC:MANUAL_END:{{lowercase name}}_isValid_local_implementation]
+  
+  RETURN lOK;
+END-PROC;
+
+/endif

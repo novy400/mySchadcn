@@ -1,0 +1,56 @@
+meta {
+  name: Get All Employees
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}{{apiPath}}/employees
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+
+  test("Response should be an array", function() {
+    const employees = res.getBody();
+    expect(employees).to.be.an('array');
+  });
+
+  test("X-Total-Count header should be present", function() {
+    const totalCount = res.getHeader('x-total-count');
+    expect(totalCount).to.exist;
+    expect(parseInt(totalCount)).to.be.a('number');
+    expect(parseInt(totalCount)).to.be.greaterThan(0);
+  });
+
+  test("Access-Control-Expose-Headers should include X-Total-Count", function() {
+    const exposeHeaders = res.getHeader('access-control-expose-headers');
+    expect(exposeHeaders).to.contain('X-Total-Count');
+  });
+
+  test("CORS headers should be present", function() {
+    expect(res.getHeader('access-control-allow-origin')).to.exist;
+  });
+
+  test("Each employee should have required fields", function() {
+    const employees = res.getBody();
+    if (employees.length > 0) {
+      const employee = employees[0];
+      expect(employee).to.have.property('id');
+      expect(employee).to.have.property('nom');
+      expect(employee).to.have.property('prenom');
+    }
+  });
+}

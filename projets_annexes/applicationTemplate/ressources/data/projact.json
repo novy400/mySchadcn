@@ -1,0 +1,457 @@
+[
+  {
+    "PROJNO": "AD3100",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3110",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-04-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-02-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3111",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-09-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-02-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1983-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-02-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-08-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-08-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3112",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-08-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-06-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-07-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-04-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-06-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-04-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-09-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-09-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "AD3113",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF1000",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-06-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF1000",
+    "ACTNO": 90,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF1000",
+    "ACTNO": 100,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "ACTNO": 100,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "ACTNO": 100,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "ACTNO": 110,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-03-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "ACTNO": 110,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2100",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2100",
+    "ACTNO": 20,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2110",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2111",
+    "ACTNO": 50,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2111",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-06-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2111",
+    "ACTNO": 40,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2112",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2112",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-07-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2112",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-06-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2112",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2112",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2113",
+    "ACTNO": 60,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-07-15",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2113",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2113",
+    "ACTNO": 70,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-04-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2113",
+    "ACTNO": 80,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "MA2113",
+    "ACTNO": 180,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-10-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP1000",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP1010",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP1010",
+    "ACTNO": 130,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2010",
+    "ACTNO": 10,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2011",
+    "ACTNO": 140,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2011",
+    "ACTNO": 150,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2012",
+    "ACTNO": 140,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2012",
+    "ACTNO": 160,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2013",
+    "ACTNO": 140,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "OP2013",
+    "ACTNO": 170,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  },
+  {
+    "PROJNO": "PL2100",
+    "ACTNO": 30,
+    "ACSTAFF": null,
+    "ACSTDATE": "1982-01-01",
+    "ACENDATE": null
+  }
+]

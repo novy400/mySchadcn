@@ -1,0 +1,72 @@
+**FREE
+
+ctl-opt thread(*CONCURRENT);
+
+
+/include 'routes.rpginc'
+/include 'ileastic/ileastic.rpgle'
+/include 'qusec_h.rpgle'
+
+
+// Note: If you need transaction you should enable the SQL Server Mode : setSqlServerMode();
+
+main();
+*inlr = *on;
+
+
+dcl-proc main;
+  dcl-ds config likeds(il_config);
+
+  config = loadConfig();
+
+  il_addRoute(config : %paddr('champions_web_award_list') : IL_GET : '^/api/award/?$');
+  il_addRoute(config : %paddr('champions_web_country_list') : IL_GET : '^/api/country/?$');
+  il_addRoute(config : %paddr('champions_web_expertise_list') : IL_GET : '^/api/expertise/?$');
+  il_addRoute(config : %paddr('champions_web_champion_search') : IL_GET : '^/api/champion/?$');
+  il_addRoute(config : %paddr('champions_web_champion_get') : IL_GET : '^/api/champion/{id}$');
+  il_addRoute(config : %paddr('champions_web_champion_persist') : IL_POST : '^/api/champion/?$');
+  il_addRoute(config : %paddr('champions_web_champion_delete') : IL_DELETE : '^/api/champion/{id}$');
+  il_addRoute(config : %paddr('champions_web_champion_addAward') : IL_PUT : '^/api/champion/{id}/award/[0-9]+$');
+  il_addRoute(config : %paddr('champions_web_champion_removeAward') : IL_DELETE : '^/api/champion/{id}/award/[0-9]+$');
+  
+  il_listen(config);
+end-proc;
+
+
+dcl-proc loadConfig;
+  dcl-pi *n likeds(il_config) end-pi;
+
+  dcl-ds config likeds(il_config) inz;
+
+  config.port = 35800;
+  config.host = '*ANY';
+
+  return config;
+end-proc;
+
+
+dcl-proc setSqlServerMode;
+  dcl-pr sys_changeJob extpgm('QWTCHGJB');
+    job char(26) const;
+    internalJobId char(16) const;
+    format char(8) const;
+    jobChangeInfo char(1000) const options(*varsize);
+    errorCode likeds(qusec);
+  end-pr;
+  dcl-ds jobc0200 qualified template;
+    numberKeys int(10) inz(1);
+    fieldInfoLength int(10) inz(20);
+    keyField int(10) inz(1922);
+    dataType char(1) inz('C');
+    reserved2 char(3);
+    lengthData int(10) inz(1);
+    data char(1) inz('1');
+    reserved3 char(3);
+  end-ds;
+
+
+  dcl-ds error likeds(qusec) inz;
+  dcl-ds jobData likeds(jobc0200) inz(*likeds);
+
+  sys_changeJob('*' : '' : 'JOBC0200' : jobData : error);
+end-proc;

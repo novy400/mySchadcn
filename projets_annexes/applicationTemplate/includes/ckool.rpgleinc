@@ -1,0 +1,212 @@
+**free
+/if defined(CKOOL_H_DEFINED)       
+/eof                               
+/endif                             
+/define CKOOL_H_DEFINED  
+/include 'global.rpgleinc'
+dcl-c TOOLS_LINEFEED x'0d25';
+dcl-c CKOOL_msgIdError 'CMS0001';
+dcl-c CKOOL_msgIdErrorInconnu 'CMS0002';
+dcl-c CKOOL_msgFile  'PSGMSGF';
+dcl-s CKOOL_longText varchar(65535);
+dcl-s CKOOL_longMessage varchar(1677310);
+dcl-enum CKOOL_listeEvenement qualified;
+  RECHERCHE_DROIT_UTILISATEUR 'HA';
+end-enum;
+
+///                                                                    
+// Affiche un long message à l'écran.                                      
+//                                                                    
+// Cette procédure prend une variable ou une expression
+// en entrée et l'affiche à l'écran sur plusieurs lignes.
+//                                                        
+// @param pMessage le long meessage à afficher.
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-S lMessage like(CKOOL_longMessage);
+//     clear lMessage;
+//     lMessage = 'Write this data ' + %char(toto);
+//     CKOOL_displayLongMessage(lMessage);
+///
+dcl-pr CKOOL_displayLongMessage extproc(*dclcase);                                
+       pMessage like(CKOOL_longMessage) Const;
+end-pr; 
+
+///                                                                    
+// Enregistre un message dans la JobLog.                                      
+//                                                                    
+// Cette procédure prend une variable ou une expression
+// en entrée et l'enregistre dans la joblog.
+//                                                        
+// @param pMessage 
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-dS lMessage like(CKOOL_longText);
+//     clear lMessage;
+//     lMessage = 'Write this data ' + %char(toto);
+//     CKOOL_logMessage(lMessage);
+///
+dcl-pr CKOOL_logMessage extproc(*dclcase);                                
+       pMessage like(CKOOL_longText) Const;
+end-pr; 
+
+///                                                                    
+// Enregistre une erreur  dans la JobLog.                                      
+//                                                                    
+// Cette procédure prend une erreur
+// en entrée et l'enregistre dans la joblog.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-dS lErreur likeDS(errorItem);
+//     clear lErreur;
+//     lErreur.nomZone = 'Code Client';
+//     lErreur.code = 'ERR0002';
+//     lErreur.valeur ='XXXXXX';
+//     lErreur.text = 'Le code client est incorrect';
+//     CKOOL_logError(lErreur);
+///
+dcl-pr CKOOL_logError extproc(*dclcase);                                
+       pError likeDS(errorItem) Const;
+end-pr; 
+
+///                                                                    
+// Affiche une erreur à l'écran.                                      
+//                                                                    
+// Cette procédure prend une erreur
+// en entrée et l'affiche à l'écran.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-S lErreur likeDS(errorItem);
+//     clear lErreur;
+//     lErreur.nomZone = 'Code Client';
+//     lErreur.code = 'ERR0002';
+//     lErreur.valeur ='XXXXXX';
+//     lErreur.text = 'Le code client est incorrect';
+//     CKOOL_displayError(lErreur);
+///
+dcl-pr CKOOL_displayError extproc(*dclcase);                                
+       pError likeDS(errorItem) Const;
+end-pr; 
+
+///                                                                    
+// Enregistre une liste d'erreurs  dans la JobLog.                                      
+//                                                                    
+// Cette procédure prend une liste d'erreurs
+// en entrée et l'enregistre dans la joblog.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-dS lListeErreur likeDS(GLOBAL_listError);
+//     ...
+//     CKOOL_logListError(lListeErreur);
+///
+dcl-pr CKOOL_logListError extproc(*dclcase);                                
+       pListError likeDS(GLOBAL_listError) Const;
+end-pr; 
+
+///                                                                    
+// Affiche une liste d'erreurs à l'écran.                                      
+//                                                                    
+// Cette procédure prend une liste d'erreurs
+// en entrée et l'affiche à l'écran.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-dS lListeErreur likeDS(GLOBAL_listError);
+//     ..
+//     CKOOL_displayListError(lListeErreur);
+///
+dcl-pr CKOOL_displayListError extproc(*dclcase);                                
+       pListError likeDS(GLOBAL_listError) Const;
+end-pr; 
+
+///                                                                    
+// Leve une exception.                                      
+//                                                                    
+// Cette procédure leve une exception.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     Dcl-S lErreur likeDS(errorItem);
+//     clear lErreur;
+//     lErreur.nomZone = 'Code Client';
+//     lErreur.code = 'ERR0002';
+//     lErreur.valeur ='XXXXXX';
+//     lErreur.text = 'Le code client est incorrect';
+//     CKOOL_ThrowError(lErreur);
+///
+dcl-pr CKOOL_throwError extproc(*dclcase);                                
+       pError likeDS(errorItem) Const;
+end-pr; 
+
+///                                                                    
+// Renvoie une exception.                                      
+//                                                                    
+// Cette procédure renvoie une exception.
+//                                                        
+// @param pError l'erreur à enregistrer
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//     CKOOL_resendError();
+///
+dcl-pr CKOOL_resendError extproc(*dclcase);                                
+end-pr; 
+
+///                                                                    
+// assertion.                                      
+//                                                                    
+// Cette procédure évalue une expression 
+// et renvoie un message si ko.
+//                                                        
+// @param pExpression expression à évaluer.
+// @param pMessage Message si ko ! 
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//  CKOOL_assert(Price = *zero
+//              : 'Assertion failed: price is not zero');
+///
+dcl-pr CKOOL_assert extproc(*dclcase);  
+   pExpression  ind value;
+   pMessage like(GLOBAL_longueVariable) value options(*nopass: *trim);
+end-pr;
+
+///                                                                    
+// inscription Evenement.                                      
+//                                                                    
+// Cette procédure journalise un evenement  
+// dans le journal CKOOLJRN.
+//                                                        
+// @param pTypeEvenement  type de l'evenement à inscrire.
+// @param pEvenement  
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//  CKOOL_journaliseEvenement('RECHERCHE_DROIT_UTILISATEUR'
+//: '{"etablissement":"BDX","codeAutorisation":20523,
+//  "utilisateur":"GIYVOVIE","isAutorised":"O"});
+///
+dcl-pr CKOOL_journaliseEvenement extproc(*dclcase);  
+   pTypeEvenement char(2) const;
+   pEvenement like(GLOBAL_longueVariable) const;
+end-pr;
+
+///                                                                    
+// execution commande.                                      
+//                                                                    
+// Cette procédure execute la commande transmise.  
+//                                                        
+// @param pTypeEvenement  type de l'evenement à inscrire.
+// @param pEvenement  
+// @throws 0000 nothing
+// @example Exemple d'appel :
+//  CKOOL_runCommand('OVRDBF FILE(FICHIER) TOFILE(QTEMP/FICHIER)'
+///
+dcl-pr CKOOL_runCommand extproc(*dclcase);  
+   pCommand like(GLOBAL_longueVariable) const;
+end-pr;

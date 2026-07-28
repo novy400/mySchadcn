@@ -1,0 +1,239 @@
+**free
+/if defined(EMPLOYEE_H_DEFINED)       
+/eof                               
+/endif                             
+/define EMPLOYEE_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+dcl-enum employee_listeAction qualified;
+  creation 'create';
+  modification 'update';
+  suppression 'delete';
+  consultation 'read';
+  habilitation 'habilitation';
+end-enum;
+dcl-enum employee_listeGenre qualified;
+  masculin 'M';
+  feminin 'F';
+end-enum;
+dcl-s employee_genre char(1) template;
+
+///
+// Employee ID template
+///
+dcl-ds employee_id_t template qualified;
+  code char(6);
+end-ds;
+
+///
+// Employee Detail template
+///
+dcl-ds employee_detail_t template qualified;
+  dcl-ds id likeDS(employee_id_t);
+  prenom varchar(12);
+  nom varchar(15);
+  initiale char(1);
+  service char(3);
+  dateEmbauche date;
+  dateNaissance date;
+  genre like(employee_genre); //dans l'énumération employee_listeGenre
+  salaire packed(9:2);
+end-ds;
+
+///
+// Employee Detail SQL template
+// Flattened structure for SQL operations (SQL precompiler doesn't support nested DS)
+///
+dcl-ds employee_detail_sql_t template qualified;
+  code like(employee_id_t.code);
+  prenom like(employee_detail_t.prenom);
+  nom like(employee_detail_t.nom);
+  initiale like(employee_detail_t.initiale);
+  service like(employee_detail_t.service);
+  dateEmbauche like(employee_detail_t.dateEmbauche);
+  dateNaissance like(employee_detail_t.dateNaissance);
+  genre like(employee_detail_t.genre);
+  salaire like(employee_detail_t.salaire);
+end-ds;
+
+///
+// Employee List Item template
+///
+dcl-ds employee_item_t template qualified;
+  id likeDS(employee_id_t);
+  prenom like(employee_detail_t.prenom);
+  nom like(employee_detail_t.nom);
+  initiale like(employee_detail_t.initiale);
+  service like(employee_detail_t.service);
+end-ds;
+
+///
+// Employee List Item SQL template
+// Flattened structure for SQL operations
+///
+dcl-ds employee_item_sql_t template qualified;
+  code like(employee_id_t.code);
+  prenom like(employee_detail_t.prenom);
+  nom like(employee_detail_t.nom);
+  initiale like(employee_detail_t.initiale);
+  service like(employee_detail_t.service);
+end-ds;
+
+///
+// Search Employees
+//
+// Returns a paginate list of found Employees 
+//  regarding the search critéria send in the context.
+//
+// @param **in**  context (pagination,sort,filter) critérias
+// @param **out** itemCount count of item found based on filter critérias
+// @param **out** items pointer to the linked list of item Employee
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_search ind extproc(*dclcase);
+   context likeDS(CMAGIC_context) const;
+   totalCount like(CMAGIC_totalCount);
+   items pointer;
+   errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// get detail Employee by ID
+//
+// Returns a detail Employee
+//
+// @param **in**  id Employee ID
+// @param **out** detail Employee detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_getByID ind extproc(*dclcase);
+  id likeDS(employee_id_t) const;
+  detail likeds(employee_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// display  Employee
+//
+// - calls getByID
+// - display the detail Employee on screen
+//
+// @param **in**  id Employee ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_display ind extproc(*dclcase);
+  id likeDS(employee_id_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+///
+// create Employee
+//
+// Returns the id of created Employee
+//
+// @param **in** detail Employee detail
+// @param **out**  id Employee ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_create ind extproc(*dclcase);
+  detail likeds(employee_detail_t) const;
+  id likeDS(employee_id_t);
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// update Employee
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id Employee ID
+// @param **in** detail Employee detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_update ind extproc(*dclcase);
+  id likeDS(employee_id_t) const;
+  detail likeds(employee_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// delete Employee
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id Employee ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_delete ind extproc(*dclcase);
+  id likeDS(employee_id_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// check if sended action is valid for Employee.
+//
+// Returns a list of errors if Employee is not valid for the action
+//
+// @param **in**  action Employee action
+// @param **in** detail Employee detail before action
+// @param **in** detail Employee detail after action
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_isValid ind  extproc(*dclcase);
+   action like(GLOBAL_codeAction) Const; // in employee_listeAction
+   beforeDetail likeds(employee_detail_t) Const;
+   afterDetail likeds(employee_detail_t) Const;
+   errors likeDS(GLOBAL_listError);
+end-pr;
+
+// ========================================
+// Configuration des champs supportés pour Employee
+// ========================================
+
+///
+// Get Employee supported fields configuration
+//
+// Initializes a local supported fields configuration.
+// Pure function with no side effects.
+//
+// @param **out** supportedFields  supported fields array to initialize
+// @tag Employee
+// @tag REST
+// @tag Configuration
+///
+dcl-pr employee_getSupportedFields ind  extproc(*dclcase);
+  supportedFields likeds(CMAGIC_supportedFields);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+

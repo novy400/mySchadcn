@@ -1,0 +1,100 @@
+[
+  {
+    "DEPTNO": "A00",
+    "DEPTNAME": "SPIFFY COMPUTER SERVICE DIV.",
+    "MGRNO": "000010",
+    "ADMRDEPT": "A00",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "B01",
+    "DEPTNAME": "PLANNING",
+    "MGRNO": "000020",
+    "ADMRDEPT": "A00",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "C01",
+    "DEPTNAME": "INFORMATION CENTER",
+    "MGRNO": "000030",
+    "ADMRDEPT": "A00",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "D01",
+    "DEPTNAME": "DEVELOPMENT CENTER",
+    "MGRNO": null,
+    "ADMRDEPT": "A00",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "D11",
+    "DEPTNAME": "MANUFACTURING SYSTEMS",
+    "MGRNO": "000060",
+    "ADMRDEPT": "D01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "D21",
+    "DEPTNAME": "ADMINISTRATION SYSTEMS",
+    "MGRNO": "000070",
+    "ADMRDEPT": "D01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "E01",
+    "DEPTNAME": "SUPPORT SERVICES",
+    "MGRNO": "000050",
+    "ADMRDEPT": "A00",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "E11",
+    "DEPTNAME": "OPERATIONS",
+    "MGRNO": "000090",
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "E21",
+    "DEPTNAME": "SOFTWARE SUPPORT",
+    "MGRNO": "000100",
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "F22",
+    "DEPTNAME": "BRANCH OFFICE F2",
+    "MGRNO": null,
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "G22",
+    "DEPTNAME": "BRANCH OFFICE G2",
+    "MGRNO": null,
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "H22",
+    "DEPTNAME": "BRANCH OFFICE H2",
+    "MGRNO": null,
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "I22",
+    "DEPTNAME": "BRANCH OFFICE I2",
+    "MGRNO": null,
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  },
+  {
+    "DEPTNO": "J22",
+    "DEPTNAME": "BRANCH OFFICE J2",
+    "MGRNO": null,
+    "ADMRDEPT": "E01",
+    "LOCATION": null
+  }
+]

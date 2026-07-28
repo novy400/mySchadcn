@@ -1,0 +1,421 @@
+# Script Complet - Création Nouvelle Entité API
+# Usage: .\scripts\Create-NewEntity.ps1 -EntityName "product" -TableName "PRODUCT"
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$EntityName,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$TableName,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$PluralName,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$IdField,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$IdType = "char(6)",
+    
+    [Parameter(Mandatory=$false)]
+    [string]$BaseBranch = "employee_rest",
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipTests
+)
+
+# Configuration de l'encodage UTF-8 sans BOM
+$ErrorActionPreference = "Stop"
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)  # false = no BOM
+
+# Fonction utilitaire pour écrire des fichiers avec le bon encodage
+function Write-FileUTF8NoBOM {
+    param(
+        [string]$Path,
+        [string]$Content
+    )
+    
+    # Pour PowerShell 5.x, utiliser System.IO.File pour avoir UTF-8 sans BOM
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
+$EntityLower = $EntityName.ToLower()
+$EntityCapital = (Get-Culture).TextInfo.ToTitleCase($EntityLower)
+
+if (-not $PluralName) {
+    $PluralName = if ($EntityLower.EndsWith("y")) {
+        $EntityLower.Substring(0, $EntityLower.Length - 1) + "ies"
+    } elseif ($EntityLower.EndsWith("s") -or $EntityLower.EndsWith("x") -or $EntityLower.EndsWith("ch") -or $EntityLower.EndsWith("sh")) {
+        $EntityLower + "es"
+    } else {
+        $EntityLower + "s"
+    }
+}
+
+if (-not $IdField) {
+    $IdField = $EntityLower + "no"
+}
+
+Write-Host "🚀 Création complète de l'entité API: $EntityCapital" -ForegroundColor Green
+Write-Host "  - Table: $TableName" -ForegroundColor Gray
+Write-Host "  - Routes: /api/$PluralName" -ForegroundColor Gray
+Write-Host "  - ID Field: $IdField ($IdType)" -ForegroundColor Gray
+
+# Étape 1: Vérifications préliminaires
+Write-Host "`n📋 Étape 1: Vérifications préliminaires..." -ForegroundColor Yellow
+
+try {
+    # Vérifier Git
+    git status 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Pas dans un repository Git"
+    }
+
+    # Vérifier que nous avons les scripts nécessaires
+    $scriptsToCheck = @(
+        "scripts\generate_resource.ps1",
+        "src\employee"
+    )
+    
+    foreach ($script in $scriptsToCheck) {
+        if (-not (Test-Path $script)) {
+            throw "Fichier/dossier requis manquant: $script"
+        }
+    }
+    
+    Write-Host "✅ Vérifications OK" -ForegroundColor Green
+}
+catch {
+    Write-Host "❌ Erreur lors des vérifications: $_" -ForegroundColor Red
+    exit 1
+}
+
+# Étape 2: Création de la feature branch
+Write-Host "`n🌿 Étape 2: Création de la feature branch..." -ForegroundColor Yellow
+
+try {
+    # Checkout et pull de la branche de base
+    Write-Host "📥 Mise à jour de $BaseBranch..."
+    git checkout $BaseBranch
+    if ($LASTEXITCODE -ne 0) {
+        throw "Impossible de checkout $BaseBranch"
+    }
+    
+    git pull origin $BaseBranch
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Impossible de pull depuis origin, continuation avec la branche locale"
+    }
+
+    # Créer nouvelle branche feature
+    $featureBranch = "feature/api-$EntityLower"
+    Write-Host "🌟 Création de la branche: $featureBranch"
+    
+    # Vérifier si la branche existe déjà
+    $existingBranch = git branch --list $featureBranch
+    if ($existingBranch) {
+        $response = Read-Host "La branche $featureBranch existe déjà. Continuer? (y/N)"
+        if ($response -ne "y" -and $response -ne "Y") {
+            Write-Host "Opération annulée par l'utilisateur" -ForegroundColor Yellow
+            exit 0
+        }
+        git checkout $featureBranch
+    } else {
+        git checkout -b $featureBranch
+        if ($LASTEXITCODE -ne 0) {
+            throw "Impossible de créer la branche $featureBranch"
+        }
+    }
+    
+    Write-Host "✅ Branche créée/activée: $featureBranch" -ForegroundColor Green
+}
+catch {
+    Write-Host "❌ Erreur lors de la création de branche: $_" -ForegroundColor Red
+    exit 1
+}
+
+# Étape 3: Génération de la structure API
+Write-Host "`n🔧 Étape 3: Génération de la structure API..." -ForegroundColor Yellow
+
+try {
+    $generateParams = @{
+        Name = $EntityName
+        Table = $TableName
+        PluralName = $PluralName
+        IdField = $IdField
+        IdType = $IdType
+    }
+    
+    Write-Host "🔨 Génération avec les paramètres:"
+    $generateParams.GetEnumerator() | ForEach-Object {
+        Write-Host "   $($_.Key): $($_.Value)" -ForegroundColor Gray
+    }
+    
+    & ".\scripts\generate_resource.ps1" @generateParams
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erreur lors de la génération de la ressource"
+    }
+    
+    Write-Host "✅ Structure générée avec succès" -ForegroundColor Green
+}
+catch {
+    Write-Host "❌ Erreur lors de la génération: $_" -ForegroundColor Red
+    exit 1
+}
+
+# Étape 4: Vérification des fichiers générés
+Write-Host "`n📁 Étape 4: Vérification des fichiers générés..." -ForegroundColor Yellow
+
+$expectedFiles = @(
+    "src\$EntityLower\$EntityLower.sqlrpgle",
+    "src\$EntityLower\$EntityLower.rest.sqlrpgle",
+    "src\$EntityLower\$EntityLower.route.sqlrpgle",
+    "src\$EntityLower\$EntityLower.bnd",
+    "includes\$EntityLower.rpgleinc"
+)
+
+$missingFiles = @()
+foreach ($file in $expectedFiles) {
+    if (Test-Path $file) {
+        Write-Host "✅ $file" -ForegroundColor Green
+    } else {
+        Write-Host "❌ $file" -ForegroundColor Red
+        $missingFiles += $file
+    }
+}
+
+if ($missingFiles.Count -gt 0) {
+    Write-Host "⚠️  Fichiers manquants détectés. Continuer quand même? (y/N)" -ForegroundColor Yellow
+    $response = Read-Host
+    if ($response -ne "y" -and $response -ne "Y") {
+        exit 1
+    }
+}
+
+# Étape 5: Création de la documentation
+Write-Host "`n📚 Étape 5: Création de la documentation..." -ForegroundColor Yellow
+
+$readmeContent = @"
+# API $EntityCapital
+
+API REST pour la gestion des $PluralName.
+
+## Routes Disponibles
+
+- ``GET /api/$PluralName`` - Liste des $PluralName avec pagination
+- ``GET /api/$PluralName/{id}`` - Détail d'un $EntityLower
+- ``POST /api/$PluralName`` - Création d'un nouveau $EntityLower
+- ``PUT /api/$PluralName/{id}`` - Modification d'un $EntityLower
+- ``DELETE /api/$PluralName/{id}`` - Suppression d'un $EntityLower
+
+## Paramètres de Requête
+
+### Pagination
+- ``_page`` : Numéro de page (commence à 1)
+- ``_limit`` : Nombre d'éléments par page
+- ``_sort`` : Champ de tri
+- ``_order`` : Ordre de tri (asc/desc)
+
+### Filtres
+- ``$IdField=valeur`` : Filtre exact sur l'ID
+- ``$IdField_like=pattern`` : Recherche par pattern
+- ``q=terme`` : Recherche globale
+
+## Format des Données
+
+### Structure Complète ($EntityLower_detail_t)
+````json
+{
+  "$IdField": "string",
+  // Autres champs selon la table $TableName
+}
+````
+
+### Structure Liste ($EntityLower_item_t)
+````json
+{
+  "$IdField": "string",
+  // Champs essentiels pour l'affichage liste
+}
+````
+
+## Exemples
+
+````bash
+# Récupérer tous les $PluralName
+curl "http://server:44000/api/$PluralName"
+
+# Récupérer avec pagination
+curl "http://server:44000/api/$PluralName?_page=1&_limit=10"
+
+# Récupérer un $EntityLower spécifique
+curl "http://server:44000/api/$PluralName/ID001"
+
+# Créer un nouveau $EntityLower
+curl -X POST "http://server:44000/api/$PluralName" \
+  -H "Content-Type: application/json" \
+  -d '{"field1":"value1","field2":"value2"}'
+````
+
+## Tests
+
+````bash
+# Exécuter les tests
+.\test_$($EntityLower)_api.ps1
+
+# Build sur IBM i
+bob --build src/$EntityLower
+````
+
+## Configuration
+
+Table DB2 : ``$TableName``
+Champ ID : ``$IdField`` ($IdType)
+
+Créé le $(Get-Date -Format "yyyy-MM-dd") avec le générateur ArchiAPI.
+"@
+
+$readmePath = "src\$EntityLower\README.md"
+Write-FileUTF8NoBOM -Path $readmePath -Content $readmeContent
+
+Write-Host "✅ Documentation créée: $readmePath" -ForegroundColor Green
+
+# Étape 6: Création du script de test
+Write-Host "`n🧪 Étape 6: Création du script de test..." -ForegroundColor Yellow
+
+$testScript = @"
+# Test Script pour API $EntityCapital
+# Usage: .\test_$($EntityLower)_api.ps1 -BaseUrl "http://your-server:44000"
+
+param(
+    [string]`$BaseUrl = "http://localhost:44000",
+    [switch]`$Verbose
+)
+
+Write-Host "🧪 Testing $EntityCapital API on `$BaseUrl" -ForegroundColor Yellow
+
+try {
+    # Test 1: Collection
+    Write-Host "`n📋 Test 1: Collection..." -ForegroundColor Cyan
+    `$response = Invoke-RestMethod -Uri "`$BaseUrl/api/$PluralName" -Method Get
+    
+    if (`$response -is [array]) {
+        Write-Host "✅ Collection retourne un tableau: `$(`$response.Count) éléments" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Collection ne retourne pas un tableau" -ForegroundColor Red
+    }
+
+    # Test 2: Header X-Total-Count
+    Write-Host "`n📊 Test 2: Header X-Total-Count..." -ForegroundColor Cyan
+    `$headers = Invoke-WebRequest -Uri "`$BaseUrl/api/$PluralName" -Method Head
+    `$totalCount = `$headers.Headers["X-Total-Count"]
+    
+    if (`$totalCount) {
+        Write-Host "✅ Header X-Total-Count présent: `$totalCount" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Header X-Total-Count manquant" -ForegroundColor Red
+    }
+
+    # Test 3: Pagination
+    Write-Host "`n📄 Test 3: Pagination..." -ForegroundColor Cyan
+    `$paged = Invoke-RestMethod -Uri "`$BaseUrl/api/$PluralName?_page=1&_limit=5" -Method Get
+    Write-Host "✅ Pagination: `$(`$paged.Count) éléments dans la page 1" -ForegroundColor Green
+
+    # Test 4: Tri
+    Write-Host "`n🔤 Test 4: Tri..." -ForegroundColor Cyan
+    `$sorted = Invoke-RestMethod -Uri "`$BaseUrl/api/$PluralName?_sort=$IdField&_order=asc" -Method Get
+    Write-Host "✅ Tri par $(IdField): `$(`$sorted.Count) éléments" -ForegroundColor Green
+
+    Write-Host "`n🎉 Tous les tests de base sont passés!" -ForegroundColor Green
+    Write-Host "⚠️  N'oubliez pas de tester les endpoints POST/PUT/DELETE manuellement" -ForegroundColor Yellow
+
+} catch {
+    Write-Host "`n❌ Erreur durant les tests: `$_" -ForegroundColor Red
+    Write-Host "💡 Vérifiez que le service ILEastic est démarré et accessible" -ForegroundColor Yellow
+}
+"@
+
+$testScriptPath = "test_$($EntityLower)_api.ps1"
+Write-FileUTF8NoBOM -Path $testScriptPath -Content $testScript
+
+Write-Host "✅ Script de test créé: $testScriptPath" -ForegroundColor Green
+
+# Étape 7: Commit initial
+Write-Host "`n💾 Étape 7: Commit initial..." -ForegroundColor Yellow
+
+try {
+    git add -A
+    
+    $commitMessage = @"
+feat(api): implement $EntityCapital REST API
+
+- Add complete $EntityCapital resource structure
+- Support standard REST operations (CRUD)
+- Routes: /api/$PluralName
+- Table: $TableName (ID: $IdField)
+- Compatible with React-Admin data provider
+- Includes test script and documentation
+
+Generated with ArchiAPI entity generator
+"@
+
+    git commit -m $commitMessage
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Commit créé avec succès" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  Aucun changement à commiter ou erreur" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "❌ Erreur lors du commit: $_" -ForegroundColor Red
+}
+
+# Étape 8: Tests rapides (optionnel)
+if (-not $SkipTests) {
+    Write-Host "`n🔍 Étape 8: Tests de validation des fichiers..." -ForegroundColor Yellow
+    
+    # Vérifier la syntaxe des fichiers générés
+    $rpgleFiles = Get-ChildItem "src\$EntityLower\*.sqlrpgle", "src\$EntityLower\*.rpgle" -ErrorAction SilentlyContinue
+    
+    foreach ($file in $rpgleFiles) {
+        if (Select-String -Path $file.FullName -Pattern "TODO|FIXME|PLACEHOLDER" -Quiet) {
+            Write-Host "⚠️  Le fichier $($file.Name) contient des TODO/FIXME à compléter" -ForegroundColor Yellow
+        } else {
+            Write-Host "✅ $($file.Name) semble complet" -ForegroundColor Green
+        }
+    }
+}
+
+# Étape 9: Résumé et prochaines étapes
+Write-Host "`n🎉 CRÉATION TERMINÉE AVEC SUCCÈS!" -ForegroundColor Green
+Write-Host "===========================================" -ForegroundColor Green
+
+Write-Host "`n📋 Résumé:" -ForegroundColor White
+Write-Host "  ✅ Branche créée: feature/api-$EntityLower" -ForegroundColor Gray
+Write-Host "  ✅ Structure API générée dans: src\$EntityLower\" -ForegroundColor Gray
+Write-Host "  ✅ Prototypes créés dans: includes\$EntityLower.rpgleinc" -ForegroundColor Gray
+Write-Host "  ✅ Documentation: src\$EntityLower\README.md" -ForegroundColor Gray
+Write-Host "  ✅ Script de test: $testScriptPath" -ForegroundColor Gray
+Write-Host "  ✅ Commit initial effectué" -ForegroundColor Gray
+
+Write-Host "`n🚀 Prochaines étapes:" -ForegroundColor White
+Write-Host "  1. Adapter les structures dans includes\$EntityLower.rpgleinc selon votre table" -ForegroundColor Yellow
+Write-Host "  2. Modifier les requêtes SQL dans src\$EntityLower\$EntityLower.sqlrpgle" -ForegroundColor Yellow
+Write-Host "  3. Intégrer les routes dans src\main\main.sqlrpgle" -ForegroundColor Yellow
+Write-Host "  4. Build sur IBM i: bob --build src/$EntityLower" -ForegroundColor Yellow
+Write-Host "  5. Tester avec: .\$testScriptPath" -ForegroundColor Yellow
+Write-Host "  6. Push et créer une Pull Request" -ForegroundColor Yellow
+
+Write-Host "`n📚 Documentation de référence:" -ForegroundColor White
+Write-Host "  - GUIDE_CREATION_NOUVELLE_ENTITE.md (ce guide)" -ForegroundColor Gray
+Write-Host "  - ressources\docs\copilotInstructions\ibmi_rest_api_instructions.md" -ForegroundColor Gray
+Write-Host "  - src\employee\ (modèle de référence)" -ForegroundColor Gray
+
+Write-Host "`n💡 Commandes utiles:" -ForegroundColor White
+Write-Host "  git push -u origin feature/api-$EntityLower  # Push de la branche" -ForegroundColor Gray
+Write-Host "  .\$testScriptPath                            # Test de l'API" -ForegroundColor Gray
+Write-Host "  bob --build src/$EntityLower                  # Build sur IBM i" -ForegroundColor Gray
+
+Write-Host "`nBonne continuation! 🚀" -ForegroundColor Green

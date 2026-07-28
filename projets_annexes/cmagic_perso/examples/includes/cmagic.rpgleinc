@@ -1,0 +1,71 @@
+**free
+/if defined(CMAGIC_H_DEFINED)       
+/eof                               
+/endif                             
+/define CMAGIC_H_DEFINED  
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+
+// Constantes
+dcl-c CMAGIC_DEFAULT_LIMIT 10;
+dcl-c CMAGIC_MAX_FILTERS 20;
+dcl-c CMAGIC_MAX_SORTS 10;
+dcl-c CMAGIC_MAX_SUPPORTED_FIELDS 50;
+// Opérateurs supportés pour les filtres
+dcl-c CMAGIC_OP_EQUAL '=';
+dcl-c CMAGIC_OP_NOT_EQUAL '<>';
+dcl-c CMAGIC_OP_LIKE 'LIKE';
+dcl-c CMAGIC_OP_GREATER '>';
+dcl-c CMAGIC_OP_GREATER_EQUAL '>=';
+dcl-c CMAGIC_OP_LESS '<';
+dcl-c CMAGIC_OP_LESS_EQUAL '<=';
+
+// Variables globales
+dcl-s CMAGIC_totalCount int(10);
+dcl-s CMAGIC_items pointer;
+
+// Structure de pagination
+dcl-ds CMAGIC_pagination template qualified;
+   numPage int(10); // Numéro de page (commence à 1)
+   perPage int(10); // Éléments par page
+end-ds;
+
+// Structure de tri
+dcl-ds CMAGIC_sort template qualified;
+   field char(32); // Nom du champ à trier
+   order char(32); // ASC ou DESC
+end-ds;
+
+// Structure de filtre
+dcl-ds CMAGIC_filter template qualified;
+   field char(32);      // Nom du champ
+   operator char(10);   // =, <>, LIKE, >=, <=, >, <
+   value char(100);     // Valeur du filtre
+end-ds;
+
+
+// Context global (pagination + tri + filtres)
+dcl-ds CMAGIC_context template qualified;
+  dcl-ds pagination likeDS(CMAGIC_pagination);
+  dcl-ds sort likeDS(CMAGIC_sort) dim(CMAGIC_MAX_SORTS);
+  dcl-ds filter likeDS(CMAGIC_filter) dim(CMAGIC_MAX_FILTERS);
+end-ds;
+
+// Structure des champs filtre
+dcl-enum CMAGIC_typeChamp qualified;
+  CHARACTER 'C';
+  NUMERIC 'N';
+  DATE 'D';
+end-enum;
+
+dcl-ds CMAGIC_supportedField template qualified;
+   name char(32);      // Nom du champ
+   sqlField char(32);   // Nom du champ SQL
+   dataType char(1);   // Type de données (char, int, date, etc.)
+end-ds;
+
+dcl-ds CMAGIC_supportedFields template qualified;
+    dcl-ds supportedFields likeDS(CMAGIC_supportedField) dim(CMAGIC_MAX_SUPPORTED_FIELDS);
+end-ds;

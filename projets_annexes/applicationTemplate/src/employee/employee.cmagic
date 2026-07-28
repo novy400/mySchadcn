@@ -1,0 +1,79 @@
+// 1. Définir la structure de la clé composite
+struct EmployeeId {
+    /** @source(db: 'EMPLOYEE.EMPNO') */
+    code: String(6) required,
+}
+
+enum ListeGenre {
+    masculin: 'M',
+    feminin: 'F'
+}
+
+enum EmployeeStatus {
+    ACTIVE,
+    SUSPENDED,
+    TERMINATED
+}
+
+// 2. Utiliser cette structure comme type dans l'entité
+/** 
+ * Entité Catalogue : Employé 
+ * @objectType '*FILE'
+ * @objectSubType 'PF'
+ * @table(name: 'EMPLOYEE') 
+ */
+entity Employee {
+    id: EmployeeId, // 'id' est de type EmployeeId, il contient 'code'
+    /** @source(db: 'EMPLOYEE.FIRSTNME') */
+    prenom: String(12) required,
+    /** @source(db: 'EMPLOYEE.LASTNAME') */
+    nom: String(15) required,
+    /** @source(db: 'EMPLOYEE.MIDINIT') */ 
+    initiale: String(1),
+    /** @source(db: 'EMPLOYEE.WORKDEPT') */
+    idService: String(3),
+    /** @source(db: 'EMPLOYEE.PHONENO') */
+    numeroTelephone: String(4),
+    /** @source(db: 'EMPLOYEE.HIREDATE') */ 
+    dateEmbauche: date,
+    /** @source(db: 'EMPLOYEE.JOB') */
+    profession: String(8),
+    /** @source(db: 'EMPLOYEE.EDLEVEL') */
+    niveau: Integer,
+    /** @source(db: 'EMPLOYEE.BIRTHDATE') */
+    dateNaissance: date,
+    /** @source(db: 'EMPLOYEE.SEX') */
+    genre: ListeGenre required,
+    /** @source(db: 'EMPLOYEE.SALARY') */
+    salaire: Decimal(9, 2),
+    /** @source(db: 'EMPLOYEE.BONUS') */
+    prime: Decimal(9, 2), 
+    /** @source(db: 'EMPLOYEE.COMM') */
+    commission: Decimal(9, 2),
+}
+
+// 4. On définit les opérations standardisées pour cette entité
+operations for Employee {
+    // Génère un formulaire de création
+    CREATE, 
+    
+    // Génère un formulaire d'édition
+    CHANGE, 
+    
+    // Génère une fonction de suppression
+    DELETE, 
+    
+    // Génère un écran de consultation non-modifiable
+    DISPLAY,
+    
+    // C'est le pattern clé : génère un écran de liste/recherche
+    // avec des actions sur chaque ligne.
+    WORK_WITH {
+        // Champs à afficher dans la liste (le subfile)
+        list_columns(id, prenom, nom, initiale, idService),
+        // Actions possibles depuis une ligne de la liste
+        row_actions(CREATE, CHANGE, DELETE, DISPLAY),
+        // Champs sur lesquels on peut filtrer
+        filters(id, prenom, nom, initiale, idService)
+    }
+}

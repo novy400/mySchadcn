@@ -1,0 +1,92 @@
+[
+  {
+    "ACTNO": 10,
+    "ACTKWD": "MANAGE",
+    "ACTDESC": "MANAGE/ADVISE"
+  },
+  {
+    "ACTNO": 20,
+    "ACTKWD": "ECOST",
+    "ACTDESC": "ESTIMATE COST"
+  },
+  {
+    "ACTNO": 30,
+    "ACTKWD": "DEFINE",
+    "ACTDESC": "DEFINE SPECS"
+  },
+  {
+    "ACTNO": 40,
+    "ACTKWD": "LEADPR",
+    "ACTDESC": "LEAD PROGRAM/DESIGN"
+  },
+  {
+    "ACTNO": 50,
+    "ACTKWD": "SPECS",
+    "ACTDESC": "WRITE SPECS"
+  },
+  {
+    "ACTNO": 60,
+    "ACTKWD": "LOGIC",
+    "ACTDESC": "DESCRIBE LOGIC"
+  },
+  {
+    "ACTNO": 70,
+    "ACTKWD": "CODE",
+    "ACTDESC": "CODE PROGRAMS"
+  },
+  {
+    "ACTNO": 80,
+    "ACTKWD": "TEST",
+    "ACTDESC": "TEST PROGRAMS"
+  },
+  {
+    "ACTNO": 90,
+    "ACTKWD": "ADMQS",
+    "ACTDESC": "ADM QUERY SYSTEM"
+  },
+  {
+    "ACTNO": 100,
+    "ACTKWD": "TEACH",
+    "ACTDESC": "TEACH CLASSES"
+  },
+  {
+    "ACTNO": 110,
+    "ACTKWD": "COURSE",
+    "ACTDESC": "DEVELOP COURSES"
+  },
+  {
+    "ACTNO": 120,
+    "ACTKWD": "STAFF",
+    "ACTDESC": "PERS AND STAFFING"
+  },
+  {
+    "ACTNO": 130,
+    "ACTKWD": "OPERAT",
+    "ACTDESC": "OPER COMPUTER SYS"
+  },
+  {
+    "ACTNO": 140,
+    "ACTKWD": "MAINT",
+    "ACTDESC": "MAINT SOFTWARE SYS"
+  },
+  {
+    "ACTNO": 150,
+    "ACTKWD": "ADMSYS",
+    "ACTDESC": "ADM OPERATING SYS"
+  },
+  {
+    "ACTNO": 160,
+    "ACTKWD": "ADMDB",
+    "ACTDESC": "ADM DATA BASES"
+  },
+  {
+    "ACTNO": 170,
+    "ACTKWD": "ADMDC",
+    "ACTDESC": "ADM DATA COMM"
+  },
+  {
+    "ACTNO": 180,
+    "ACTKWD": "DOC",
+    "ACTDESC": "DOCUMENT"
+  }
+]

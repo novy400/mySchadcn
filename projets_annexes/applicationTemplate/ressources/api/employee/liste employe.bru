@@ -1,0 +1,22 @@
+meta {
+  name: liste employe
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://cmspw7t:10074/api/employees?_page=1&_limit=10&_sort=id&_order=ASC"
+  body: none
+  auth: none
+}
+
+query {
+  _page: 1
+  _limit: 10
+  _sort: id
+  _order: ASC"
+}
+
+headers {
+  Accept: application/json
+}

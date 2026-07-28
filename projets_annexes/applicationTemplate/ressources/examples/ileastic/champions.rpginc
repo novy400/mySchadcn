@@ -1,0 +1,13 @@
+**FREE
+
+/if defined (CHAMPIONS)
+/eof
+/endif
+
+/define CHAMPIONS
+
+
+/include 'award.rpginc'
+/include 'champion.rpginc'
+/include 'country.rpginc'
+/include 'expertise.rpginc'

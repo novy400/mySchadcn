@@ -1,0 +1,45 @@
+// 1. Définir la structure de la clé composite
+struct EmployeeId {
+    code: String(6) required,
+}
+enum ListeGenre {
+    M,
+    F 
+}
+// 2. Utiliser cette structure comme type dans l'entité
+entity Employee {
+    id: EmployeeId, // 'id' est de type EmployeeId, il contient 'code' et 'departement'
+    prenom: String(12) required,
+    nom: String(15) required,
+    initiale: String(1),
+    service: String(3),
+    dateEmbauche: date,
+    dateNaissance: date,
+    genre: ListeGenre required,
+    salaire: Decimal(9, 2) 
+}
+// On définit les opérations standardisées pour cette entité
+operations for Employee {
+    // Génère un formulaire de création
+    CREATE, 
+    
+    // Génère un formulaire d'édition
+    CHANGE, 
+    
+    // Génère une fonction de suppression
+    DELETE, 
+    
+    // Génère un écran de consultation non-modifiable
+    DISPLAY,
+    
+    // C'est le pattern clé : génère un écran de liste/recherche
+    // avec des actions sur chaque ligne.
+    WORK_WITH {
+        // Champs à afficher dans la liste (le subfile)
+        list_columns(id,prenom,nom,initiale,service),
+        // Actions possibles depuis une ligne de la liste
+        row_actions(CHANGE, DELETE, DISPLAY),
+        // Champs sur lesquels on peut filtrer
+        filters(id,prenom,nom, service)
+    }
+}

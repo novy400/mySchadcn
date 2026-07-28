@@ -1,0 +1,5 @@
+entity BooleanTest {
+    id: Int required
+    isActive: Boolean default (true)
+    isDeleted: Boolean default (false)
+}

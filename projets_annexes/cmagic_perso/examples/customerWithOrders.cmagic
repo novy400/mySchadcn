@@ -1,0 +1,54 @@
+// Fichier : customerWithOrders.cmagic
+// Description : Customer et CustomerOrder ensemble pour tester les FK
+
+// Structure réutilisable pour adresse
+struct Address {
+    ligne1: String(50) required,
+    ligne2: String(50),
+    codePostal: String(10) required,
+    ville: String(50) required,
+    pays: String(3) default("FR")
+}
+
+// Énumération pour statut client
+enum CustomerStatus {
+    ACTIVE,      // Client actif
+    INACTIVE,    // Client inactif
+    SUSPENDED    // Client suspendu
+}
+
+// Énumération pour statut commande
+enum OrderStatus {
+    DRAFT,       // Brouillon
+    CONFIRMED,   // Confirmée
+    SHIPPED,     // Expédiée
+    DELIVERED    // Livrée
+}
+
+// Entité Customer
+entity Customer {
+    id: Int required,                           // Clé primaire auto-increment
+    code: String(10) required unique,           // Code client unique
+    name: String(80) required,                  // Raison sociale
+    address: Address required,                  // Adresse complète
+    phone: String(20),                         // Téléphone
+    email: String(100),                        // Email
+    status: CustomerStatus default(ACTIVE),     // Statut client
+    creationDate: Date required,               // Date de création
+    creditLimit: Decimal(15,2) default(0),    // Limite de crédit
+    isVip: Boolean default(false)              // Client VIP
+}
+
+// Entité CustomerOrder avec FK vers Customer
+entity CustomerOrder {
+    id: Int required,                                // Clé primaire auto-increment
+    orderNumber: String(20) required unique,         // Numéro de commande unique
+    customerId: Int required,                        // FK vers Customer.id
+    orderDate: Date required,                        // Date de commande
+    deliveryDate: Date,                              // Date de livraison prévue
+    status: OrderStatus default(DRAFT),              // Statut de la commande
+    totalAmount: Decimal(15,2) default(0),          // Montant total
+    taxAmount: Decimal(15,2) default(0),            // Montant TVA
+    notes: String(500),                              // Notes/commentaires
+    isUrgent: Boolean default(false)                 // Commande urgente
+}

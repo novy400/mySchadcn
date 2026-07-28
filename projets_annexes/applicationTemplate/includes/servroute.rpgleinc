@@ -1,0 +1,54 @@
+**free
+/if defined(servroute_H_DEFINED)       
+/eof                               
+/endif                             
+/define servroute_H_DEFINED  
+
+// ------------------------------------------------------------------//
+// Service Route Interface Definitions                             //
+// Mirror of emprest.rpgleinc for Route setup procedures            //
+// ------------------------------------------------------------------//
+
+// Route patterns
+  dcl-ds servroute_patterns;
+  *N varchar(100) inz('^/api/services/?$');
+  *N varchar(100) inz('^/api/services/([0-9A-Za-z]+)$');
+  *N varchar(100) inz('^/api/services/health$');
+  *N varchar(100) inz('^/api/services/docs$');
+  *N varchar(100) inz('^/api/services/.*$');
+  servroute_supportedPatterns varchar(100) dim(5) pos(1);
+end-ds;
+
+///
+// Setup service routes
+//
+// Configures all service-related routes in the ILEastic configuration.
+// Sets up CRUD endpoints compatible with React Admin data provider.
+//
+// @param **in/out** config  ILEastic configuration object
+// @return void
+// @tag Service
+// @tag Route
+// @tag CMAGIC
+///
+dcl-pr service_setupRoutes extproc(*dclcase);
+  config likeds(il_config);
+end-pr;
+
+///
+// Register complete service API
+//
+// Registers all service endpoints and routes in the ILEastic configuration.
+// Includes logging and setup of all CRUD operations.
+//
+// @param **in/out** config  ILEastic configuration object
+// @return void
+// @tag Service
+// @tag Route
+// @tag CMAGIC
+///
+dcl-pr service_registerAPI extproc(*dclcase);
+  config likeds(il_config);
+end-pr;
+
+

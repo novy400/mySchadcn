@@ -1,0 +1,33 @@
+**free
+/if defined(CIWS_H_DEFINED)
+/eof
+/endif
+/define CIWS_H_DEFINED
+
+// Include des dépendances
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ------------------------------------------------------------
+// Constantes privées
+// ------------------------------------------------------------
+dcl-c CIWS_MAX_QUERY_STRING 4096;
+dcl-c CIWS_MAX_PARAM_NAME    128;
+dcl-c CIWS_MAX_PARAM_VALUE  1024;
+// ========================================
+// CIWS - CMAGIC IWS Adapter
+// API publique minimale du service program
+// Adaptation IWS -> QUERY_STRING -> CMAGIC_context
+// ========================================
+
+///
+// Initialize request processing from IWS transport metadata
+//
+// Reads QUERY_STRING from environment, parses supported query parameters,
+// and fills a CMAGIC_context compatible with CMAGIC/service layers.
+///
+dcl-pr CIWS_initRestRequest ind extproc(*dclcase);
+  supportedFields likeDS(CMAGIC_supportedFields) const;
+  context         likeDS(CMAGIC_context);
+  errors          likeDS(GLOBAL_listError);
+end-pr;

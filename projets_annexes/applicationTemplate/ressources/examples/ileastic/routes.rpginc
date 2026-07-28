@@ -1,0 +1,53 @@
+**FREE
+
+/if defined (CHAMPIONS_ROUTES)
+/eof
+/endif
+
+/define CHAMPIONS_ROUTES
+
+
+dcl-pr champions_web_expertise_list extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_country_list extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_award_list extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_search extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_get extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_persist extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_delete extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_addAward extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;
+
+dcl-pr champions_web_champion_removeAward extproc(*dclcase);
+  request  likeds(il_request);
+  response likeds(il_response);
+end-pr;

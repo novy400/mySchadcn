@@ -1,0 +1,115 @@
+**free
+/if defined(EMPREST_H_DEFINED)       
+/eof                               
+/endif                             
+/define EMPREST_H_DEFINED  
+/include 'employee.rpgleinc'
+
+// ------------------------------------------------------------------//
+// Employee REST API Interface Definitions                          //
+// Mirror of employee.rpgleinc for REST API procedures              //
+// ------------------------------------------------------------------//
+
+
+dcl-ds employee_detail_rest_t qualified;
+  id like(employee_id_t.code);
+  prenom like(employee_detail_t.prenom);
+  nom like(employee_detail_t.nom);
+  initiale like(employee_detail_t.initiale);
+  idService like(employee_detail_t.idService);
+  numeroTelephone like(employee_detail_t.numeroTelephone);
+  dateEmbauche like(employee_detail_t.dateEmbauche);
+  profession like(employee_detail_t.profession);
+  dateNaissance like(employee_detail_t.dateNaissance);
+  genre like(employee_detail_t.genre);
+  salaire like(employee_detail_t.salaire);
+  prime like(employee_detail_t.prime);
+  commission like(employee_detail_t.commission);
+end-ds;
+
+///
+// Get list of employees (REST endpoint)
+//
+// REST endpoint for searching employees with pagination and filtering.
+// Compatible with React Admin data provider.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic  
+// @return void
+// @tag Employee
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr employee_getlist_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Get employee detail by ID (REST endpoint)
+//
+// REST endpoint for retrieving a single employee by ID.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Employee
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr employee_getone_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Create new employee (REST endpoint)
+//
+// REST endpoint for creating a new employee from JSON data.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Employee
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr employee_create_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Update employee (REST endpoint)
+//
+// REST endpoint for updating an existing employee with JSON data.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Employee
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr employee_update_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Delete employee (REST endpoint)
+//
+// REST endpoint for deleting an employee by ID.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Employee
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr employee_delete_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+

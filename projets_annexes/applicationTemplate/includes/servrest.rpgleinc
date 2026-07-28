@@ -1,0 +1,108 @@
+**free
+/if defined(SERVREST_H_DEFINED)       
+/eof                               
+/endif                             
+/define SERVREST_H_DEFINED  
+/include 'service.rpgleinc'
+
+// ------------------------------------------------------------------//
+// Service REST API Interface Definitions                           //
+// Mirror of service.rpgleinc for REST API procedures              //
+// ------------------------------------------------------------------//
+
+
+dcl-ds service_detail_rest_t qualified;
+  id like(service_id_t.code);
+  nom like(service_detail_t.nom);
+  idManageur like(employee_id_t.code);
+  idServiceAdmin like(service_id_t.code);
+  site like(service_detail_t.site);
+
+end-ds;
+
+///
+// Get list of services (REST endpoint)
+//
+// REST endpoint for searching services with pagination and filtering.
+// Compatible with React Admin data provider.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic  
+// @return void
+// @tag Service
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr service_getlist_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Get service detail by ID (REST endpoint)
+//
+// REST endpoint for retrieving a single service by ID.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Service
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr service_getone_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Create new service (REST endpoint)
+//
+// REST endpoint for creating a new service from JSON data.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Service
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr service_create_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Update service (REST endpoint)
+//
+// REST endpoint for updating an existing service with JSON data.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Service
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr service_update_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+
+///
+// Delete employee (REST endpoint)
+//
+// REST endpoint for deleting an employee by ID.
+//
+// @param **in**  request  HTTP request object from ILEastic
+// @param **out** response HTTP response object from ILEastic
+// @return void
+// @tag Service
+// @tag REST
+// @tag CMAGIC
+///
+dcl-pr service_delete_rest extproc(*dclcase);
+  request likeds(IL_request);
+  response likeds(IL_response);
+end-pr;
+

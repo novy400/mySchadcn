@@ -1,0 +1,279 @@
+     A*%%TS  SD  20251210  121005  GIYVOVIE    REL-V7R4M0  5770-WDS
+     A**************************************************************************
+     A**** Gestion des dates de figement des contrats - DSPF *******
+     A**************************************************************************
+     A*%%EC
+     A                                      DSPSIZ(27 132 *DS4)
+     A                                      REF(*LIBL/CONTFIGDAV)
+     A                                      PRINT
+     A                                      INDARA
+     A                                      CA03(03)
+     A                                      CF05(05)
+     A                                      CF06(06)
+     A                                      CF12(12)
+     A                                      CF09(09)
+     A                                      CF10(10)
+     A                                      CF04(04)
+     A**************************************************************************
+     A          R BASPAGE
+     A                                      OVERLAY
+     A            TFONCTIONS   125A  O 26  2COLOR(BLU)
+     A            MSGERR       125A  O 27  2COLOR(RED)
+     A N99                                  DSPATR(ND)
+     A                                      MSGID(&WMSG CONTFIGDAT)
+     A            WMSG           7A  P
+     A**************************************************************************
+     A          R SFL01                     SFL
+     A*%%TS  SD  20240701  120904  GIYVOVIE    REL-V7R4M0  5770-WDS
+     A                                      KEEP
+     A            CHOIX          1A  B  9  2
+     A  37                                  DSPATR(PC)
+     A  37                                  DSPATR(RI)
+     A  39                                  DSPATR(PR)
+     A  39                                  DSPATR(ND)
+     *********************************************************************
+     **** TODO: 1.  Add the fields to the SFL record format.
+     *********************************************************************
+     A            ID        R        H      REFFLD(ID)
+     A            CODCLI    R        O  9  6REFFLD(CODCLI)
+     A                                      ALIAS(NUMEROCLIENT)
+     A                                      EDTCDE(4)
+     A            NOMCLI    R        O  9 14REFFLD(NOMCLI)
+     A                                      ALIAS(NOMCLIENT)
+     A            NUMCON    R        O  9 54REFFLD(NUMCON)
+     A                                      ALIAS(NUMEROCONTRAT)
+     A                                      EDTCDE(4)
+     A            POSCON    R        O  9 64REFFLD(POSCON)
+     A                                      ALIAS(POSITIONCONTRAT)
+     A            DAECON    R        O  9 68REFFLD(DAECON)
+     A                                      ALIAS(DATEECHEANCECONTRAT)
+     A            MNTCON    R        O  9 80REFFLD(MNTCON)
+     A                                      ALIAS(MONTANTCONTRAT)
+     A            OPPCON    R        O  9 94REFFLD(OPPCON)
+     A                                      ALIAS(CODEOPPOSITION)
+     A            DATFIG    R        O  9100REFFLD(DATFIG)
+     A                                      ALIAS(DATEFIGEMENT)
+     A                                      DATFMT(*ISO)
+     A            MOTIF     R   20   O  9111REFFLD(MOTIF)
+     *********************************************************************
+     **** ENDTODO:
+     *********************************************************************
+
+     A**************************************************************************
+     A          R CTL01                     SFLCTL(SFL01)
+     A*%%TS  SD  20251210  121005  GIYVOVIE    REL-V7R4M0  5770-WDS
+     A                                      SFLSIZ(0017)
+     A                                      SFLPAG(0016)
+     A N33                                  ROLLUP(35)
+     A                                      RTNCSRLOC(&REC &FLD)
+     A                                      BLINK
+     A                                      OVERLAY
+     A                                      SFLCSRRRN(&GRTRNG)
+     A  30                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  33                                  SFLEND(*MORE)
+     A            GRTRNG         5S 0H
+     A            POSPAGE        4S 0H      SFLRCDNBR(CURSOR)
+     A            REC           10A  H
+     A            FLD           10A  H
+     A            LIG            3S 0H
+     A            COL            3S 0H
+     A            ID        R        H      REFFLD(ID)
+     A            $NOMPGM       10A  O  1  2
+     A                                  1 38'Gestion des dates de figement de c-
+     A                                      ontrat'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            ENVIRONMNT    10A  O  1 86
+     A                                  1125DATE
+     A                                      EDTCDE(Y)
+     A                                      COLOR(BLU)
+     A                                  2  2USER
+     A            NOMETA        38A  O  2 14
+     A            MODE          20A  O  2 86DSPATR(RI)
+     A                                      COLOR(PNK)
+     A                                  2125TIME
+     A                                      COLOR(BLU)
+     A            NOMAGE        38A  O  3 14
+     A                                  3125SYSNAME
+     A                                      DSPATR(HI)
+     A                                      COLOR(RED)
+     A                                  4  4'2=Modifier'
+     A                                      COLOR(BLU)
+     A                                  4 15'4=Supprimer'
+     A                                      COLOR(BLU)
+     A                                  4 27'5=Consulter'
+     A                                      COLOR(BLU)
+     A                                  6  6'Client                            -
+     A                                                  '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  6 54'Contrat                           -
+     A                                               '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  6100'Figement                       '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  7  6'N°      Nom                       -
+     A                                                  '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  7 54'N°        Pos Dt Ech.     Montant -
+     A                                            Opp'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  7100'Date       MOTIF               '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            CODCLI    R        B  8  6REFFLD(CODCLI)
+     A                                      ALIAS(NUMEROCLIENT)
+     A                                      EDTCDE(4)
+     A            NOMCLI    R        B  8 14REFFLD(NOMCLI)
+     A                                      ALIAS(NOMCLIENT)
+     A            NUMCON    R        B  8 54REFFLD(NUMCON)
+     A                                      ALIAS(NUMEROCONTRAT)
+     A                                      EDTCDE(4)
+     A            POSCON    R        B  8 64REFFLD(POSCON)
+     A                                      ALIAS(POSITIONCONTRAT)
+     A            DAECON    R        B  8 68REFFLD(DAECON)
+     A                                      ALIAS(DATEECHEANCECONTRAT)
+     A                                      DATFMT(*ISO)
+     A                                      TEXT('Date échéance contrat')
+     A            MNTCON    R        B  8 80REFFLD(MNTCON)
+     A                                      ALIAS(MONTANTCONTRAT)
+     A            OPPCON    R        B  8 94REFFLD(OPPCON)
+     A                                      ALIAS(CODEOPPOSITION)
+     A            DATFIG    R        B  8100REFFLD(DATFIG)
+     A                                      ALIAS(DATEFIGEMENT)
+     A                                      DATFMT(*ISO)
+     A                                      TEXT('Date de figement du contrat')
+     A            MOTIF     R   20   B  8111REFFLD(MOTIF)
+      **************************************************************************
+     A          R FVIDE
+     A                                      OVERLAY
+     A                                 14 31'Aucun enregistrement'
+     A                                      DSPATR(BL)
+     A                                      COLOR(RED)
+     A          R ENT02
+     A*%%TS  SD  20251210  093017  GIYVOVIE    REL-V7R4M0  5770-WDS
+     A            $NOMPGM       10A  O  1  2
+     A                                  1 40'Détail date figement Contrat'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            ENVIRONMNT    10A  O  1 86
+     A                                  1125DATE
+     A                                      EDTCDE(Y)
+     A                                      COLOR(BLU)
+     A                                  2  2USER
+     A            NOMETA        38A  O  2 14
+     A            MODE          20A  O  2 86DSPATR(RI)
+     A                                      COLOR(PNK)
+     A            ACTION        20A  O  3 86DSPATR(RI)
+     A                                      COLOR(PNK)
+     A                                  2125TIME
+     A                                      COLOR(BLU)
+     A            NOMAGE        38A  O  3 14
+     A                                  3125SYSNAME
+     A                                      DSPATR(HI)
+     A                                      COLOR(RED)
+     A          R FMT02
+     A*%%TS  SD  20251210  093017  GIYVOVIE    REL-V7R4M0  5770-WDS
+     A                                      OVERLAY
+     A                                      RTNCSRLOC(&REC &FLD)
+     A                                      CSRLOC(ROW        COL)
+     A            REC           10A  H
+     A            FLD           10A  H
+     A            ROW            3S 0H
+     A            COL            3S 0H
+     A********************************************************************
+     A*** TODO: 1.  Add the mutable fields of the entities.
+     A* the ID must be not mutable.
+     A********************************************************************
+     A                                  5  2'ID'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            ID        R        O  5  5REFFLD(ID)
+     A                                  9  2'Client'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            CODCLI    R        O  9  9REFFLD(CODCLI)
+     A                                      ALIAS(NUMEROCLIENT)
+     A                                      EDTCDE(4)
+     A**************  40                                  DSPATR(PR)
+     A            NOMCLI    R        O  9 17REFFLD(NOMCLI)
+     A                                      ALIAS(NOMCLIENT)
+     A                                 11  2'Contrat'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            NUMCON    R        B 11 10REFFLD(NUMCON)
+     A                                      ALIAS(NUMEROCONTRAT)
+     A                                      EDTCDE(4)
+     A  40                                  DSPATR(PR)
+     A            POSCON    R        O 11 20REFFLD(POSCON)
+     A                                      ALIAS(POSITIONCONTRAT)
+     A            DAECON    R        O 11 24REFFLD(DAECON)
+     A                                      ALIAS(DATEECHEANCECONTRAT)
+     A                                      DATFMT(*ISO)
+     A            MNTCON    R        O 11 35REFFLD(MNTCON)
+     A                                      ALIAS(MONTANTCONTRAT)
+     A                                 13  2'Opposition'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            OPPCON    R        O 13 13REFFLD(OPPCON)
+     A                                      ALIAS(CODEOPPOSITION)
+     A            LIBOPP    R        O 13 17REFFLD(LIBOPP)
+     A                                      ALIAS(LIBELLEOPPOSITION)
+     A            DATOPP    R        O 13 56REFFLD(DATOPP)
+     A                                      ALIAS(DATEOPPOSITION)
+     A                                      DATFMT(*ISO)
+     A                                 15  2'Date Figement'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            DATFIG    R        B 15 16REFFLD(DATFIG)
+     A                                      ALIAS(DATEFIGEMENT)
+     A                                      DATFMT(*ISO)
+     A  38                                  DSPATR(PR)
+     A                                 18  2'MOTIF'
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A            MOTIF     R        B 18  9REFFLD(MOTIF)
+     A  38                                  DSPATR(PR)
+     A********************************************************************
+     A*** ENDTODO:
+     A********************************************************************
+     A          R AUDIT
+     A                                      WINDOW(5 5 10 70)
+     A                                      WDWBORDER((*DSPATR HI RI) (*CHAR ' -
+     A                                             '))
+     A                                  2  2'AUDIT'
+     A                                      COLOR(PNK)
+     A                                  3 13'Le                       '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  3 40'Qui      '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  3 52'Par      '
+     A                                      DSPATR(UL)
+     A                                      COLOR(WHT)
+     A                                  4  2'Statut'
+     A                                      COLOR(WHT)
+     A                                  9 29'F12=Annuler'
+     A                                      COLOR(BLU)
+     A          R CONFIRM
+     A                                      WINDOW(5 10 10 40)
+     A                                      WDWBORDER((*DSPATR HI RI) (*CHAR ' -
+     A                                             '))
+     A                                  2  2'CONFIRMATION'
+     A                                      COLOR(PNK)
+     A            CONF1         38   O  4  2COLOR(RED)
+     A            CONF2         38   O  5  2COLOR(RED)
+     A            CONF3         38   O  6  2COLOR(RED)
+     A            CONF4         38   O  7  2COLOR(RED)
+     A                                  9  2'F9=CONFIRMER'
+     A                                      COLOR(BLU)
+     A                                      DSPATR(RI)
+     A                                  9 29'F12=Annuler'
+     A                                      COLOR(BLU)

@@ -1,0 +1,4 @@
+# Rapports Bruno générés
+*.html
+*.json
+reports/

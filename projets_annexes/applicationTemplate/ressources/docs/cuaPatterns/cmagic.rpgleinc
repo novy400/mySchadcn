@@ -1,0 +1,31 @@
+**free
+/if defined(CMAGIC_H_DEFINED)       
+/eof                               
+/endif                             
+/define CMAGIC_H_DEFINED  
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+dcl-c CMAGIC_DEFAULT_LIMIT 10;
+dcl-s CMAGIC_totalCount int(10);
+dcl-s CMAGIC_items pointer;
+dcl-ds CMAGIC_pagination template qualified;
+   page int(10);
+   perPage int(10);
+end-ds;
+dcl-ds CMAGIC_sort template qualified;
+   field char(32);
+   order char(32);
+end-ds;
+dcl-ds CMAGIC_filter template qualified;
+   field char(32);
+   value char(32);
+end-ds;
+
+dcl-ds CMAGIC_context template qualified;
+  dcl-ds pagination likeDS(CMAGIC_pagination);
+  dcl-ds sort likeDS(CMAGIC_sort) dim(10);
+  dcl-ds filter likeDS(CMAGIC_filter) dim(10);
+end-ds;
+

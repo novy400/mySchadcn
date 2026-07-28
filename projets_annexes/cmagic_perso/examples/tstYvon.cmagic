@@ -1,0 +1,62 @@
+struct Addresse {
+    rue: String(50) required,
+    complement: String(50),
+    pays: String(3) default("FR"),
+    codePostal: String(10) required,
+    ville: String(50) required
+}
+
+// Énumération pour le statut du client
+enum StatutClient {
+    ACTIF,
+    INACTIF,
+    SUSPENDU
+}
+
+// Énumération pour le statut de la commande
+enum StatutCommande {
+    BROUILLON,
+    CONFIRMEE,
+    EXPEDIEE,
+    LIVREE
+}
+
+// Entité Client
+entity Client {
+    id: Int required,                             // Clé primaire auto-increment
+    code: String(10) required unique,              // Code client unique
+    nom: String(80) required,                      // Nom du client
+    adresse: Addresse required,                     // Adresse complète
+    telephone: String(20),                         // Téléphone
+    email: String(100),                            // Email
+    statut: StatutClient default(ACTIF),            // Statut du client
+    dateCreation: Date required,                    // Date de création
+    limiteCredit: Decimal(15,2) default(0),        // Limite de crédit
+    estVip: Boolean default(false)                  // Client VIP
+}
+// Entité CommandeClient avec FK vers Client
+entity CommandeClient {
+    id: Int required,                                // Clé primaire auto-increment
+    numeroCommande: String(20) required unique,       // Numéro de commande unique
+    clientId: Int required,                           // FK vers Client.id
+    dateCommande: Date required,                      // Date de la commande
+    dateLivraison: Date,                              // Date de livraison prévue
+    statut: StatutCommande default(BROUILLON),        // Statut de la commande
+    montantTotal: Decimal(15,2) default(0),          // Montant total
+    montantTva: Decimal(15,2) default(0),            // Montant TVA
+    remarques: String(500),                           // Remarques/commentaires
+    estUrgente: Boolean default(false)                // Commande urgente
+}
+
+// Bloc operations pour Client
+operations for Client {
+    CREATE,
+    DISPLAY,
+    CHANGE,
+    DELETE,
+    SEARCH
+}
+operations for CommandeClient {
+    DISPLAY,
+    SEARCH
+}

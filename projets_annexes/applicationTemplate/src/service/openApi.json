@@ -1,0 +1,123 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SERVIWS APIs",
+    "description": "APIs available for SERVIWS",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://cmspw7t:10074/web/services/SERVIWS"
+    }
+  ],
+  "tags": [
+    {
+      "name": "SERVIWS APIs",
+      "description": "APIs available for SERVIWS"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "SERVIWS APIs"
+        ],
+        "operationId": "service_getlist_iws",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/data"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected exception",
+            "content": {}
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "service_detail_rest_t": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "maxLength": 3,
+            "type": "string"
+          },
+          "nom": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "idManageur": {
+            "maxLength": 6,
+            "type": "string"
+          },
+          "idServiceAdmin": {
+            "maxLength": 3,
+            "type": "string"
+          },
+          "site": {
+            "maxLength": 16,
+            "type": "string"
+          }
+        }
+      },
+      "errorItem": {
+        "type": "object",
+        "properties": {
+          "nomZone": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "code": {
+            "maxLength": 7,
+            "type": "string"
+          },
+          "valeur": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "textUser": {
+            "maxLength": 256,
+            "type": "string"
+          }
+        }
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/service_detail_rest_t"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errors": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/errorItem"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-original-swagger-version": "2.0"
+}

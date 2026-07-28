@@ -1,0 +1,18 @@
+STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('CREST.0.0.2')
+  EXPORT SYMBOL('CREST_addHeaders')
+  EXPORT SYMBOL('CREST_initRestRequest')
+  EXPORT SYMBOL('CREST_initSimpleRestRequest')
+  EXPORT SYMBOL('CREST_initWriteRestRequest')
+  EXPORT SYMBOL('CREST_errorsToJson')
+  EXPORT SYMBOL('CREST_simpleError')
+  EXPORT SYMBOL('CREST_errorsToReactAdmin')  
+ENDPGMEXP
+
+STRPGMEXP PGMLVL(*PRV) SIGNATURE('CREST.0.0.1')
+  EXPORT SYMBOL('CREST_addHeaders')
+  EXPORT SYMBOL('CREST_initRestRequest')
+  EXPORT SYMBOL('CREST_initSimpleRestRequest')
+  EXPORT SYMBOL('CREST_initWriteRestRequest')
+  EXPORT SYMBOL('CREST_errorsToJson')
+  EXPORT SYMBOL('CREST_simpleError')
+ENDPGMEXP

@@ -1,0 +1,44 @@
+// Exemple Customer + CustomerOrder avec enum - Test Sprint 01
+// Définition des énumérations
+enum CustomerStatus {
+    ACTIVE, INACTIVE, SUSPENDED
+}
+
+enum OrderStatus {
+    PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+}
+
+// Structure réutilisable
+struct Address {
+    ligne1: String(50)
+    ligne2: String(50)
+    codePostal: String(10)
+    ville: String(50)
+    pays: String(3) default ("FR")
+}
+
+// Entité Customer
+entity Customer {
+    id: Int required
+    code: String(10) required unique
+    name: String(80) required
+    address: Address
+    phone: String(20)
+    email: String(100)
+    status: CustomerStatus default (ACTIVE)
+    creationDate: Date
+    creditLimit: Decimal(15,2) default (0)
+    isVip: Boolean default (false)
+}
+
+// Entité CustomerOrder
+entity CustomerOrder {
+    id: Int required
+    orderNumber: String(20) required unique
+    customerId: Int required  // FK vers Customer
+    status: OrderStatus default (PENDING)
+    orderDate: Date required
+    deliveryDate: Date
+    totalAmount: Decimal(15,2) default (0)
+    notes: String(500)
+}

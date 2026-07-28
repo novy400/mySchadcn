@@ -1,0 +1,105 @@
+**FREE
+
+/if defined (CHAMPIONS_CHAMPION)
+/eof
+/endif
+
+/define CHAMPIONS_CHAMPION
+
+/include 'country.rpginc'
+/include 'expertise.rpginc'
+
+
+///
+// Champion template - Awards is a linked list of Champion Award data structures.
+///
+dcl-ds champions_champion_t qualified template;
+  id int(10);
+  name varchar(100);
+  expertise likeds(champions_expertise_t);
+  country likeds(champions_country_t);
+  awards pointer;
+  version int(10);
+end-ds;
+
+
+///
+// Get champion
+//
+// Returns the champion data of the champion with the passed id. If there is no champion with the
+// passed id an empty data structure will be returned.
+//
+// @param Champion id
+// @return Champion
+//
+// @info The champion data must be freed by calling the dispose procedure.
+///
+dcl-pr champions_champion_get likeds(champions_champion_t) extproc(*dclcase);
+  id int(10) const;
+end-pr;
+
+
+///
+// Search champions
+//
+// Returns a list of champions. An empty or not passed search term returns all champions.
+//
+// @return List (LinkedList) of champions (champions_champion_t).
+//
+// @info The champion data must be freed by calling the dispose procedure (for each champion).
+///
+dcl-pr champions_champion_search pointer extproc(*dclcase);
+  searchTerm varchar(100) const options(*nopass);
+end-pr;
+
+
+///
+// Persist champion
+//
+// Persists the champion (either create or update). If it is a new champion
+// the id and the version should be zero.
+//
+// @param Champion
+// @return Persisted champion
+// 
+// @throws TOC0001 Version mismatch
+///
+dcl-pr champions_champion_persist likeds(champions_champion_t) extproc(*dclcase);
+  champion likeds(champions_champion_t) const;
+end-pr;
+
+
+///
+// Delete champion
+//
+// Deletes the champion.
+//
+// @param Champion id
+///
+dcl-pr champions_champion_delete extproc(*dclcase);
+  id int(10) const;
+end-pr;
+
+
+///
+// Dispose champion
+//
+// Frees all memory allocated by champion data structure.
+//
+// @param Champion
+///
+dcl-pr champions_champion_dispose extproc(*dclcase);
+  champion likeds(champions_champion_t);
+end-pr;
+
+
+///
+// Dispose list of champions
+//
+// Frees all memory allocated by the passed list of champions. 
+//
+// @param List of champions
+///
+dcl-pr champions_champion_disposeList extproc(*dclcase);
+  champions pointer;
+end-pr;

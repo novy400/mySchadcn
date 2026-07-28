@@ -1,0 +1,208 @@
+**free
+/if defined(client_H_DEFINED)       
+/eof                               
+/endif                             
+/define client_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+dcl-enum client_listeAction qualified;
+  creation 'create';
+  modification 'update';
+  suppression 'delete';
+  consultation 'read';
+end-enum;
+
+///
+// ID client template
+///
+dcl-ds client_id_t template qualified;
+  code char(3);
+ end-ds;
+
+///
+// client Detail template
+///
+dcl-ds client_detail_t template qualified;
+  id likeDS(client_id_t);
+  nom varchar(36);
+  idManageur likeDS(employee_id_t);
+  idclientAdmin likeDS(client_id_t);
+  site char(16);
+end-ds;
+dcl-ds client_detail_sql_t template qualified;
+  code like(client_id_t.code);
+  nom varchar(36);
+  codeManageur like(employee_id_t.code);
+  codeclientAdmin like(client_id_t.code);
+  site char(16);
+end-ds;
+///
+// client List Item template
+///
+dcl-ds client_item_t template qualified;
+  id likeDS(client_detail_t.id);
+  nom like(client_detail_t.nom);
+end-ds;
+dcl-ds client_item_sql_t template qualified;
+  code like(client_id_t.code);
+  nom varchar(36);
+end-ds;
+
+///
+// Search clients
+//
+// Returns a paginate list of found clients 
+//  regarding the search critÃ©ria send in the context.
+//
+// @param **in**  context (pagination,sort,filter) critÃ©rias
+// @param **out** itemCount count of item found based on filter critÃ©rias
+// @param **out** items pointer to the linked list of item client
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_search ind extproc(*dclcase);
+   context likeDS(CMAGIC_context) const;
+   totalCount like(CMAGIC_totalCount);
+   items pointer;
+   errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// get detail client by ID
+//
+// Returns a detail client
+//
+// @param **in**  id client ID
+// @param **out** detail client detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_getByID ind extproc(*dclcase);
+  id likeDS(client_detail_t.id) const;
+  detail likeds(client_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// display  client
+//
+// - calls getByID
+// - display the detail client on screen
+//
+// @param **in**  id client ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_display ind extproc(*dclcase);
+  id likeDS(client_detail_t.id) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+///
+// create client
+//
+// Returns the id of created client
+//
+// @param **in** detail client detail
+// @param **out**  id client ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_create ind extproc(*dclcase);
+  detail likeds(client_detail_t) const;
+  id likeDS(client_detail_t.id);
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// change client
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id client ID
+// @param **in** detail client detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_update ind extproc(*dclcase);
+  id likeDS(client_detail_t.id) const;
+  detail likeds(client_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// delete client
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id client ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_delete ind extproc(*dclcase);
+  id likeDS(client_detail_t.id) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// check if sended action is valid for client.
+//
+// Returns a list of errors if client is not valid for the action
+//
+// @param **in**  action client action
+// @param **in**  beforeDetail client detail before action
+// @param **in**  afterDetail client detail after action
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_isValid ind  extproc(*dclcase);
+  action like(GLOBAL_codeAction) Const; // in client_listeAction
+  beforeDetail likeds(client_detail_t) Const;
+  afterDetail likeds(client_detail_t) Const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+
+// ========================================
+// Configuration des champs supportés pour client
+// ========================================
+
+///
+// Get client supported fields configuration
+//
+// Returns pointer to supported fields configuration for client entity.
+// Used by REST clients for filtering and validation.
+//
+// @return pointer to supported fields array
+// @tag client
+// @tag REST
+// @tag Configuration
+///
+dcl-pr client_getSupportedFields ind  extproc(*dclcase);
+      supportedFields likeds(CMAGIC_supportedFields);
+      errors likeDS(GLOBAL_listError);
+end-pr;

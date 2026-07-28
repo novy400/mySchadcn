@@ -1,0 +1,74 @@
+**free
+// ============================================
+// customer headers - générée par cmagic v1.0
+// source : test.cmagic  
+// date : 2025-12-19
+// ============================================
+
+/if defined(customer_h_defined)       
+/eof                               
+/endif                             
+/define customer_h_defined  
+/// ============================================
+// includes standard
+/// ============================================
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+/include 'sqlstates.rpginc'
+/include 'llist/llist_h.rpgle'
+/include 'ckool.rpgleinc'
+
+
+// structure audit réutilisable
+dcl-ds audit_t qualified template;
+  createdat timestamp;
+  createdby char(10);
+  updatedat timestamp;
+  updateby char(10);
+end-ds;
+
+
+///========================================
+// structures entité
+///========================================
+
+///
+// structure de base customer (données métier)
+///
+dcl-ds customer_t qualified template;
+  id INT(10);
+end-ds;
+
+///
+// structure pour clé primaire
+///
+dcl-ds customer_id_t qualified template;
+  id INT(10);
+end-ds;
+
+///
+// structure détaillée customer (avec métadonnées techniques)
+///
+dcl-ds customer_detail_t qualified template;
+  // données métier héritées de customer_t
+  detail likeds(customer_t);
+  // métadonnées techniques
+  audit likeds(audit_t);
+end-ds;
+
+// ========================================
+// api publique - procédures exportées
+// ========================================
+
+///
+// Liste des opératinons supportées
+//
+dcl-enum customer_listeAction qualified;
+  creation 'create';
+  modification 'update';
+  suppression 'delete';
+  consultation 'read';
+end-enum;
+
+
+// ========================================

@@ -1,0 +1,17 @@
+// Test file for Sprint 02 - Operations parsing
+
+// Entité Customer basique
+entity Customer {
+    id: Int required,
+    name: String(50) required,
+    email: String(100)
+}
+
+// Bloc operations pour Customer
+operations for Customer {
+    CREATE,
+    DISPLAY,
+    CHANGE,
+    DELETE,
+    SEARCH
+}

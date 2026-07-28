@@ -1,0 +1,48 @@
+**free
+/if defined(SERVIWS_H_DEFINED)
+/eof
+/endif
+/define SERVIWS_H_DEFINED
+
+/include 'service.rpgleinc'
+/include 'global.rpgleinc'
+/include 'httpRest.rpgleinc'
+
+// ========================================
+// SERVIWS - Service IWS wrappers
+// Prototype standard IWS / PCML
+// ========================================
+
+// Structure de sortie IWS pour une ligne de liste
+// On aplatit l'id pour faciliter l'exposition IWS
+
+dcl-ds service_detail_rest_t qualified;
+  id like(service_detail_t.id);
+  nom like(service_detail_t.nom);
+  idManageur like(service_detail_t.idManageur);
+  idServiceAdmin like(service_detail_t.idServiceAdmin);
+  site like(service_detail_t.site);
+end-ds;
+
+///
+// GET LIST - Wrapper IWS standard pour Service
+//
+// Contrat standard retenu :
+// - items_LENGTH
+// - items dim(100)
+// - totalCount
+// - errors_LENGTH
+// - errors dim(...)
+// - httpStatus
+// - httpHeaders_LENGTH
+// - httpHeaders dim(...)
+///
+dcl-pr service_getlist_iws extproc(*dclcase);
+  items_LENGTH int(10);
+  items likeDS(service_detail_rest_t) dim(HTTPREST_MAX_ITEMS);
+  totalCount like(CMAGIC_totalCount);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;

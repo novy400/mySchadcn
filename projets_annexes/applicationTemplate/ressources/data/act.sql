@@ -1,0 +1,17 @@
+--  Générer SQL 
+--  Version :                   	V7R4M0 190621 
+--  Générée le :              	21/10/25 08:44:58 
+--  Base données relation :    	CMSPW7T 
+--  Option normes :          	Db2 for i 
+  
+CREATE TABLE DB2SAMPLE.ACT ( 
+	ACTNO SMALLINT NOT NULL , 
+	ACTKWD CHAR(6) CCSID 1147 NOT NULL , 
+	ACTDESC VARCHAR(20) CCSID 1147 NOT NULL , 
+	CONSTRAINT DB2SAMPLE.Q_DB2SAMPLE_ACT_ACTNO_00001 PRIMARY KEY( ACTNO ) )   
+	  
+	RCDFMT ACT        ; 
+  
+GRANT ALTER , DELETE , INDEX , INSERT , REFERENCES , SELECT , UPDATE   
+ON DB2SAMPLE.ACT TO GIYVOVIE WITH GRANT OPTION ; 
+  

@@ -1,0 +1,315 @@
+**free
+/if defined(contfigdat_H_DEFINED)       
+/eof                               
+/endif                             
+/define contfigdat_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+dcl-enum contfigdat_listeAction qualified;
+  creation 'create';
+  modification 'update';
+  suppression 'delete';
+  consultation 'read';
+end-enum;
+///
+// contfigdat Detail template
+///
+  dcl-ds contfigdat_id_t template qualified;
+    code int(10);
+  end-ds;
+dcl-ds contfigdat_etablissement_t template qualified;
+  code char(3);
+  nom varchar(64);
+end-ds;
+  dcl-ds contfigdat_agence_t template qualified;
+    code char(3);
+    nom varchar(64);
+  end-ds;
+  dcl-ds contfigdat_client_t template qualified;  
+    numero packed(7:0);  
+    nom varchar(64);
+  end-ds;
+  dcl-ds contfigdat_contrat_t template qualified;
+    numero packed(9:0);
+    position char(3);
+    dateEcheance date;
+    montant packed(11:2);
+  end-ds;
+  dcl-ds contfigdat_opposition_t template qualified; 
+    code char(3);
+    libelle varchar(64);
+    date date;
+  end-ds;
+
+dcl-ds contfigdat_detail_t template qualified;
+//*********************************************************************
+// TODO: 1.  Indiquer la ou les zones constituant l' ID unique
+//           de l'entité.
+  dcl-ds id likeDS(contfigdat_id_t);
+//*********************************************************************
+
+//*********************************************************************
+// TODO: 2.  Indiquer la ou les zones représentant le détail 
+//           de l'entité.               
+  dcl-ds etablissement likeDS(contfigdat_etablissement_t);
+  dcl-ds agence likeDS(contfigdat_agence_t);
+  dcl-ds client likeDS(contfigdat_client_t);  
+  dcl-ds contrat likeDS(contfigdat_contrat_t); 
+  dcl-ds opposition likeDS(contfigdat_opposition_t); 
+  dateFigement date;
+  motifFigement varchar(512);
+//*********************************************************************
+end-ds;
+
+//*********************************************************************
+// TODO: 1.  on applatit la ds contfigdat_detail_t.
+//          le précompilateur SQL ne supporte pas les DS imbriquées
+  dcl-ds contfigdat_detail_sql_t template qualified;
+    id like(contfigdat_id_t.code);
+    codeEtablissement like(contfigdat_etablissement_t.code);
+    nomEtablissement like(contfigdat_etablissement_t.nom);
+    codeAgence like(contfigdat_agence_t.code);
+    nomAgence like(contfigdat_agence_t.nom);
+    numeroClient like(contfigdat_client_t.numero);
+    nomClient like(contfigdat_client_t.nom);
+    numeroContrat like(contfigdat_contrat_t.numero);
+    positionContrat like(contfigdat_contrat_t.position);
+    dateEcheanceContrat like(contfigdat_contrat_t.dateEcheance);
+    montantContrat like(contfigdat_contrat_t.montant);
+    codeOpposition like(contfigdat_opposition_t.code);
+    libelleOpposition like(contfigdat_opposition_t.libelle);
+    dateOpposition like(contfigdat_opposition_t.date);
+    dateFigement like(contfigdat_detail_t.dateFigement);  
+    motifFigement like(contfigdat_detail_t.motifFigement);
+  end-ds;
+//*********************************************************************
+
+///
+// contfigdat List Item template
+///
+dcl-ds contfigdat_item_t template qualified;
+//*********************************************************************
+// TODO: 3.  Indiquer la ou les zones constituant un item type
+//           dans la liste de l'entité.
+  id likeDS(contfigdat_id_t);
+  codeEtablissement like(contfigdat_etablissement_t.code);
+  codeAgence like(contfigdat_agence_t.code);
+  numeroClient like(contfigdat_client_t.numero);
+  nomClient like(contfigdat_client_t.nom);
+  numeroContrat like(contfigdat_contrat_t.numero);
+  positionContrat like(contfigdat_contrat_t.position);
+  montantContrat like(contfigdat_contrat_t.montant);
+  dateEcheanceContrat like(contfigdat_contrat_t.dateEcheance);  
+  codeOpposition like(contfigdat_opposition_t.code);      
+  dateFigement like(contfigdat_detail_t.dateFigement);
+  motifFigement like(contfigdat_detail_t.motifFigement);
+//*********************************************************************
+end-ds;
+  dcl-ds contfigdat_item_sql_t template qualified;
+    id like(contfigdat_id_t.code);
+    codeEtablissement like(contfigdat_etablissement_t.code);
+    codeAgence like(contfigdat_agence_t.code);
+    numeroClient like(contfigdat_client_t.numero);
+    nomClient like(contfigdat_client_t.nom);
+    numeroContrat like(contfigdat_contrat_t.numero);
+    positionContrat like(contfigdat_contrat_t.position);
+    montantContrat like(contfigdat_contrat_t.montant);
+    dateEcheanceContrat like(contfigdat_contrat_t.dateEcheance);  
+    codeOpposition like(contfigdat_opposition_t.code);      
+    dateFigement like(contfigdat_detail_t.dateFigement);
+    motifFigement like(contfigdat_detail_t.motifFigement);
+  end-ds;
+///
+// Search contfigdats
+//
+// Returns a paginate list of found contfigdats 
+//  regarding the search critéria send in the context.
+//
+// @param **in**  context (pagination,sort,filter) critérias
+// @param **out** itemCount count of item found based on filter critérias
+// @param **out** items pointer to the linked list of item contfigdat
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_search ind extproc(*dclcase);
+  context likeDS(CMAGIC_context) const;
+  totalCount like(CMAGIC_totalCount);
+  items pointer;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// get detail contfigdat by ID
+//
+// Returns a detail contfigdat
+//
+// @param **in**  id contfigdat ID
+// @param **out** detail contfigdat detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_getByID ind extproc(*dclcase);
+  id likeDS(contfigdat_id_t) const;
+  detail likeds(contfigdat_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// display  contfigdat
+//
+// - calls getByID
+// - display the detail contfigdat on screen
+//
+// @param **in**  id contfigdat ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_display ind extproc(*dclcase);
+  id likeDS(contfigdat_id_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+///
+// create contfigdat
+//
+// Returns the id of created contfigdat
+//
+// @param **in** detail contfigdat detail
+// @param **out**  id contfigdat ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_create ind extproc(*dclcase);
+  detail likeds(contfigdat_detail_t) const;
+  id likeDS(contfigdat_id_t);
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// update contfigdat
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id contfigdat ID
+// @param **in** detail contfigdat detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_update ind extproc(*dclcase);
+  id likeDS(contfigdat_id_t) const;
+  detail likeds(contfigdat_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr; 
+
+///
+// delete contfigdat
+//
+// Returns *on if ok, *off if error
+//
+// @param **in**  id contfigdat ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_delete ind extproc(*dclcase);
+  id likeDS(contfigdat_id_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// check if sended action is valid for contfigdat.
+//
+// Returns a list of errors if contfigdat is not valid for the action
+//
+// @param **in**  action contfigdat action
+// @param **in** detail contfigdat detail before action
+// @param **in** detail contfigdat detail after action
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr contfigdat_isValid ind  extproc(*dclcase);
+  action like(GLOBAL_codeAction) Const; // in contfigdat_listeAction
+  beforeDetail likeds(contfigdat_detail_t) Const;
+  afterDetail likeds(contfigdat_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+// ========================================
+// Configuration des champs supportés pour contfigdat
+// ========================================
+
+///
+// Get contfigdat supported fields configuration
+//
+// Used by REST services for filtering and validation.
+//
+// @tag contfigdat
+// @tag REST
+// @tag Configuration
+///
+dcl-pr contfigdat_getSupportedFields ind  extproc(*dclcase);
+  supportedFields likeds(CMAGIC_supportedFields);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// init contfigdat entity detail.
+// @tag contfigdat
+// @tag REST
+// @tag Configuration
+///
+dcl-pr contfigdat_initDetailEntity ind  extproc(*dclcase);
+  pCodeEtablissement like(contfigdat_etablissement_t.code) const;
+  pNumeroClient like(contfigdat_client_t.numero) const;
+  pNumeroContrat like(contfigdat_contrat_t.numero) const;
+  pDetailEntity likeds(contfigdat_detail_t);
+  pError likeds(errorItem);
+end-pr;
+
+// ========================================
+// Procédures Métiers. 
+// ========================================
+
+///
+// Récupére la date de figement pour un contrat donné.
+//
+//
+// @param **in**  Code etablissement.
+// @param **in**  Numéro de contrat.
+// @param **out** Date de figement. des calculs.
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Contrat
+// @tag PSGDATC
+///
+dcl-pr contfigdat_getDateFigementContrat ind extproc(*dclcase);
+  pCodeEtablissement like(contfigdat_etablissement_t.code) const;
+  pNumeroContrat like(contfigdat_contrat_t.numero) const;
+  pDateFigement like(contfigdat_detail_t.dateFigement);
+end-pr;
+
+
+

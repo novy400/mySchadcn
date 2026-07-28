@@ -1,0 +1,19 @@
+{
+  "repository": "",
+  "description": "test hello",
+  "includePath": [
+    "includes",
+    "/usr/local/include"
+  ],
+  "curlib": "&CURLIB",
+  "objlib": "&CURLIB",
+  "buildObjectCommand": "makei b -t {object}",
+  "postUsrlibl": [
+    "db2SAMPLE",
+    "ILEASTIC",
+    "RPGUNIT"
+  ],
+  "preUsrlibl": [
+    "CKOOLBIN"
+  ]
+}

@@ -1,0 +1,373 @@
+**FREE
+
+ctl-opt nomain;
+ctl-opt thread(*CONCURRENT);
+
+
+/include 'routes.rpginc'
+/include 'champions.rpginc'
+/include 'ileastic/ileastic.rpgle'
+/include 'llist/llist_h.rpgle'
+/include 'message/message_h.rpgle'
+/include 'noxdb2/noxDB2.rpgle'
+/include 'psds.rpginc'
+/include 'qusec_h.rpgle'
+
+
+dcl-proc champions_web_champion_search export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+  dcl-s champions pointer;
+  dcl-s contentType varchar(100);
+  dcl-s json pointer;
+  dcl-s searchTerm varchar(100);
+  dcl-ds iterator likeds(nox_iterator);
+  
+  contentType = il_getRequestHeader(request : 'Accept');
+  if (contentType <> IL_MEDIA_TYPE_JSON and contentType <> IL_MEDIA_TYPE_ALL);
+    response.status = IL_HTTP_UNSUPPORTED_MEDIA_TYPE;
+    il_responseWrite(response : contentType + ' is not supported');
+    return;
+  endif;
+  
+  searchTerm = il_getQueryParameter(request : 'q' : '');
+  
+  champions = champions_champion_search(searchTerm);
+  
+  json = championsToJson(champions);
+  
+  response.status = IL_HTTP_OK;
+  response.contentType = IL_MEDIA_TYPE_JSON;
+  
+  il_responseWrite(response : %ucs2('['));
+  
+  iterator = nox_setIterator(json);
+  dow (nox_forEach(iterator));
+    il_responseWrite(response : nox_AsJsonText(iterator.this));
+    
+    if (not iterator.isLast);
+      il_responseWrite(response : ',');
+    endif;
+  enddo;
+  
+  il_responseWrite(response : %ucs2(']'));
+    
+  on-exit;
+    nox_close(json);
+    champions_champion_disposeList(champions);
+end-proc;
+
+
+dcl-proc champions_web_champion_get export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+  dcl-s contentType varchar(100);
+  dcl-ds champion likeds(champions_champion_t) inz;
+  dcl-s cId varchar(10);
+  dcl-s id int(10);
+  dcl-s json pointer;
+  
+  contentType = il_getRequestHeader(request : 'Accept');
+  if (contentType <> IL_MEDIA_TYPE_JSON and contentType <> IL_MEDIA_TYPE_ALL);
+    response.status = IL_HTTP_UNSUPPORTED_MEDIA_TYPE;
+    il_responseWrite(response : contentType + ' is not supported');
+    return;
+  endif;
+  
+  cId = il_getPathParameter(request : 'id' : '');
+  monitor;
+    id = %int(cId);
+  on-error;
+    response.status = IL_HTTP_BAD_REQUEST;
+    il_responseWrite(response : 'Invalid champion id');
+    return;
+  endmon;
+  
+  champion = champions_champion_get(id);
+  if (champion.id = 0);
+    response.status = IL_HTTP_NOT_FOUND;
+    il_responseWrite(response : 'No champion with id ' + cId);
+    return;
+  endif;
+  
+  json = championToJson(champion);
+  
+  response.status = IL_HTTP_OK;
+  response.contentType = IL_MEDIA_TYPE_JSON;
+  il_responseWrite(response : nox_AsJsonText(json));
+  
+  on-exit;
+    nox_close(json);
+end-proc;
+
+
+dcl-proc champions_web_champion_delete export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+  dcl-s abnormallyEnded ind;
+  dcl-s cId varchar(10);
+  dcl-s id int(10);
+  
+  cId = il_getPathParameter(request : 'id' : '');
+  monitor;
+    id = %int(cId);
+  on-error;
+    response.status = IL_HTTP_BAD_REQUEST;
+    il_responseWrite(response : 'Invalid champion id');
+    return;
+  endmon;
+  
+  champions_champion_delete(id);
+  
+  response.status = IL_HTTP_NO_CONTENT;
+  il_responseWrite(response : '');
+  
+  on-exit abnormallyEnded;
+    if (abnormallyEnded);
+      exec sql ROLLBACK;
+    else;
+      exec sql COMMIT;
+    endif;
+end-proc;
+
+
+dcl-proc champions_web_champion_persist export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+  dcl-s contentType varchar(100);
+  dcl-s json pointer;
+  dcl-ds champion likeds(champions_champion_t);
+  dcl-s create ind;
+  dcl-ds errorCode likeds(qusec) inz;
+  
+  contentType = il_getRequestHeader(request : 'Content-Type');
+  if (contentType <> IL_MEDIA_TYPE_JSON);
+    response.status = IL_HTTP_NOT_ACCEPTABLE;
+    il_responseWrite(response : contentType + ' is not supported');
+    return;
+  endif;
+  
+  json = nox_parseString(%char(il_getRequestContent(request)));
+  champion = jsonToChampion(json);
+  create = (champion.id = 0);
+  nox_close(json);
+
+  monitor;
+    champion = champions_champion_persist(champion);
+    exec sql COMMIT;
+  on-error;
+    exec sql ROLLBACK;
+    
+    if (programStatus.exceptionType = 'TOC');
+      response.status = IL_HTTP_BAD_REQUEST;
+      il_responseWrite(response : 'Invalid data. ' + programStatus.exceptionData);
+      return;
+    else;
+      message_resendEscapeMessage('' : errorCode);
+    endif;
+  endmon;
+
+  if (create);
+    response.status = IL_HTTP_CREATED;
+  else;
+    response.status = IL_HTTP_OK;
+  endif;
+
+  json = championToJson(champion);
+  response.contentType = IL_MEDIA_TYPE_JSON;
+  il_responseWrite(response : nox_AsJsonText(json));
+
+  nox_close(json);
+end-proc;
+
+
+dcl-proc champions_web_champion_addAward export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+end-proc;
+
+
+dcl-proc champions_web_champion_removeAward export;
+  dcl-pi *n;
+    request  likeds(il_request);
+    response likeds(il_response);
+  end-pi;
+  
+end-proc;
+
+
+dcl-proc championsToJson;
+  dcl-pi *n pointer;
+    champions pointer const;
+  end-pi;
+
+  dcl-s json pointer;
+  dcl-ds champion likeds(champions_champion_t) based(ptr);
+  
+  json = nox_newArray();
+  
+  ptr = list_iterate(champions);
+  dow (ptr <> *null);
+    nox_arrayPush(json : championToJson(champion));
+  
+    ptr = list_iterate(champions);
+  enddo;
+  
+  return json;
+end-proc;
+
+
+dcl-proc championToJson;
+  dcl-pi *n pointer;
+    champion likeds(champions_champion_t) const;
+  end-pi;
+
+  dcl-s json pointer;
+ 
+  json = nox_newObject();
+  
+  nox_setInt(json : 'id' : champion.id);
+  nox_setStr(json : 'name' : champion.name);
+  nox_setInt(json : 'version' : champion.version);
+  nox_moveObjectInto(json : 'expertise' : expertiseToJson(champion.expertise));
+  nox_moveObjectInto(json : 'country' : countryToJson(champion.country));
+  if (champion.awards <> *null);
+    nox_moveObjectInto(json : 'awards' : awardsToJson(champion.awards));
+  endif;
+  
+  return json;
+end-proc;
+
+
+dcl-proc expertiseToJson;
+  dcl-pi *n pointer;
+    expertise likeds(champions_expertise_t) const;
+  end-pi;
+
+  dcl-s json pointer;
+  
+  json = nox_newObject();
+  
+  nox_setInt(json : 'id' : expertise.id);
+  nox_setStr(json : 'name' : expertise.name);
+  
+  return json;
+end-proc;
+
+
+dcl-proc countryToJson;
+  dcl-pi *n pointer;
+    country likeds(champions_country_t) const;
+  end-pi;
+
+  dcl-s json pointer;
+  
+  json = nox_newObject();
+  
+  nox_setStr(json : 'isoCode' : country.isoCode);
+  nox_setStr(json : 'name' : country.name);
+  
+  return json;
+end-proc;
+
+
+dcl-proc awardsToJson;
+  dcl-pi *n pointer;
+    awards pointer const;
+  end-pi;
+
+  dcl-s array pointer;
+  dcl-s json pointer;
+  dcl-ds award likeds(champions_award_t) based(ptr);
+  
+  array = nox_newArray();
+  
+  ptr = list_iterate(awards);
+  dow (ptr <> *null);
+    json = nox_newObject();
+    nox_setInt(json : 'pid' : award.pid);
+    nox_setInt(json : 'id' : award.id);
+    nox_setStr(json : 'name' : award.name);
+    nox_setInt(json : 'year' : award.year);
+    nox_arrayPush(array : json);
+      
+    ptr = list_iterate(awards);
+  enddo;
+  
+  return array;
+end-proc;
+
+
+dcl-proc jsonToChampion;
+  dcl-pi *n likeds(champions_champion_t);
+    json pointer const;
+  end-pi;
+
+  dcl-ds champion likeds(champions_champion_t) inz;
+  
+  if (json = *null);
+    return champion;
+  endif;
+  
+  champion.id = nox_getInt(json : 'id' : 0);
+  champion.name = nox_getStr(json : 'name' : '');
+  champion.version = nox_getInt(json : 'version' : 0);
+  
+  if (nox_has(json : 'expertise'));
+    champion.expertise.id = nox_getInt(json : 'expertise/id' : 0);
+    champion.expertise.name = nox_getStr(json : 'expertise/name' : '');
+  endif;
+  
+  if (nox_has(json : 'country'));
+    champion.country.isoCode = nox_getStr(json : 'country/isoCode' : '');
+    champion.country.name = nox_getStr(json : 'country/name' : '');
+  endif;
+  
+  champion.awards = jsonToAwards(nox_locate(json : 'awards'));
+  
+  return champion;
+end-proc;
+
+
+dcl-proc jsonToAwards;
+  dcl-pi *n pointer;
+    json pointer const;
+  end-pi;
+  
+  dcl-s awards pointer;
+  dcl-ds iterator likeds(nox_iterator);
+  dcl-ds award likeds(champions_award_t);
+  
+  awards = list_create();
+  if (json = *null);
+    return awards;
+  endif;
+  
+  iterator = nox_setIterator(json);
+  dow (nox_forEach(iterator));
+    clear award;
+    award.pid = nox_getInt(iterator.this : 'pid' : 0);
+    award.id = nox_getInt(iterator.this : 'id' : 0);
+    award.name = nox_getStr(iterator.this : 'name' : '');
+    award.year = nox_getInt(iterator.this : 'year' : 0);
+    list_add(awards : %addr(award) : %size(award));
+  enddo;
+  
+  return awards;
+end-proc;
+

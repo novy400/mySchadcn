@@ -1,0 +1,78 @@
+**free
+// ============================================
+// tiers headers - générée par cmagic v1.0
+// source : tiers.cmagic  
+// date : 2025-12-19
+// ============================================
+
+/if defined(tiers_h_defined)       
+/eof                               
+/endif                             
+/define tiers_h_defined  
+/// ============================================
+// includes standard
+/// ============================================
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+/include 'sqlstates.rpginc'
+/include 'llist/llist_h.rpgle'
+/include 'ckool.rpgleinc'
+
+
+// structure audit réutilisable
+dcl-ds audit_t qualified template;
+  createdat timestamp;
+  createdby char(10);
+  updatedat timestamp;
+  updateby char(10);
+end-ds;
+
+
+///========================================
+// structures entité
+///========================================
+
+///
+// structure de base tiers (données métier)
+///
+dcl-ds tiers_t qualified template;
+  id INT(10);
+  nom VARCHAR(50);
+  adresse VARCHAR(100);
+  codepostal VARCHAR(10);
+  ville VARCHAR(256);
+end-ds;
+
+///
+// structure pour clé primaire
+///
+dcl-ds tiers_id_t qualified template;
+  id INT(10);
+end-ds;
+
+///
+// structure détaillée tiers (avec métadonnées techniques)
+///
+dcl-ds tiers_detail_t qualified template;
+  // données métier héritées de tiers_t
+  detail likeds(tiers_t);
+  // métadonnées techniques
+  audit likeds(audit_t);
+end-ds;
+
+// ========================================
+// api publique - procédures exportées
+// ========================================
+
+///
+// Liste des opératinons supportées
+//
+dcl-enum tiers_listeAction qualified;
+  creation 'create';
+  modification 'update';
+  suppression 'delete';
+  consultation 'read';
+end-enum;
+
+
+// ========================================

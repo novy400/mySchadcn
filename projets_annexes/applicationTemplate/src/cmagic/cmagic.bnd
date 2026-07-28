@@ -1,0 +1,5 @@
+
+STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('CMAGIC.0.0.1')
+  EXPORT SYMBOL('cmagic_sanitizeContext')
+  EXPORT SYMBOL('cmagic_computeSqlClauses')
+ENDPGMEXP

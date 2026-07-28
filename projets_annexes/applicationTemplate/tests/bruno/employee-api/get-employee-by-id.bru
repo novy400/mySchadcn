@@ -1,0 +1,42 @@
+meta {
+  name: Get Employee by ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}{{apiPath}}/employees/000100
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+
+  test("Response should contain employee data", function() {
+    const employee = res.getBody();
+    expect(employee).to.be.an('object');
+    expect(employee).to.have.property('id');
+    expect(employee).to.have.property('nom');
+    expect(employee).to.have.property('prenom');
+  });
+
+  test("Employee ID should match requested ID", function() {
+    const employee = res.getBody();
+    expect(employee.id).to.equal('000100');
+  });
+
+  test("CORS headers should be present", function() {
+    expect(res.getHeader('access-control-allow-origin')).to.exist;
+  });
+}

@@ -1,0 +1,135 @@
+**free
+/if defined(SERVICETYPE_H_DEFINED)       
+/eof                               
+/endif                             
+/define SERVICETYPE_H_DEFINED  
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ------------------------------------------------------------------//
+// ServiceType entity definitions for TechServ project             //
+// Episode 3: Reference Data Made Easy - Service Types             //
+// ------------------------------------------------------------------//
+
+///
+// ServiceType Detail template - Full record for GET /api/service-types/{id}
+///
+dcl-ds servicetype_detail_t template qualified;
+  id int(10);
+  code varchar(20);
+  name varchar(100);
+  description varchar(500);
+  estimatedDurationMinutes int(10);
+  defaultPrice packed(10:2);
+  active char(1);
+  createdAt timestamp;
+end-ds;
+
+///
+// ServiceType List Item template - For GET /api/service-types collection
+///
+dcl-ds servicetype_item_t template qualified;
+  id like(servicetype_detail_t.id);
+  code like(servicetype_detail_t.code);
+  name like(servicetype_detail_t.name);
+  estimatedDurationMinutes like(servicetype_detail_t.estimatedDurationMinutes);
+  defaultPrice like(servicetype_detail_t.defaultPrice);
+  active like(servicetype_detail_t.active);
+end-ds;
+
+///
+// ServiceType Input template - For POST/PUT operations
+///
+dcl-ds servicetype_input_t template qualified;
+  code like(servicetype_detail_t.code);
+  name like(servicetype_detail_t.name);
+  description like(servicetype_detail_t.description);
+  estimatedDurationMinutes like(servicetype_detail_t.estimatedDurationMinutes);
+  defaultPrice like(servicetype_detail_t.defaultPrice);
+  active like(servicetype_detail_t.active);
+end-ds;
+
+// ------------------------------------------------------------------//
+// Prototypes for servicetype business logic                       //
+// ------------------------------------------------------------------//
+
+// ServiceType CRUD operations
+dcl-pr servicetype_getList;
+  pContext likeds(CMAGIC_context);
+  pItems likeds(servicetype_item_t) dim(CMAGIC_MAX_ITEMS);
+  pCount int(10);
+end-pr;
+
+dcl-pr servicetype_getById;
+  pId int(10) const;
+  pServiceType likeds(servicetype_detail_t);
+  pFound ind;
+end-pr;
+
+dcl-pr servicetype_create;
+  pInput likeds(servicetype_input_t) const;
+  pServiceType likeds(servicetype_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr servicetype_update;
+  pId int(10) const;
+  pInput likeds(servicetype_input_t) const;
+  pServiceType likeds(servicetype_detail_t);
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr servicetype_delete;
+  pId int(10) const;
+  pSuccess ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+// Validation functions
+dcl-pr servicetype_validateInput;
+  pInput likeds(servicetype_input_t) const;
+  pValid ind;
+  pErrorMessage varchar(200);
+end-pr;
+
+dcl-pr servicetype_isValidCode;
+  pCode varchar(20) const;
+  pValid ind;
+end-pr;
+
+// ------------------------------------------------------------------//
+// REST API prototypes for servicetype routes                      //
+// ------------------------------------------------------------------//
+
+// HTTP Handlers
+dcl-pr servicetype_handleGetList;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr servicetype_handleGetById;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr servicetype_handleCreate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr servicetype_handleUpdate;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+dcl-pr servicetype_handleDelete;
+  pRequest pointer const;
+  pResponse pointer const;
+end-pr;
+
+// Route registration
+dcl-pr servicetype_registerRoutes;
+  pILEastic pointer const;
+end-pr;

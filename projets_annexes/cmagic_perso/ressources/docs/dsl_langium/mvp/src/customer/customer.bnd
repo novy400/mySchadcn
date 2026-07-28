@@ -1,0 +1,9 @@
+STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('CUSTOMER.0.0.1')
+  EXPORT SYMBOL('customer_search')
+  EXPORT SYMBOL('customer_getByID')
+  EXPORT SYMBOL('customer_change')
+  EXPORT SYMBOL('customer_delete')
+  EXPORT SYMBOL('customer_create')  
+  EXPORT SYMBOL('customer_display')
+  EXPORT SYMBOL('customer_isValid')  
+ENDPGMEXP

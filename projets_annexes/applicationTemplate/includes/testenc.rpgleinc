@@ -1,0 +1,128 @@
+**free
+/if defined(TESTENC_H_DEFINED)
+/eof
+/endif
+/define TESTENC_H_DEFINED
+
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ============================================================================
+// STRUCTURES DE DONNÃ‰ES
+// ============================================================================
+
+///
+// TESTENC Detail template
+///
+dcl-ds testenc_detail_t template qualified;
+  dcl-ds id;
+    code char(6);
+  end-ds;
+  // TODO: Ajouter autres champs selon structure table TESTENC
+end-ds;
+
+///
+// TESTENC List Item template
+///
+dcl-ds testenc_item_t template qualified;
+  id likeDS(testenc_detail_t.id);
+  // TODO: Ajouter champs affichage liste
+end-ds;
+
+// ============================================================================
+// PROTOTYPES - MODULE MÃ‰TIER
+// ============================================================================
+
+///
+// Search TESTENCs
+//
+// @param **in**  context (pagination,sort,filter)
+// @param **out** totalCount count of items found
+// @param **out** items pointer to linked list
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_search ind extproc(*dclcase);
+  context likeDS(CMAGIC_context) const;
+  totalCount like(CMAGIC_totalCount);
+  items pointer;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Get TESTENC by ID
+//
+// @param **in**  id TESTENC ID
+// @param **out** detail TESTENC detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_getByID ind extproc(*dclcase);
+  id likeDS(testenc_detail_t.id) const;
+  detail likeds(testenc_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Create TESTENC
+//
+// @param **in**  detail TESTENC detail
+// @param **out** id generated ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_create ind extproc(*dclcase);
+  detail likeds(testenc_detail_t) const;
+  id likeDS(testenc_detail_t.id);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Update TESTENC
+//
+// @param **in**  id TESTENC ID
+// @param **in**  detail TESTENC detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_update ind extproc(*dclcase);
+  id likeDS(testenc_detail_t.id) const;
+  detail likeds(testenc_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Delete TESTENC
+//
+// @param **in**  id TESTENC ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_delete ind extproc(*dclcase);
+  id likeDS(testenc_detail_t.id) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Validate TESTENC
+//
+// @param **in**  detail TESTENC detail
+// @param **out** errors list of errors
+// @return *on if valid, *off if invalid
+///
+dcl-pr testenc_isValid ind extproc(*dclcase);
+  detail likeds(testenc_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Get supported fields configuration
+//
+// @param **out** supportedFields fields configuration
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr testenc_getSupportedFields ind extproc(*dclcase);
+  supportedFields likeDS(CMAGIC_supportedFields);
+  errors likeDS(GLOBAL_listError);
+end-pr;

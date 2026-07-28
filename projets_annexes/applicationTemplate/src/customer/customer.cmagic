@@ -1,0 +1,39 @@
+
+// Description : Entité Customer basique pour MVP Sprint 1
+
+// Structure réutilisable pour adresse
+struct Address {
+    ligne1: String(50) required,
+    ligne2: String(50),
+    codePostal: String(10) required,
+    ville: String(50) required,
+    pays: String(3) default("FR")
+}
+
+// Énumération pour statut client
+enum CustomerStatus {
+    ACTIVE,      // Client actif
+    INACTIVE,    // Client inactif
+    SUSPENDED    // Client suspendu
+}
+
+// Entité principale Customer
+entity Customer {
+    id: Int required,                           // Clé primaire auto-increment
+    code: String(10) required unique,   // Code client unique
+    name: String(80) required,                  // Raison sociale
+    address: Address required,                  // Adresse complète
+    phone: String(20),                         // Téléphone
+    email: String(100),                        // Email
+    status: CustomerStatus default(ACTIVE),     // Statut client
+    creationDate: Date required,               // Date de création
+    creditLimit: Decimal(15,2) default(0),    // Limite de crédit
+    isVip: Boolean default(false)              // Client VIP
+}
+// Vue pour la liste des commandes
+view item for Customer {
+    id,
+    name,
+    status,
+    creationDate
+    }

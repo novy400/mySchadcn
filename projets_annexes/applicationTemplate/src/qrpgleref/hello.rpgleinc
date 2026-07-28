@@ -1,0 +1,16 @@
+**free
+/if defined(HELLO_H_DEFINED)       
+/eof                               
+/endif                             
+/define HELLO_H_DEFINED  
+/include 'global.rpgleinc'
+
+
+dcl-c MAX_MATCH       const(50) ;
+
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+
+dcl-s HELLO_message like(GLOBAL_longueVariable) template;
+

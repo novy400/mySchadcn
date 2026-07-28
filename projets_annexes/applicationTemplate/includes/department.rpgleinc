@@ -1,0 +1,128 @@
+﻿**free
+/if defined(DEPARTMENT_H_DEFINED)
+/eof
+/endif
+/define DEPARTMENT_H_DEFINED
+
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ============================================================================
+// STRUCTURES DE DONNÃ‰ES
+// ============================================================================
+
+///
+// DEPARTMENT Detail template
+///
+dcl-ds department_detail_t template qualified;
+  dcl-ds id;
+    code char(3);
+  end-ds;
+  // TODO: Ajouter autres champs selon structure table DEPARTMENT
+end-ds;
+
+///
+// DEPARTMENT List Item template
+///
+dcl-ds department_item_t template qualified;
+  id likeDS(department_detail_t.id);
+  // TODO: Ajouter champs affichage liste
+end-ds;
+
+// ============================================================================
+// PROTOTYPES - MODULE MÃ‰TIER
+// ============================================================================
+
+///
+// Search DEPARTMENTs
+//
+// @param **in**  context (pagination,sort,filter)
+// @param **out** totalCount count of items found
+// @param **out** items pointer to linked list
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_search ind extproc(*dclcase);
+  context likeDS(CMAGIC_context) const;
+  totalCount like(CMAGIC_totalCount);
+  items pointer;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Get DEPARTMENT by ID
+//
+// @param **in**  id DEPARTMENT ID
+// @param **out** detail DEPARTMENT detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_getByID ind extproc(*dclcase);
+  id likeDS(department_detail_t.id) const;
+  detail likeds(department_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Create DEPARTMENT
+//
+// @param **in**  detail DEPARTMENT detail
+// @param **out** id generated ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_create ind extproc(*dclcase);
+  detail likeds(department_detail_t) const;
+  id likeDS(department_detail_t.id);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Update DEPARTMENT
+//
+// @param **in**  id DEPARTMENT ID
+// @param **in**  detail DEPARTMENT detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_update ind extproc(*dclcase);
+  id likeDS(department_detail_t.id) const;
+  detail likeds(department_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Delete DEPARTMENT
+//
+// @param **in**  id DEPARTMENT ID
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_delete ind extproc(*dclcase);
+  id likeDS(department_detail_t.id) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Validate DEPARTMENT
+//
+// @param **in**  detail DEPARTMENT detail
+// @param **out** errors list of errors
+// @return *on if valid, *off if invalid
+///
+dcl-pr department_isValid ind extproc(*dclcase);
+  detail likeds(department_detail_t) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+
+///
+// Get supported fields configuration
+//
+// @param **out** supportedFields fields configuration
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+///
+dcl-pr department_getSupportedFields ind extproc(*dclcase);
+  supportedFields likeDS(CMAGIC_supportedFields);
+  errors likeDS(GLOBAL_listError);
+end-pr;

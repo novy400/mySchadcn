@@ -1,0 +1,150 @@
+**free
+/if defined(ENTITY_H_DEFINED)       
+/eof                               
+/endif                             
+/define ENTITY_H_DEFINED
+
+/include 'global.rpgleinc'
+
+/include 'cmagic.rpgleinc'
+// ------------------------------------------------------------------//
+// printf (c)                                                       //
+// ------------------------------------------------------------------//
+///
+// Employee Detail template
+///
+dcl-ds employee_detail_t template qualified;
+  dcl-ds id;
+    code char(6);
+  end-ds;
+  prenom varchar(12);
+  nom varchar(15);
+  service char(3);
+end-ds;
+///
+// Employee List Item template
+///
+dcl-ds employee_item_t template qualified;
+  id likeDS(employee_detail_t.id);
+  nom like(employee_detail_t.nom);
+end-ds;
+
+///
+// Search Employees
+//
+// Returns a paginate list of found Employees 
+//  regarding the search critéria send in the context.
+//
+// @param **in**  context (pagination,sort,filter) critérias
+// @param **out** itemCount count of item found based on filter critérias
+// @param **out** items pointer to the linked list of item Employee
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_search ind extproc(*dclcase);
+   context likeDS(CMAGIC_context) const;
+   itemCount int(10);
+   items like(CMAGIC_items);
+   errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// get Employee detail by ID
+//
+// Returns a detail employee by ID
+//
+// @param **in**  id employee ID
+// @param **out** detail employee detail
+// @param **out** errors list of errors
+// @param **out** items pointer to the linked list of item Employee
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_getByID ind extproc(*dclcase);
+  id likeDS(employee_detail_t.id) const;
+  detail likeds(employee_detail_t);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// check if sended action is valid for Employee.
+//
+// @param **in**  action to check
+// @param **in**  detail employee detail
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_isValid4Action ind  extproc(*dclcase);
+   action like(GLOBAL_codeAction) Const;
+   detail likeds(employee_detail_t) Const;
+   errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// check if this employee could be hirable.
+//
+// @param **in**  id employee ID
+// @param **in**  service new employee service
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_isHirable ind  extproc(*dclcase);
+  id likeDS(employee_detail_t.id) const;
+  service like(employee_detail_t.service) const;
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// hire this person.
+//
+// This procedure hires a new employee.
+// It takes the employee ID and the new employee service as input parameters.
+//
+// @param **in**  nom nom de l'employé
+// @param **in**  prenom prénom de l'employé
+// @param **in**  service nouveau service de l'employé
+// @param **in**  salaire salaire de l'employé
+// @param **out** id identifiant dun nouvel employé
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_hirePerson ind  extproc(*dclcase);
+  nom like(employee_detail_t.nom) const;
+  prenom like(employee_detail_t.prenom) const;
+  service like(employee_detail_t.service) const;
+  salaire zoned(15:2) const; // Salaire de l'employé
+  id likeDS(employee_detail_t.id);
+  errors likeDS(GLOBAL_listError);
+end-pr;
+///
+// increase the employee salary.
+//
+// This procedure increases the salary of an employee by a specified amount.
+// It takes the employee ID and the increase amount as input parameters.
+// to run this procedure call an existent programme in Legacy system (TOTO001).
+//
+// @param **in**  id employee ID
+// @param **in**  increase amount of increase
+// @param **out** okKo *on if ok, *off if error
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag Employe
+// @tag CMAGIC
+///
+dcl-pr employee_increaseSalary extpgm('TOTO001');
+  id likeDS(employee_detail_t.id) const;
+  increase zoned(15:2) const; // Montant de l'augmentation
+  okKo like(GLOBAL_cOkKo);          
+end-pr;
+

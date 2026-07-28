@@ -1,0 +1,7 @@
+entity Tiers {
+    id: Int
+    nom: String(50) // <-- Utilisation de la nouvelle syntaxe
+    adresse: String(100)
+    codePostal: String(10)
+    ville: String
+}

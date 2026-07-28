@@ -1,0 +1,21 @@
+**free
+/if defined(HTTPREST_H_DEFINED)       
+/eof                               
+/endif                             
+/define HTTPREST_H_DEFINED  
+dcl-c HTTPREST_OK 200;
+dcl-c HTTPREST_CREATED 201;
+dcl-c HTTPREST_ACCEPTED 202;
+dcl-c HTTPREST_NOCONTENT 204;
+dcl-c HTTPREST_BADREQUEST 400;
+dcl-c HTTPREST_NOTFOUND 404;
+dcl-c HTTPREST_CONFLICT 409;
+dcl-c HTTPREST_GONE 410;
+dcl-c HTTPREST_SERVERERROR 500;
+dcl-c HTTPREST_MAX_ITEMS 100;
+dcl-c HTTPREST_MAX_ERRORS 10;
+dcl-c HTTPREST_nbHeaders 10;
+
+dcl-s HTTPREST_httpStatus int(10) template;
+
+dcl-s HTTPREST_httpHeader char(100) template;

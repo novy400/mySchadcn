@@ -7,6 +7,9 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
 - [Concepts CMagic](./concepts-cmagic.md) : vocabulaire et responsabilités normatives.
 - [Architecture CMagic](./ARCHITECTURE_CMAGIC.md) : cadrage court en cours d'élaboration.
 - [Synthèse](./synthese.md) : proposition de trajectoire à consolider.
+- [Catalogue v0](./catalogue-v0.md) : contrat DSL et artefacts générés.
+- [Recette IBM i du catalogue](./recette-ibmi-catalogue.md) : build BOB, lancement
+  ILEastic, tests HTTP et collecte des preuves.
 
 ## Matériaux de travail
 
@@ -27,7 +30,7 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
 | Catalogue | ressources CRM CRUD | ressources issues du domaine Flight400 |
 | Processus | statut éditable sur certaines ressources | transitions contrôlées par actions métier |
 | Saga | non implémentée | orchestration et compensations côté backend |
-| DSL `.cmagic` | non implémenté dans ce dépôt | éventuelle source de génération |
+| DSL `.cmagic` | prototype dans `projets_annexes/cmagic_perso` | validation et industrialisation IBM i |
 
 Une proposition décrite dans ce dossier n'est donc pas automatiquement une fonctionnalité
 du prototype.

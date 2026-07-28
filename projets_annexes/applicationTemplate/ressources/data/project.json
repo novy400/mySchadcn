@@ -1,0 +1,202 @@
+[
+  {
+    "PROJNO": "AD3100",
+    "PROJNAME": "ADMIN SERVICES",
+    "DEPTNO": "D01",
+    "RESPEMP": "000010",
+    "PRSTAFF": 6.5,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "AD3110",
+    "PROJNAME": "GENERAL ADMIN SYSTEMS",
+    "DEPTNO": "D21",
+    "RESPEMP": "000070",
+    "PRSTAFF": 6,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "AD3100"
+  },
+  {
+    "PROJNO": "AD3111",
+    "PROJNAME": "PAYROLL PROGRAMMING",
+    "DEPTNO": "D21",
+    "RESPEMP": "000230",
+    "PRSTAFF": 2,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "AD3110"
+  },
+  {
+    "PROJNO": "AD3112",
+    "PROJNAME": "PERSONNEL PROGRAMMING",
+    "DEPTNO": "D21",
+    "RESPEMP": "000250",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "AD3110"
+  },
+  {
+    "PROJNO": "AD3113",
+    "PROJNAME": "ACCOUNT PROGRAMMING",
+    "DEPTNO": "D21",
+    "RESPEMP": "000270",
+    "PRSTAFF": 2,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "AD3110"
+  },
+  {
+    "PROJNO": "IF1000",
+    "PROJNAME": "QUERY SERVICES",
+    "DEPTNO": "C01",
+    "RESPEMP": "000030",
+    "PRSTAFF": 2,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "IF2000",
+    "PROJNAME": "USER EDUCATION",
+    "DEPTNO": "C01",
+    "RESPEMP": "000030",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "MA2100",
+    "PROJNAME": "WELD LINE AUTOMATION",
+    "DEPTNO": "D01",
+    "RESPEMP": "000010",
+    "PRSTAFF": 12,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "MA2110",
+    "PROJNAME": "W L PROGRAMMING",
+    "DEPTNO": "D11",
+    "RESPEMP": "000060",
+    "PRSTAFF": 9,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "MA2100"
+  },
+  {
+    "PROJNO": "MA2111",
+    "PROJNAME": "W L PROGRAM DESIGN",
+    "DEPTNO": "D11",
+    "RESPEMP": "000220",
+    "PRSTAFF": 2,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1982-12-01",
+    "MAJPROJ": "MA2110"
+  },
+  {
+    "PROJNO": "MA2112",
+    "PROJNAME": "W L ROBOT DESIGN",
+    "DEPTNO": "D11",
+    "RESPEMP": "000150",
+    "PRSTAFF": 3,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1982-12-01",
+    "MAJPROJ": "MA2110"
+  },
+  {
+    "PROJNO": "MA2113",
+    "PROJNAME": "W L PROD CONT PROGS",
+    "DEPTNO": "D11",
+    "RESPEMP": "000160",
+    "PRSTAFF": 3,
+    "PRSTDATE": "1982-02-15",
+    "PRENDATE": "1982-12-01",
+    "MAJPROJ": "MA2110"
+  },
+  {
+    "PROJNO": "OP1000",
+    "PROJNAME": "OPERATION SUPPORT",
+    "DEPTNO": "E01",
+    "RESPEMP": "000050",
+    "PRSTAFF": 6,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "OP1010",
+    "PROJNAME": "OPERATION",
+    "DEPTNO": "E11",
+    "RESPEMP": "000090",
+    "PRSTAFF": 5,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "OP1000"
+  },
+  {
+    "PROJNO": "OP2000",
+    "PROJNAME": "GEN SYSTEMS SERVICES",
+    "DEPTNO": "E01",
+    "RESPEMP": "000050",
+    "PRSTAFF": 5,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": null
+  },
+  {
+    "PROJNO": "OP2010",
+    "PROJNAME": "SYSTEMS SUPPORT",
+    "DEPTNO": "E21",
+    "RESPEMP": "000100",
+    "PRSTAFF": 4,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "OP2000"
+  },
+  {
+    "PROJNO": "OP2011",
+    "PROJNAME": "SCP SYSTEMS SUPPORT",
+    "DEPTNO": "E21",
+    "RESPEMP": "000320",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "OP2010"
+  },
+  {
+    "PROJNO": "OP2012",
+    "PROJNAME": "APPLICATIONS SUPPORT",
+    "DEPTNO": "E21",
+    "RESPEMP": "000330",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "OP2010"
+  },
+  {
+    "PROJNO": "OP2013",
+    "PROJNAME": "DB/DC SUPPORT",
+    "DEPTNO": "E21",
+    "RESPEMP": "000340",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1983-02-01",
+    "MAJPROJ": "OP2010"
+  },
+  {
+    "PROJNO": "PL2100",
+    "PROJNAME": "WELD LINE PLANNING",
+    "DEPTNO": "B01",
+    "RESPEMP": "000020",
+    "PRSTAFF": 1,
+    "PRSTDATE": "1982-01-01",
+    "PRENDATE": "1982-09-15",
+    "MAJPROJ": "MA2100"
+  }
+]

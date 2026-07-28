@@ -1,0 +1,12 @@
+ DLTMSGF MSGF(&O/&N)     
+CRTMSGF MSGF(&O/&N)     
+ADDMSGD MSGID(SER0001) MSGF(&O/&N) +
+  MSG('Service non trouvé.')
+ADDMSGD MSGID(SER0002) MSGF(&O/&N) +
+  MSG('Nom obligatoire.')  
+ADDMSGD MSGID(SER0003) MSGF(&O/&N) +
+  MSG('Service Administratif obligatoire.')
+ADDMSGD MSGID(SER0004) MSGF(&O/&N) +
+  MSG('Id Service obligatoire.')  
+ADDMSGD MSGID(SER0010) MSGF(&O/&N) +
+  MSG('Action inconnue.')
