@@ -1,12 +1,10 @@
 
 import type { Model, Entity } from '../../language/generated/ast.js';
 import * as path from 'node:path';
-import * as fs from 'node:fs';
-import Handlebars from 'handlebars';
+import { renderTemplate } from '../../generation/template-renderer.js';
 import { registerHandlebarsHelpers } from './handlebars.js';
 import { extractManualCode, injectManualCode } from './preservation.js';
 import { extractDestinationAndName } from '../cli-util.js';
-import { resolveTemplatesDirectory } from './template-directory.js';
 
 // Nouvelle fonction pour générer les copybooks RPG
 export function generateRpgCopybook(entity: Entity, model: Model, sourceFile: string, templatesDir?: string, operations: string[] = []): string {
@@ -14,8 +12,6 @@ export function generateRpgCopybook(entity: Entity, model: Model, sourceFile: st
     registerHandlebarsHelpers();
 
     // Charger le template RPG simple avec commentaires
-    const templatePath = path.join(resolveTemplatesDirectory(templatesDir), 'copybook.rpg.tpl');
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
 
     // Préparer le contexte pour le template copybook simple
     const context = {
@@ -28,8 +24,7 @@ export function generateRpgCopybook(entity: Entity, model: Model, sourceFile: st
     };
 
     // Compiler et appliquer le template
-    const compiledTemplate = Handlebars.compile(templateSource);
-    const rpgCode = compiledTemplate(context);
+    const rpgCode = renderTemplate('copybook.rpg.tpl', context, templatesDir);
 
     return rpgCode;
 }
@@ -40,8 +35,6 @@ export function generateRpgService(entity: Entity, operations: string[], model: 
     registerHandlebarsHelpers();
 
     // Charger le template service RPG conforme PRD Sprint 02 Phase 3
-    const templatePath = path.join(resolveTemplatesDirectory(templatesDir), 'service.sqlrpgle.tpl');
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
 
     // Préparer le contexte pour le template - EXPLICITE
     const context = {
@@ -55,8 +48,7 @@ export function generateRpgService(entity: Entity, operations: string[], model: 
     };
 
     // Compiler et appliquer le template
-    const compiledTemplate = Handlebars.compile(templateSource);
-    let serviceCode = compiledTemplate(context);
+    let serviceCode = renderTemplate('service.sqlrpgle.tpl', context, templatesDir);
 
     // *** NOUVELLE FONCTIONNALITÉ: Préservation des zones protégées ***
     // Calculer le chemin du fichier service existant
@@ -83,8 +75,6 @@ export function generateRpgTest(entity: Entity, operations: string[], model: Mod
     registerHandlebarsHelpers();
 
     // Charger le template test RPG
-    const templatePath = path.join(resolveTemplatesDirectory(templatesDir), 'test.sqlrpgle.tpl');
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
 
     // Préparer le contexte pour le template
     const context = {
@@ -96,8 +86,7 @@ export function generateRpgTest(entity: Entity, operations: string[], model: Mod
     };
 
     // Compiler et appliquer le template
-    const compiledTemplate = Handlebars.compile(templateSource);
-    const testCode = compiledTemplate(context);
+    const testCode = renderTemplate('test.sqlrpgle.tpl', context, templatesDir);
 
     return testCode;
 }

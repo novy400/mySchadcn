@@ -1,0 +1,303 @@
+**free
+{{! Catalogue read module. CatalogSpec is adapted to this template by rpg-read.ts. }}
+{{#*inline "whereClause"}}
+{{#if hasSearch}}
+    WHERE (:lUseQ = 0 OR (
+{{#each searchFields}}
+      UPPER({{column}}) LIKE UPPER(:lQ){{#unless @last}} OR{{/unless}}
+{{/each}}
+    ))
+{{#each filterBindings}}
+      AND (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
+{{/each}}
+{{else}}
+{{#each filterBindings}}
+{{#if @first}}
+    WHERE (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
+{{else}}
+      AND (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
+{{/if}}
+{{/each}}
+{{/if}}
+{{/inline}}
+// Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
+ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+/include 'sqlstates.rpginc'
+/include 'llist/llist_h.rpgle'
+
+{{#if hasList}}
+dcl-ds {{entityName}}_item_t qualified template;
+{{#each itemFields}}
+  {{rpgName}} {{rpgType}};
+{{/each}}
+end-ds;
+{{/if}}
+{{#if hasGet}}
+dcl-ds {{entityName}}_detail_t qualified template;
+{{#each detailFields}}
+  {{rpgName}} {{rpgType}};
+{{/each}}
+end-ds;
+{{/if}}
+
+exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
+
+dcl-proc {{entityName}}_reject_query;
+  dcl-pi *n;
+    pErrors likeDS(GLOBAL_listError);
+    pField varchar(32) const;
+    pMessage varchar(256) const;
+  end-pi;
+  pErrors.listError(1).code = 'CAT0001';
+  pErrors.listError(1).nomZone = pField;
+  pErrors.listError(1).text = pMessage;
+  pErrors.listError(1).textUser = pMessage;
+end-proc;
+
+{{#if hasList}}
+dcl-proc {{entityName}}_list export;
+  dcl-pi *n ind;
+    pContext likeDS(CMAGIC_context) const;
+    pTotalCount like(CMAGIC_totalCount);
+    pItems pointer;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-ds lRow likeDS({{entityName}}_item_t) inz;
+  dcl-ds lFilter likeDS(CMAGIC_filter) inz;
+  dcl-s lItems pointer inz;
+  dcl-s lWindowTotal like(CMAGIC_totalCount) inz(0);
+  dcl-s lPage int(10) inz(1);
+  dcl-s lPerPage int(10) inz(CMAGIC_DEFAULT_LIMIT);
+  dcl-s lOffset int(20) inz(0);
+  dcl-s lSortField varchar(32) inz;
+  dcl-s lSortOrder char(4) inz;
+{{#if hasSearch}}
+  dcl-s lUseQ int(3) inz(0);
+  dcl-s lQ varchar(100) inz;
+{{/if}}
+{{#each filterBindings}}
+  dcl-s {{useVariable}} int(3) inz(0);
+  dcl-s {{valueVariable}} {{rpgType}} inz;
+{{/each}}
+
+  clear pTotalCount;
+  clear pItems;
+  clear pErrors;
+  lPage = pContext.pagination.numPage;
+  lPerPage = pContext.pagination.perPage;
+  if lPage < 1;
+    lPage = 1;
+  endif;
+  if lPerPage < 1;
+    lPerPage = CMAGIC_DEFAULT_LIMIT;
+  endif;
+  lOffset = (lPage - 1) * lPerPage;
+
+  lSortField = '{{defaultSortField}}';
+  lSortOrder = '{{defaultSortOrder}}';
+  if %trim(pContext.sort(1).field) <> *blanks;
+    select;
+{{#each sortFields}}
+      when %trim(pContext.sort(1).field) = '{{name}}';
+        lSortField = '{{name}}';
+{{/each}}
+      other;
+        {{entityName}}_reject_query(pErrors : %trim(pContext.sort(1).field)
+          : 'Unsupported sort field');
+        return *off;
+    endsl;
+  endif;
+  if %trim(pContext.sort(1).order) <> *blanks;
+    lSortOrder = %upper(%trim(pContext.sort(1).order));
+    if lSortOrder <> 'ASC' and lSortOrder <> 'DESC';
+      {{entityName}}_reject_query(pErrors : 'order'
+        : 'Sort order must be ASC or DESC');
+      return *off;
+    endif;
+  endif;
+
+  for-each lFilter in pContext.filter;
+    if %trim(lFilter.field) = *blanks;
+      leave;
+    endif;
+    select;
+{{#if hasSearch}}
+      when %trim(lFilter.field) = 'q';
+        if %upper(%trim(lFilter.operator)) <> 'LIKE'
+          and %trim(lFilter.operator) <> *blanks;
+          {{entityName}}_reject_query(
+            pErrors : 'q' : 'Unsupported filter operator');
+          return *off;
+        endif;
+        lUseQ = 1;
+        lQ = '%' + %trim(lFilter.value) + '%';
+{{/if}}
+{{#each filterFields}}
+      when %trim(lFilter.field) = '{{name}}';
+        select;
+{{#each filters}}
+          when {{#if hasOperatorSymbol}}(%upper(%trim(lFilter.operator)) = '{{operatorName}}' or %trim(lFilter.operator) = '{{operatorSymbol}}'){{else}}%upper(%trim(lFilter.operator)) = '{{operatorName}}'{{/if}};
+            {{useVariable}} = 1;
+{{#if isText}}
+            {{valueVariable}} = %trim(lFilter.value);
+{{/if}}
+{{#if isInteger}}
+          monitor;
+            {{valueVariable}} = %int(%trim(lFilter.value));
+          on-error;
+            {{@root.entityName}}_reject_query(
+              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
+            return *off;
+          endmon;
+{{/if}}
+{{#if isDecimal}}
+          monitor;
+            {{valueVariable}} = %dec(%trim(lFilter.value)
+              : {{precision}} : {{scale}});
+          on-error;
+            {{@root.entityName}}_reject_query(
+              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
+            return *off;
+          endmon;
+{{/if}}
+{{#if isDate}}
+          monitor;
+            {{valueVariable}} = %date(%trim(lFilter.value) : *ISO);
+          on-error;
+            {{@root.entityName}}_reject_query(
+              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
+            return *off;
+          endmon;
+{{/if}}
+{{#if isBoolean}}
+          select;
+            when %upper(%trim(lFilter.value)) = 'TRUE'
+              or %trim(lFilter.value) = '1';
+              {{valueVariable}} = *on;
+            when %upper(%trim(lFilter.value)) = 'FALSE'
+              or %trim(lFilter.value) = '0';
+              {{valueVariable}} = *off;
+            other;
+              {{@root.entityName}}_reject_query(
+                pErrors : '{{../name}}' : '{{invalidValueMessage}}');
+              return *off;
+          endsl;
+{{/if}}
+{{/each}}
+          other;
+            {{@root.entityName}}_reject_query(
+              pErrors : '{{name}}' : 'Unsupported filter operator');
+            return *off;
+        endsl;
+{{/each}}
+      other;
+        {{entityName}}_reject_query(pErrors : %trim(lFilter.field)
+          : 'Unsupported filter field');
+        return *off;
+    endsl;
+  endfor;
+
+  lItems = list_create();
+  exec sql declare CATALOG_LIST cursor for
+    select
+{{#each itemFields}}
+      {{#if required}}{{column}}{{else}}COALESCE({{column}}, {{sqlDefault}}){{/if}},
+{{/each}}
+      COUNT(*) OVER()
+    FROM {{table}}
+{{> whereClause}}
+{{#if hasSortFields}}
+    ORDER BY
+{{#each sortFields}}
+      {{#unless @first}}, {{/unless}}CASE WHEN :lSortField = '{{name}}'
+        AND :lSortOrder = 'ASC' THEN {{column}} END ASC
+      , CASE WHEN :lSortField = '{{name}}'
+        AND :lSortOrder = 'DESC' THEN {{column}} END DESC
+{{/each}}
+      , {{id.column}} ASC
+{{else}}
+    ORDER BY {{id.column}} ASC
+{{/if}}
+    OFFSET :lOffset ROWS
+    FETCH NEXT :lPerPage ROWS ONLY
+    FOR READ ONLY;
+
+  exec sql open CATALOG_LIST;
+  if sqlState <> SQL_OK;
+    {{entityName}}_reject_query(
+      pErrors : 'sql' : 'Unable to open list cursor');
+    list_dispose(lItems);
+    return *off;
+  endif;
+
+  dow sqlState = SQL_OK;
+    clear lRow;
+    exec sql fetch next from CATALOG_LIST into :lRow, :lWindowTotal;
+    if sqlState = SQL_NOT_FOUND;
+      leave;
+    endif;
+    if sqlState <> SQL_OK;
+      {{entityName}}_reject_query(
+        pErrors : 'sql' : 'Unable to fetch list row');
+      exec sql close CATALOG_LIST;
+      list_dispose(lItems);
+      return *off;
+    endif;
+    pTotalCount = lWindowTotal;
+    list_add(lItems : %addr(lRow) : %size(lRow));
+  enddo;
+  exec sql close CATALOG_LIST;
+
+  if pTotalCount = 0;
+    exec sql
+      select COUNT(*)
+      into :pTotalCount
+      FROM {{table}}
+{{> whereClause}}
+    ;
+    if sqlState <> SQL_OK;
+      {{entityName}}_reject_query(
+        pErrors : 'sql' : 'Unable to count list rows');
+      list_dispose(lItems);
+      return *off;
+    endif;
+  endif;
+
+  pItems = lItems;
+  return *on;
+end-proc;
+{{/if}}
+
+{{#if hasGet}}
+dcl-proc {{entityName}}_get export;
+  dcl-pi *n ind;
+    pId {{id.rpgType}} const;
+    pDetail likeDS({{entityName}}_detail_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  clear pDetail;
+  clear pErrors;
+  exec sql
+    select
+{{#each detailFields}}
+      {{#if required}}{{column}}{{else}}COALESCE({{column}}, {{sqlDefault}}){{/if}}{{#unless @last}},{{/unless}}
+{{/each}}
+    into :pDetail
+    FROM {{table}}
+    WHERE {{id.column}} = :pId
+    fetch first 1 row only;
+  if sqlState = SQL_NOT_FOUND;
+    {{entityName}}_reject_query(
+      pErrors : 'id' : '{{entityDisplayName}} not found');
+    return *off;
+  endif;
+  if sqlState <> SQL_OK;
+    {{entityName}}_reject_query(
+      pErrors : 'sql' : 'Unable to read {{entityDisplayName}}');
+    return *off;
+  endif;
+  return *on;
+end-proc;
+{{/if}}

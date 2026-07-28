@@ -159,6 +159,23 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
+    test('limits free-text search to searchable fields exposed by the list view', async () => {
+        const model = await parseCMagicString(`
+            entity VisibleSearch resource "visible-search" table "VISIBLE_SEARCH" {
+                id: Int column "ID" key required,
+                label: String(40) column "LABEL" searchable,
+                internalNote: String(80) column "INTERNAL_NOTE" searchable
+            }
+            view list for VisibleSearch { id, label }
+            operations for VisibleSearch { LIST }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.diagnostics).toEqual([]);
+        expect(compilation.specs[0].list?.searchFields).toEqual(['label']);
+    });
+
     test('generates the OpenAPI and frontend contract from the same CatalogSpec', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')

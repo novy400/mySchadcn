@@ -38,13 +38,15 @@ describe('Catalogue RPG read generator', () => {
         expect(source).toContain('DEPTNO LIKE :lIdLike');
         expect(source).toContain('UPPER(DEPTNO) LIKE UPPER(:lQ)');
 
-        expect(source).toContain(
-            "CASE WHEN :lSortField = 'nom' AND :lSortOrder = 'ASC'"
+        expect(source).toMatch(
+            /CASE WHEN :lSortField = 'nom'\s+AND :lSortOrder = 'ASC'/
         );
         expect(source).toContain('OFFSET :lOffset ROWS');
         expect(source).toContain('FETCH NEXT :lPerPage ROWS ONLY');
         expect(source).toContain('WHERE DEPTNO = :pId');
         expect(source).toContain('COUNT(*) OVER()');
+        expect(source).toContain('select COUNT(*)');
+        expect(source).toContain('into :pTotalCount');
     });
 
     test('rejects SQL identifiers that cannot be safely generated', async () => {
@@ -87,5 +89,25 @@ describe('Catalogue RPG read generator', () => {
         expect(listWithoutSearch).not.toContain(
             "when %trim(lFilter.field) = 'q';"
         );
+    });
+
+    test('renders the artifact through a replaceable Handlebars template', async () => {
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-template-')
+        );
+
+        try {
+            fs.writeFileSync(
+                path.join(temporaryDirectory, 'catalog-read.sqlrpgle.hbs'),
+                '{{entityName}}|{{table}}|{{#if hasList}}LIST{{/if}}|{{#if hasGet}}GET{{/if}}\n',
+                'utf-8'
+            );
+
+            expect(
+                generateRpgReadModule(await compileService(), temporaryDirectory)
+            ).toBe('service|DEPARTMENT|LIST|GET\n');
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
     });
 });

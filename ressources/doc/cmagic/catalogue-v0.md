@@ -6,11 +6,13 @@ Cette première tranche transforme une entité catalogue décrite en CMagic en u
 indépendant des générateurs RPG historiques :
 
 ```text
-source .cmagic -> CatalogSpec validé -> OpenAPI + ResourceContract TypeScript + module RPG
+source .cmagic -> CatalogSpec validé -> modèles de rendu -> templates Handlebars -> artefacts
 ```
 
-`CatalogSpec` est la frontière stable. Le générateur RPG le consomme déjà ; les futurs
-générateurs ILEastic et IWS feront de même au lieu de relire directement l'AST Langium.
+`CatalogSpec` est la frontière stable. Le générateur adapte ce contrat en modèles de
+rendu, puis Handlebars produit les artefacts dans leur langage natif. Les futurs
+générateurs DDL, `Rules.mk`, ILEastic et IWS feront de même au lieu de relire directement
+l'AST Langium ou d'assembler du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
@@ -104,6 +106,12 @@ Le quatrième artefact implémente directement les capacités de lecture déclar
 - des structures RPG dérivées des champs de liste et de détail ;
 - une pagination et un total cohérents au moyen de `COUNT(*) OVER()`.
 
+Le squelette du module se trouve dans
+`src/templates/catalog-read.sqlrpgle.hbs`. Le TypeScript ne porte que l'adaptation
+`CatalogSpec` vers un modèle de rendu typé : noms validés, types RPG, champs de
+projection, filtres et tris autorisés. Le rendu passe par le même moteur Handlebars que
+les générateurs historiques de copybook, service et SQL.
+
 Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
 Filtres et tris sont compilés sous forme de branches statiques limitées aux champs
 autorisés. Les valeurs, l'identifiant, l'offset et la taille de page sont transmis à
@@ -122,5 +130,6 @@ réservé, puis appliquée aux seules colonnes de recherche déclarées.
 - exécution de SQL dynamique ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La tranche suivante pourra publier ce module derrière ILEastic ou IWS et vérifier le
+Les prochains artefacts seront ajoutés comme templates autonomes, notamment le DDL et
+les fichiers `Rules.mk`, avant la publication ILEastic ou IWS et la vérification du
 contrat HTTP de bout en bout depuis le DataProvider de `mySchadcn`.

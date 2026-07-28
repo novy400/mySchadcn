@@ -314,7 +314,10 @@ const compileEntity = (
         spec.list = {
             fields: [...listView.fields],
             searchFields: fields
-                .filter(field => field.searchable)
+                .filter(
+                    field =>
+                        field.searchable && listView.fields.includes(field.name)
+                )
                 .map(field => field.name),
             filterFields: fields
                 .filter(field => field.filterOperators.length > 0)

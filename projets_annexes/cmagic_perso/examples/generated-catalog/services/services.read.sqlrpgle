@@ -1,5 +1,5 @@
 **free
-// Generated from CatalogSpec. Do not edit.
+// Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
 /include 'cmagic.rpgleinc'
 /include 'global.rpgleinc'
@@ -21,9 +21,7 @@ dcl-ds service_detail_t qualified template;
   site varchar(16);
 end-ds;
 
-dcl-proc service_sql_options;
-  exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
-end-proc;
+exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
 
 dcl-proc service_reject_query;
   dcl-pi *n;
@@ -116,7 +114,8 @@ dcl-proc service_list export;
       when %trim(lFilter.field) = 'q';
         if %upper(%trim(lFilter.operator)) <> 'LIKE'
           and %trim(lFilter.operator) <> *blanks;
-          service_reject_query(pErrors : 'q' : 'Unsupported filter operator');
+          service_reject_query(
+            pErrors : 'q' : 'Unsupported filter operator');
           return *off;
         endif;
         lUseQ = 1;
@@ -130,7 +129,8 @@ dcl-proc service_list export;
             lUseIdLike = 1;
             lIdLike = %trim(lFilter.value);
           other;
-            service_reject_query(pErrors : 'id' : 'Unsupported filter operator');
+            service_reject_query(
+              pErrors : 'id' : 'Unsupported filter operator');
             return *off;
         endsl;
       when %trim(lFilter.field) = 'nom';
@@ -142,7 +142,8 @@ dcl-proc service_list export;
             lUseNomLike = 1;
             lNomLike = %trim(lFilter.value);
           other;
-            service_reject_query(pErrors : 'nom' : 'Unsupported filter operator');
+            service_reject_query(
+              pErrors : 'nom' : 'Unsupported filter operator');
             return *off;
         endsl;
       when %trim(lFilter.field) = 'idManageur';
@@ -151,7 +152,8 @@ dcl-proc service_list export;
             lUseIdManageurEq = 1;
             lIdManageurEq = %trim(lFilter.value);
           other;
-            service_reject_query(pErrors : 'idManageur' : 'Unsupported filter operator');
+            service_reject_query(
+              pErrors : 'idManageur' : 'Unsupported filter operator');
             return *off;
         endsl;
       when %trim(lFilter.field) = 'idServiceAdmin';
@@ -160,7 +162,8 @@ dcl-proc service_list export;
             lUseIdServiceAdminEq = 1;
             lIdServiceAdminEq = %trim(lFilter.value);
           other;
-            service_reject_query(pErrors : 'idServiceAdmin' : 'Unsupported filter operator');
+            service_reject_query(
+              pErrors : 'idServiceAdmin' : 'Unsupported filter operator');
             return *off;
         endsl;
       when %trim(lFilter.field) = 'site';
@@ -172,7 +175,8 @@ dcl-proc service_list export;
             lUseSiteLike = 1;
             lSiteLike = %trim(lFilter.value);
           other;
-            service_reject_query(pErrors : 'site' : 'Unsupported filter operator');
+            service_reject_query(
+              pErrors : 'site' : 'Unsupported filter operator');
             return *off;
         endsl;
       other;
@@ -192,7 +196,11 @@ dcl-proc service_list export;
       COALESCE(LOCATION, ''),
       COUNT(*) OVER()
     FROM DEPARTMENT
-    WHERE (:lUseQ = 0 OR (UPPER(DEPTNO) LIKE UPPER(:lQ) OR UPPER(DEPTNAME) LIKE UPPER(:lQ) OR UPPER(LOCATION) LIKE UPPER(:lQ)))
+    WHERE (:lUseQ = 0 OR (
+      UPPER(DEPTNO) LIKE UPPER(:lQ) OR
+      UPPER(DEPTNAME) LIKE UPPER(:lQ) OR
+      UPPER(LOCATION) LIKE UPPER(:lQ)
+    ))
       AND (:lUseIdEq = 0 OR DEPTNO = :lIdEq)
       AND (:lUseIdLike = 0 OR DEPTNO LIKE :lIdLike)
       AND (:lUseNomEq = 0 OR DEPTNAME = :lNomEq)
@@ -201,10 +209,15 @@ dcl-proc service_list export;
       AND (:lUseIdServiceAdminEq = 0 OR ADMRDEPT = :lIdServiceAdminEq)
       AND (:lUseSiteEq = 0 OR LOCATION = :lSiteEq)
       AND (:lUseSiteLike = 0 OR LOCATION LIKE :lSiteLike)
-    ORDER BY CASE WHEN :lSortField = 'id' AND :lSortOrder = 'ASC' THEN DEPTNO END ASC
-      , CASE WHEN :lSortField = 'id' AND :lSortOrder = 'DESC' THEN DEPTNO END DESC
-      , CASE WHEN :lSortField = 'nom' AND :lSortOrder = 'ASC' THEN DEPTNAME END ASC
-      , CASE WHEN :lSortField = 'nom' AND :lSortOrder = 'DESC' THEN DEPTNAME END DESC
+    ORDER BY
+      CASE WHEN :lSortField = 'id'
+        AND :lSortOrder = 'ASC' THEN DEPTNO END ASC
+      , CASE WHEN :lSortField = 'id'
+        AND :lSortOrder = 'DESC' THEN DEPTNO END DESC
+      , CASE WHEN :lSortField = 'nom'
+        AND :lSortOrder = 'ASC' THEN DEPTNAME END ASC
+      , CASE WHEN :lSortField = 'nom'
+        AND :lSortOrder = 'DESC' THEN DEPTNAME END DESC
       , DEPTNO ASC
     OFFSET :lOffset ROWS
     FETCH NEXT :lPerPage ROWS ONLY
@@ -212,7 +225,8 @@ dcl-proc service_list export;
 
   exec sql open CATALOG_LIST;
   if sqlState <> SQL_OK;
-    service_reject_query(pErrors : 'sql' : 'Unable to open list cursor');
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to open list cursor');
     list_dispose(lItems);
     return *off;
   endif;
@@ -224,7 +238,8 @@ dcl-proc service_list export;
       leave;
     endif;
     if sqlState <> SQL_OK;
-      service_reject_query(pErrors : 'sql' : 'Unable to fetch list row');
+      service_reject_query(
+        pErrors : 'sql' : 'Unable to fetch list row');
       exec sql close CATALOG_LIST;
       list_dispose(lItems);
       return *off;
@@ -233,6 +248,34 @@ dcl-proc service_list export;
     list_add(lItems : %addr(lRow) : %size(lRow));
   enddo;
   exec sql close CATALOG_LIST;
+
+  if pTotalCount = 0;
+    exec sql
+      select COUNT(*)
+      into :pTotalCount
+      FROM DEPARTMENT
+    WHERE (:lUseQ = 0 OR (
+      UPPER(DEPTNO) LIKE UPPER(:lQ) OR
+      UPPER(DEPTNAME) LIKE UPPER(:lQ) OR
+      UPPER(LOCATION) LIKE UPPER(:lQ)
+    ))
+      AND (:lUseIdEq = 0 OR DEPTNO = :lIdEq)
+      AND (:lUseIdLike = 0 OR DEPTNO LIKE :lIdLike)
+      AND (:lUseNomEq = 0 OR DEPTNAME = :lNomEq)
+      AND (:lUseNomLike = 0 OR DEPTNAME LIKE :lNomLike)
+      AND (:lUseIdManageurEq = 0 OR MGRNO = :lIdManageurEq)
+      AND (:lUseIdServiceAdminEq = 0 OR ADMRDEPT = :lIdServiceAdminEq)
+      AND (:lUseSiteEq = 0 OR LOCATION = :lSiteEq)
+      AND (:lUseSiteLike = 0 OR LOCATION LIKE :lSiteLike)
+    ;
+    if sqlState <> SQL_OK;
+      service_reject_query(
+        pErrors : 'sql' : 'Unable to count list rows');
+      list_dispose(lItems);
+      return *off;
+    endif;
+  endif;
+
   pItems = lItems;
   return *on;
 end-proc;
@@ -257,11 +300,13 @@ dcl-proc service_get export;
     WHERE DEPTNO = :pId
     fetch first 1 row only;
   if sqlState = SQL_NOT_FOUND;
-    service_reject_query(pErrors : 'id' : 'Service not found');
+    service_reject_query(
+      pErrors : 'id' : 'Service not found');
     return *off;
   endif;
   if sqlState <> SQL_OK;
-    service_reject_query(pErrors : 'sql' : 'Unable to read Service');
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to read Service');
     return *off;
   endif;
   return *on;
