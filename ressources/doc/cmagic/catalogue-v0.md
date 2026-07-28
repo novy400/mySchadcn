@@ -81,6 +81,7 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - exactement un champ porte le marqueur `key` et ce champ public s'appelle `id` ;
 - chaque champ possède un mapping `column` ;
 - une capacité de liste exige une vue `list` non vide ;
+- la vue `list` expose obligatoirement l'identifiant public `id` ;
 - tous les champs de la vue existent dans l'entité ;
 - l'opérateur `LIKE` est réservé aux chaînes ;
 - le tri par défaut est déterministe et utilise l'identifiant en ordre ascendant.
@@ -92,42 +93,60 @@ Le contrat est aligné sur le DataProvider IBM i de `mySchadcn` :
 - `GET /api/services?page=1&perPage=25&sort=nom&order=ASC&q=paris` renvoie
   `{ "data": [...], "total": n }` ;
 - `GET /api/services/{id}` renvoie `{ "data": {...} }` ;
-- les filtres et tris autorisés viennent exclusivement du `CatalogSpec` ;
-- la recherche `q` porte sur les champs textuels marqués `searchable` ;
+- le `CatalogSpec` décrit les filtres, tris et champs de recherche publiés dans le
+  contrat HTTP ;
+- le runtime RPG v0 applique la liste blanche plus large décrite ci-dessous ;
 - l'identifiant public reste `id`, même si la colonne Db2 s'appelle `DEPTNO`.
 
 ## Module RPG de lecture généré
 
 Le quatrième artefact implémente directement les capacités de lecture déclarées :
 
-- une procédure publique `{entity}_list` si `LIST` est présent ;
+- une procédure publique `{entity}_search` si `LIST` est présent ;
+- une procédure publique `{entity}_getSupportedFields` qui décrit la projection à
+  CMagic ;
 - une procédure publique `{entity}_get` si `GET` est présent ;
 - aucune procédure parallèle suffixée `_local` ;
 - des structures RPG dérivées des champs de liste et de détail ;
-- une pagination et un total cohérents au moyen de `COUNT(*) OVER()`.
+- une requête de liste paginée et une requête de comptage préparées dynamiquement.
 
 Le squelette du module se trouve dans
 `src/templates/catalog-read.sqlrpgle.hbs`. Le TypeScript ne porte que l'adaptation
 `CatalogSpec` vers un modèle de rendu typé : noms validés, types RPG, champs de
-projection, filtres et tris autorisés. Le rendu passe par le même moteur Handlebars que
-les générateurs historiques de copybook, service et SQL.
+projection et métadonnées `CMAGIC_supportedFields`. Le rendu passe par le même moteur
+Handlebars que les générateurs historiques de copybook, service et SQL.
 
 Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
-Filtres et tris sont compilés sous forme de branches statiques limitées aux champs
-autorisés. Les valeurs, l'identifiant, l'offset et la taille de page sont transmis à
-Db2 par variables hôtes : le générateur n'émet ni `PREPARE`, ni interpolation de
-valeurs dans le SQL.
+La procédure `{entity}_search` suit le contrat utilisé par `service_search` dans
+`applicationTemplate` :
 
-La recherche libre `q` est acceptée seulement lorsqu'au moins un champ de la liste est
-marqué `searchable`. Elle est transportée par le contexte CMagic comme un filtre
-réservé, puis appliquée aux seules colonnes de recherche déclarées.
+1. `{entity}_getSupportedFields` construit la configuration des champs ;
+2. le tri par défaut du `CatalogSpec` est injecté, puis
+   `cmagic_sanitizeContext` applique les autres valeurs par défaut et la liste blanche ;
+3. `cmagic_computeSqlClauses` produit `SELECT`, `WHERE` et `ORDER BY` ;
+4. le template ajoute la table, la pagination et prépare les curseurs de liste et de
+   comptage.
+
+Le contrat `CMAGIC_supportedField` actuel expose une liste unique utilisée à la fois
+pour la projection, la recherche libre, les filtres et les tris. Catalogue v0 génère
+donc cette liste à partir des champs de la vue `list`. Les distinctions plus fines du
+DSL (`searchable`, `sortable`, opérateurs de filtre) restent présentes dans
+`CatalogSpec` et dans le contrat HTTP, mais leur application exacte côté RPG nécessitera
+d'enrichir `CMAGIC_supportedField` avec ces capacités.
+
+`cmagic_computeSqlClauses` construit aujourd'hui du SQL dynamique à partir du contexte
+nettoyé. Avant un usage en production, le runtime CMagic devra aussi garantir
+l'échappement ou la liaison de toutes les valeurs de filtre ; cette responsabilité
+n'appartient pas au template d'entité.
 
 ## Hors périmètre de la tranche
 
 - publication ILEastic et wrapper IWS ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
-- exécution de SQL dynamique ;
+- enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
+  filtre et tri ;
+- durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
 Les prochains artefacts seront ajoutés comme templates autonomes, notamment le DDL et

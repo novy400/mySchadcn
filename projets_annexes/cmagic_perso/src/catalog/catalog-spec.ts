@@ -64,6 +64,7 @@ export type CatalogDiagnosticCode =
     | 'CATALOG_CAPABILITY_UNSUPPORTED'
     | 'CATALOG_LIST_VIEW_REQUIRED'
     | 'CATALOG_LIST_VIEW_EMPTY'
+    | 'CATALOG_LIST_IDENTIFIER_REQUIRED'
     | 'CATALOG_VIEW_FIELD_UNKNOWN';
 
 export type CatalogDiagnostic = {

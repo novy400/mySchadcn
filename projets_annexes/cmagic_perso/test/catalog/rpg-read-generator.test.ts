@@ -20,33 +20,49 @@ const compileService = async (): Promise<CatalogSpec> => {
 };
 
 describe('Catalogue RPG read generator', () => {
-    test('generates LIST and GET with static SQL and bound values', async () => {
+    test('delegates LIST query preparation to the shared CMagic procedures', async () => {
         const source = generateRpgReadModule(await compileService());
 
-        expect(source).toContain('dcl-proc service_list export;');
+        expect(source).toContain('dcl-proc service_search export;');
+        expect(source).toContain('dcl-proc service_getSupportedFields export;');
         expect(source).toContain('dcl-proc service_get export;');
         expect(source).not.toContain('_local');
-        expect(source).not.toMatch(/\bprepare\b/i);
-        expect(source).not.toContain('GLOBAL_QUOTE');
 
-        expect(source).toContain('FROM DEPARTMENT');
-        expect(source).toContain("when %trim(lFilter.field) = 'id';");
         expect(source).toContain(
-            "when (%upper(%trim(lFilter.operator)) = 'EQ' or %trim(lFilter.operator) = '=');"
+            'service_getSupportedFields(lSupportedFields : lErrors)'
         );
-        expect(source).toContain('DEPTNO = :lIdEq');
-        expect(source).toContain('DEPTNO LIKE :lIdLike');
-        expect(source).toContain('UPPER(DEPTNO) LIKE UPPER(:lQ)');
+        expect(source).toContain(
+            'cmagic_sanitizeContext(lRequestedContext : lSupportedFields'
+        );
+        expect(source).toContain(
+            'cmagic_computeSqlClauses(lContext : lSupportedFields'
+        );
+        expect(source).toContain("lSelect += ' FROM DEPARTMENT';");
+        expect(source).toContain(
+            "lSelCount = 'SELECT COUNT(*) FROM (' + %trim(lSelect)"
+        );
+        expect(source).toMatch(/exec sql prepare CATALOG_LIST_STATEMENT/i);
+        expect(source).toMatch(/exec sql prepare CATALOG_COUNT_STATEMENT/i);
 
-        expect(source).toMatch(
-            /CASE WHEN :lSortField = 'nom'\s+AND :lSortOrder = 'ASC'/
+        expect(source).toContain(
+            "pSupportedFields.supportedFields(lIt).name = 'id';"
         );
-        expect(source).toContain('OFFSET :lOffset ROWS');
-        expect(source).toContain('FETCH NEXT :lPerPage ROWS ONLY');
+        expect(source).toContain(
+            "pSupportedFields.supportedFields(lIt).sqlField = 'DEPTNO';"
+        );
+        expect(source).toContain(
+            "pSupportedFields.supportedFields(lIt).dataType = 'C';"
+        );
+        expect(source).toContain(
+            "lRequestedContext.sort(1).field = 'id';"
+        );
+        expect(source).toContain(
+            "lRequestedContext.sort(1).order = 'ASC';"
+        );
+        expect(source).not.toContain('lUseIdEq');
+        expect(source).not.toContain("when %trim(lFilter.field) = 'id';");
+
         expect(source).toContain('WHERE DEPTNO = :pId');
-        expect(source).toContain('COUNT(*) OVER()');
-        expect(source).toContain('select COUNT(*)');
-        expect(source).toContain('into :pTotalCount');
     });
 
     test('rejects SQL identifiers that cannot be safely generated', async () => {
@@ -73,38 +89,17 @@ describe('Catalogue RPG read generator', () => {
             ...service,
             capabilities: ['list']
         });
-        const listWithoutSearch = generateRpgReadModule({
-            ...service,
-            capabilities: ['list'],
-            fields: service.fields.map(field => ({ ...field, searchable: false })),
-            list: service.list
-                ? { ...service.list, searchFields: [] }
-                : undefined
-        });
-        const listWithoutSiteFilter = generateRpgReadModule({
-            ...service,
-            capabilities: ['list'],
-            list: service.list
-                ? {
-                      ...service.list,
-                      filterFields: service.list.filterFields.filter(
-                          field => field !== 'site'
-                      )
-                  }
-                : undefined
-        });
 
-        expect(getOnly).not.toContain('dcl-proc service_list export;');
+        expect(getOnly).not.toContain('dcl-proc service_search export;');
+        expect(getOnly).not.toContain(
+            'dcl-proc service_getSupportedFields export;'
+        );
         expect(getOnly).toContain('dcl-proc service_get export;');
-        expect(listOnly).toContain('dcl-proc service_list export;');
+        expect(listOnly).toContain('dcl-proc service_search export;');
+        expect(listOnly).toContain(
+            'dcl-proc service_getSupportedFields export;'
+        );
         expect(listOnly).not.toContain('dcl-proc service_get export;');
-        expect(listWithoutSearch).not.toContain(
-            "when %trim(lFilter.field) = 'q';"
-        );
-        expect(listWithoutSiteFilter).not.toContain(
-            "when %trim(lFilter.field) = 'site';"
-        );
-        expect(listWithoutSiteFilter).not.toContain('lUseSiteEq');
     });
 
     test('renders the artifact through a replaceable Handlebars template', async () => {

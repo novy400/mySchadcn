@@ -1,24 +1,10 @@
 **free
 {{! Catalogue read module. CatalogSpec is adapted to this template by rpg-read.ts. }}
-{{#*inline "whereClause"}}
-{{#if hasSearch}}
-    WHERE (:lUseQ = 0 OR (
-{{#each searchFields}}
-      UPPER({{column}}) LIKE UPPER(:lQ){{#unless @last}} OR{{/unless}}
-{{/each}}
-    ))
-{{#each filterBindings}}
-      AND (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
-{{/each}}
-{{else}}
-{{#each filterBindings}}
-{{#if @first}}
-    WHERE (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
-{{else}}
-      AND (:{{useVariable}} = 0 OR {{column}} {{sqlOperator}} :{{valueVariable}})
-{{/if}}
-{{/each}}
-{{/if}}
+{{#*inline "failQuery"}}
+    {{@root.entityName}}_reject_query(
+      pErrors : 'sql' : '{{message}}');
+    list_dispose(lItems);
+    return *off;
 {{/inline}}
 // Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
@@ -57,216 +43,154 @@ dcl-proc {{entityName}}_reject_query;
 end-proc;
 
 {{#if hasList}}
-dcl-proc {{entityName}}_list export;
+dcl-proc {{entityName}}_getSupportedFields export;
+  dcl-pi *n ind;
+    pSupportedFields likeDS(CMAGIC_supportedFields);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-s lIt int(10) inz(0);
+  dcl-s ErrorHappened ind;
+
+  clear pSupportedFields;
+  clear pErrors;
+{{#each supportedFields}}
+  lIt += 1;
+  pSupportedFields.supportedFields(lIt).name = '{{name}}';
+  pSupportedFields.supportedFields(lIt).sqlField = '{{column}}';
+  pSupportedFields.supportedFields(lIt).dataType = '{{cmagicDataType}}';
+  pSupportedFields.supportedFields(lIt).orderTri = lIt;
+{{/each}}
+  pSupportedFields.fieldsCount = lIt;
+  sorta %subarr(pSupportedFields.supportedFields(*).orderTri
+    : 1 : pSupportedFields.fieldsCount);
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      clear pSupportedFields;
+      return *off;
+    endif;
+end-proc;
+
+dcl-proc {{entityName}}_search export;
   dcl-pi *n ind;
     pContext likeDS(CMAGIC_context) const;
     pTotalCount like(CMAGIC_totalCount);
     pItems pointer;
     pErrors likeDS(GLOBAL_listError);
   end-pi;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-ds lRequestedContext likeDS(CMAGIC_context) inz;
+  dcl-ds lContext likeDS(CMAGIC_context) inz;
+  dcl-ds lSupportedFields likeDS(CMAGIC_supportedFields) inz;
   dcl-ds lRow likeDS({{entityName}}_item_t) inz;
-  dcl-ds lFilter likeDS(CMAGIC_filter) inz;
+  dcl-s lSelect varchar(5000) inz;
+  dcl-s lSelCount like(lSelect) inz;
+  dcl-s lWhere like(lSelect) inz;
+  dcl-s lOrderBy like(lSelect) inz;
   dcl-s lItems pointer inz;
-  dcl-s lWindowTotal like(CMAGIC_totalCount) inz(0);
-  dcl-s lPage int(10) inz(1);
-  dcl-s lPerPage int(10) inz(CMAGIC_DEFAULT_LIMIT);
-  dcl-s lOffset int(20) inz(0);
-  dcl-s lSortField varchar(32) inz;
-  dcl-s lSortOrder char(4) inz;
-{{#if hasSearch}}
-  dcl-s lUseQ int(3) inz(0);
-  dcl-s lQ varchar(100) inz;
-{{/if}}
-{{#each filterBindings}}
-  dcl-s {{useVariable}} int(3) inz(0);
-  dcl-s {{valueVariable}} {{rpgType}} inz;
-{{/each}}
+  dcl-s lCount like(CMAGIC_totalCount) inz(0);
+  dcl-s ErrorHappened ind;
 
   clear pTotalCount;
   clear pItems;
   clear pErrors;
-  lPage = pContext.pagination.numPage;
-  lPerPage = pContext.pagination.perPage;
-  if lPage < 1;
-    lPage = 1;
-  endif;
-  if lPerPage < 1;
-    lPerPage = CMAGIC_DEFAULT_LIMIT;
-  endif;
-  lOffset = (lPage - 1) * lPerPage;
-
-  lSortField = '{{defaultSortField}}';
-  lSortOrder = '{{defaultSortOrder}}';
-  if %trim(pContext.sort(1).field) <> *blanks;
-    select;
-{{#each sortFields}}
-      when %trim(pContext.sort(1).field) = '{{name}}';
-        lSortField = '{{name}}';
-{{/each}}
-      other;
-        {{entityName}}_reject_query(pErrors : %trim(pContext.sort(1).field)
-          : 'Unsupported sort field');
-        return *off;
-    endsl;
-  endif;
-  if %trim(pContext.sort(1).order) <> *blanks;
-    lSortOrder = %upper(%trim(pContext.sort(1).order));
-    if lSortOrder <> 'ASC' and lSortOrder <> 'DESC';
-      {{entityName}}_reject_query(pErrors : 'order'
-        : 'Sort order must be ASC or DESC');
-      return *off;
-    endif;
+  lRequestedContext = pContext;
+  if %trim(lRequestedContext.sort(1).field) = *blanks;
+    lRequestedContext.sort(1).field = '{{defaultSortField}}';
+    lRequestedContext.sort(1).order = '{{defaultSortOrder}}';
   endif;
 
-  for-each lFilter in pContext.filter;
-    if %trim(lFilter.field) = *blanks;
-      leave;
-    endif;
-    select;
-{{#if hasSearch}}
-      when %trim(lFilter.field) = 'q';
-        if %upper(%trim(lFilter.operator)) <> 'LIKE'
-          and %trim(lFilter.operator) <> *blanks;
-          {{entityName}}_reject_query(
-            pErrors : 'q' : 'Unsupported filter operator');
-          return *off;
-        endif;
-        lUseQ = 1;
-        lQ = '%' + %trim(lFilter.value) + '%';
-{{/if}}
-{{#each filterFields}}
-      when %trim(lFilter.field) = '{{name}}';
-        select;
-{{#each filters}}
-          when {{#if hasOperatorSymbol}}(%upper(%trim(lFilter.operator)) = '{{operatorName}}' or %trim(lFilter.operator) = '{{operatorSymbol}}'){{else}}%upper(%trim(lFilter.operator)) = '{{operatorName}}'{{/if}};
-            {{useVariable}} = 1;
-{{#if isText}}
-            {{valueVariable}} = %trim(lFilter.value);
-{{/if}}
-{{#if isInteger}}
-          monitor;
-            {{valueVariable}} = %int(%trim(lFilter.value));
-          on-error;
-            {{@root.entityName}}_reject_query(
-              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
-            return *off;
-          endmon;
-{{/if}}
-{{#if isDecimal}}
-          monitor;
-            {{valueVariable}} = %dec(%trim(lFilter.value)
-              : {{precision}} : {{scale}});
-          on-error;
-            {{@root.entityName}}_reject_query(
-              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
-            return *off;
-          endmon;
-{{/if}}
-{{#if isDate}}
-          monitor;
-            {{valueVariable}} = %date(%trim(lFilter.value) : *ISO);
-          on-error;
-            {{@root.entityName}}_reject_query(
-              pErrors : '{{../name}}' : '{{invalidValueMessage}}');
-            return *off;
-          endmon;
-{{/if}}
-{{#if isBoolean}}
-          select;
-            when %upper(%trim(lFilter.value)) = 'TRUE'
-              or %trim(lFilter.value) = '1';
-              {{valueVariable}} = *on;
-            when %upper(%trim(lFilter.value)) = 'FALSE'
-              or %trim(lFilter.value) = '0';
-              {{valueVariable}} = *off;
-            other;
-              {{@root.entityName}}_reject_query(
-                pErrors : '{{../name}}' : '{{invalidValueMessage}}');
-              return *off;
-          endsl;
-{{/if}}
-{{/each}}
-          other;
-            {{@root.entityName}}_reject_query(
-              pErrors : '{{name}}' : 'Unsupported filter operator');
-            return *off;
-        endsl;
-{{/each}}
-      other;
-        {{entityName}}_reject_query(pErrors : %trim(lFilter.field)
-          : 'Unsupported filter field');
-        return *off;
-    endsl;
-  endfor;
+  if not {{entityName}}_getSupportedFields(lSupportedFields : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  if not cmagic_sanitizeContext(lRequestedContext : lSupportedFields
+    : lContext : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  if not cmagic_computeSqlClauses(lContext : lSupportedFields
+    : lSelect : lWhere : lOrderBy : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  lSelect += ' FROM {{table}}';
+  if lWhere <> *blanks;
+    lSelect = %trim(lSelect) + ' ' + %trim(lWhere);
+  endif;
+  lSelCount = 'SELECT COUNT(*) FROM (' + %trim(lSelect)
+    + ') CATALOG_COUNT';
+  if lOrderBy <> *blanks;
+    lSelect = %trim(lSelect) + ' ' + %trim(lOrderBy);
+  endif;
+  lSelect = %trim(lSelect)
+    + ' LIMIT ' + %char(lContext.pagination.perPage)
+    + ' OFFSET ' + %char(
+      (lContext.pagination.numPage - 1)
+      * lContext.pagination.perPage)
+    + ' FOR READ ONLY OPTIMIZE FOR '
+    + %char(lContext.pagination.perPage) + ' ROWS';
 
   lItems = list_create();
-  exec sql declare CATALOG_LIST cursor for
-    select
-{{#each itemFields}}
-      {{#if required}}{{column}}{{else}}COALESCE({{column}}, {{sqlDefault}}){{/if}},
-{{/each}}
-      COUNT(*) OVER()
-    FROM {{table}}
-{{> whereClause}}
-{{#if hasSortFields}}
-    ORDER BY
-{{#each sortFields}}
-      {{#unless @first}}, {{/unless}}CASE WHEN :lSortField = '{{name}}'
-        AND :lSortOrder = 'ASC' THEN {{column}} END ASC
-      , CASE WHEN :lSortField = '{{name}}'
-        AND :lSortOrder = 'DESC' THEN {{column}} END DESC
-{{/each}}
-      , {{id.column}} ASC
-{{else}}
-    ORDER BY {{id.column}} ASC
-{{/if}}
-    OFFSET :lOffset ROWS
-    FETCH NEXT :lPerPage ROWS ONLY
-    FOR READ ONLY;
+  exec sql prepare CATALOG_LIST_STATEMENT from :lSelect;
+  if sqlState <> SQL_OK;
+{{> failQuery message="Unable to prepare search query"}}
+  endif;
 
+  exec sql declare CATALOG_LIST cursor for CATALOG_LIST_STATEMENT;
   exec sql open CATALOG_LIST;
   if sqlState <> SQL_OK;
-    {{entityName}}_reject_query(
-      pErrors : 'sql' : 'Unable to open list cursor');
-    list_dispose(lItems);
-    return *off;
+{{> failQuery message="Unable to open search cursor"}}
   endif;
 
   dow sqlState = SQL_OK;
     clear lRow;
-    exec sql fetch next from CATALOG_LIST into :lRow, :lWindowTotal;
+    exec sql fetch next from CATALOG_LIST into :lRow;
     if sqlState = SQL_NOT_FOUND;
       leave;
     endif;
     if sqlState <> SQL_OK;
-      {{entityName}}_reject_query(
-        pErrors : 'sql' : 'Unable to fetch list row');
       exec sql close CATALOG_LIST;
-      list_dispose(lItems);
-      return *off;
+  {{> failQuery message="Unable to fetch search row"}}
     endif;
-    pTotalCount = lWindowTotal;
     list_add(lItems : %addr(lRow) : %size(lRow));
   enddo;
   exec sql close CATALOG_LIST;
 
-  if pTotalCount = 0;
-    exec sql
-      select COUNT(*)
-      into :pTotalCount
-      FROM {{table}}
-{{> whereClause}}
-    ;
-    if sqlState <> SQL_OK;
-      {{entityName}}_reject_query(
-        pErrors : 'sql' : 'Unable to count list rows');
-      list_dispose(lItems);
-      return *off;
-    endif;
+  exec sql prepare CATALOG_COUNT_STATEMENT from :lSelCount;
+  if sqlState <> SQL_OK;
+{{> failQuery message="Unable to prepare count query"}}
   endif;
 
+  exec sql declare CATALOG_COUNT cursor for CATALOG_COUNT_STATEMENT;
+  exec sql open CATALOG_COUNT;
+  if sqlState <> SQL_OK;
+{{> failQuery message="Unable to open count cursor"}}
+  endif;
+  exec sql fetch next from CATALOG_COUNT into :lCount;
+  if sqlState <> SQL_OK and sqlState <> SQL_NOT_FOUND;
+    exec sql close CATALOG_COUNT;
+{{> failQuery message="Unable to fetch total count"}}
+  endif;
+  exec sql close CATALOG_COUNT;
+
   pItems = lItems;
+  pTotalCount = lCount;
   return *on;
+
+  on-exit ErrorHappened;
+    exec sql close CATALOG_LIST;
+    exec sql close CATALOG_COUNT;
+    if ErrorHappened;
+      if lItems <> *null;
+        list_dispose(lItems);
+      endif;
+      return *off;
+    endif;
 end-proc;
 {{/if}}
 

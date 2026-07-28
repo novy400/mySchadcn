@@ -176,6 +176,24 @@ describe('CMagic Catalogue v0', () => {
         expect(compilation.specs[0].list?.searchFields).toEqual(['label']);
     });
 
+    test('requires the canonical id in every list view', async () => {
+        const model = await parseCMagicString(`
+            entity MissingListId resource "missing-list-id" table "MISSING_ID" {
+                id: Int column "ID" key required,
+                label: String(40) column "LABEL"
+            }
+            view list for MissingListId { label }
+            operations for MissingListId { LIST }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_LIST_IDENTIFIER_REQUIRED'
+        ]);
+    });
+
     test('generates the OpenAPI and frontend contract from the same CatalogSpec', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
@@ -278,7 +296,10 @@ describe('CMagic Catalogue v0', () => {
                 'export const servicesResourceContract ='
             );
             expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
-                'dcl-proc service_list export;'
+                'dcl-proc service_search export;'
+            );
+            expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
+                'cmagic_computeSqlClauses(lContext : lSupportedFields'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

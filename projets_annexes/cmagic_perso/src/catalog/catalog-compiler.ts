@@ -275,6 +275,14 @@ const compileEntity = (
                     `La vue list doit exposer au moins un champ.`
                 )
             );
+        } else if (!listView.fields.includes('id')) {
+            diagnostics.push(
+                diagnostic(
+                    'CATALOG_LIST_IDENTIFIER_REQUIRED',
+                    entity,
+                    `La vue list doit exposer l'identifiant public id.`
+                )
+            );
         }
     }
 
