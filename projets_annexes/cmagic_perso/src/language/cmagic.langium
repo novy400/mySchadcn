@@ -1,8 +1,15 @@
 grammar Cmagic
 
-// Le point d'entrée est un Modèle qui contient entités, structures, enums, vues et operations.
+// Le point d'entrée contient les contrats de données et les serveurs applicatifs.
 entry Model:
-    (entities+=Entity | structs+=Struct | enums+=Enum | views+=View | operations+=Operations)*;
+    (
+        entities+=Entity
+        | structs+=Struct
+        | enums+=Enum
+        | views+=View
+        | operations+=Operations
+        | servers+=IleasticServer
+    )*;
 
 // Une Entité a un nom et une liste de champs.
 Entity:
@@ -12,6 +19,16 @@ Entity:
     ('ileasticObject' ileasticObjectName=STRING)?
     '{'
         (fields+=Field (',')?)*
+    '}';
+
+// Un serveur ILEastic agrège les routes de plusieurs entités catalogue.
+IleasticServer:
+    'server' name=ID
+    'object' objectName=STRING
+    'port' port=NUMBER
+    ('host' host=STRING)?
+    '{'
+        (entities+=[Entity:ID] (',' entities+=[Entity:ID])*)?
     '}';
 
 // Une Structure (réutilisable) a un nom et une liste de champs.

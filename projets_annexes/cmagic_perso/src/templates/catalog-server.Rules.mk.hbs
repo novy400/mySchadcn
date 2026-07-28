@@ -1,0 +1,4 @@
+# Generated from CatalogServerSpec with catalog-server.Rules.mk.hbs. Do not edit.
+# {{serverName}} ILEastic application server
+{{objectName}}.MODULE: {{source}}
+{{objectName}}.PGM: {{objectName}}.MODULE{{#each catalogs}} {{ileasticObject}}.MODULE {{readObject}}.SRVPGM{{/each}}

@@ -5,7 +5,7 @@ import { CmagicLanguageMetaData } from '../language/generated/module.js';
 import { createCmagicServices } from '../language/cmagic-module.js';
 import { extractAstNode } from './cli-util.js';
 import { generateCode } from './generator.js';
-import { generateCatalogArtifacts } from '../catalog/index.js';
+import { generateCatalogProjectArtifacts } from '../catalog/index.js';
 import { NodeFileSystem } from 'langium/node';
 import * as url from 'node:url';
 import * as fs from 'node:fs/promises';
@@ -38,9 +38,9 @@ export const generateCatalogAction = async (
     const model = await extractAstNode<Model>(fileName, services);
     const destination =
         opts.destination ?? path.join(path.dirname(fileName), 'generated-catalog');
-    const artifacts = generateCatalogArtifacts(model, destination);
+    const artifacts = generateCatalogProjectArtifacts(model, destination);
 
-    for (const artifact of artifacts) {
+    for (const artifact of artifacts.catalogs) {
         console.log(chalk.green(`catalogue generated: ${artifact.spec}`));
         console.log(chalk.green(`OpenAPI generated: ${artifact.openApi}`));
         console.log(
@@ -63,6 +63,19 @@ export const generateCatalogAction = async (
         console.log(chalk.green(`Db2 DDL generated: ${artifact.ddl}`));
         console.log(chalk.green(`binder generated: ${artifact.binder}`));
         console.log(chalk.green(`BOB rules generated: ${artifact.rules}`));
+    }
+    for (const artifact of artifacts.servers) {
+        console.log(
+            chalk.green(`ILEastic server generated: ${artifact.main}`)
+        );
+        console.log(
+            chalk.green(`ILEastic server BOB rules generated: ${artifact.rules}`)
+        );
+    }
+    if (artifacts.projectRules) {
+        console.log(
+            chalk.green(`BOB project rules generated: ${artifacts.projectRules}`)
+        );
     }
 };
 
@@ -88,7 +101,7 @@ export default function (): void {
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
         .description(
-            'generates CatalogSpec, OpenAPI, frontend contracts, RPG read and ILEastic artifacts, Db2 DDL, binders and BOB rules'
+            'generates catalogue contracts, RPG/ILEastic artifacts and optional application server projects'
         )
         .action(generateCatalogAction);
 

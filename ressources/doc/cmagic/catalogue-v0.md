@@ -42,6 +42,12 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.bnd` ;
 - `Rules.mk`.
 
+Lorsqu'un bloc `server` est présent, elle ajoute au projet généré :
+
+- `Rules.mk` à la racine, avec les sous-projets BOB ;
+- `{server}/{server}.main.sqlrpgle` ;
+- `{server}/Rules.mk`.
+
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
 
 ## Syntaxe v0
@@ -61,6 +67,10 @@ view list for Service {
 
 operations for Service {
     LIST, GET
+}
+
+server ServiceApi object "SERVAPI" port 44000 host "*ANY" {
+    Service
 }
 ```
 
@@ -86,6 +96,12 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - `resource` et `table` sont tous deux obligatoires ;
 - `ileasticObject` est facultatif ; lorsqu'il est présent, il contient un nom système
   IBM i de 1 à 10 caractères, normalisé en majuscules et distinct du module de lecture ;
+- un serveur déclare un nom d'objet programme IBM i valide, un port entier compris
+  entre 1 et 65 535 et au moins une entité catalogue ;
+- chaque entité publiée par un serveur est unique dans ce serveur et déclare
+  `ileasticObject` ;
+- l'objet programme du serveur est distinct des modules de lecture et de transport
+  qu'il lie ;
 - exactement un champ porte le marqueur `key` et ce champ public s'appelle `id` ;
 - chaque champ possède un mapping `column` ;
 - une capacité de liste exige une vue `list` non vide ;
@@ -269,14 +285,48 @@ jamais tronqué silencieusement.
 
 La cible `SERVREST.MODULE` provient directement de
 `ileasticObject "SERVREST"`. Elle est facultative et doit être distincte de
-`SERVICE.MODULE`. Cette règle compile le transport ; elle ne génère ni programme
-serveur ILEastic, ni binder pour ce module. Le programme serveur qui appelle
-`Service_registerRoutes` devra donc ajouter explicitement `SERVREST.MODULE` à ses
-dépendances de lien.
+`SERVICE.MODULE`. Cette règle compile le transport et ne génère pas de binder pour ce
+module.
+
+## Programme serveur ILEastic généré
+
+Le bloc `server ServiceApi` produit un sous-projet applicatif séparé. Son source
+`serviceapi.main.sqlrpgle`, rendu par
+`src/templates/catalog-server.main.sqlrpgle.hbs` :
+
+1. initialise `IL_config` avec le port `44000` et l'hôte `*ANY` ;
+2. inclut les interfaces ILEastic publiques des catalogues référencés ;
+3. appelle `service_registerRoutes(config)` ;
+4. démarre l'écoute avec `il_listen(config)`.
+
+Un même bloc peut référencer plusieurs entités : le modèle et le template ajoutent une
+interface, un appel d'enregistrement et les dépendances BOB correspondantes pour
+chacune. Le programme ne recopie ni signatures de procédures, ni routes, ni logique
+métier.
+
+La règle applicative lie explicitement le module du programme, le module de transport
+et le service program de lecture :
+
+```make
+SERVAPI.MODULE: serviceapi.main.sqlrpgle
+SERVAPI.PGM: SERVAPI.MODULE SERVREST.MODULE SERVICE.SRVPGM
+```
+
+Le `Rules.mk` racine, produit par
+`src/templates/catalog-project.Rules.mk.hbs`, rend l'arborescence directement
+parcourable par BOB :
+
+```make
+SUBDIRS = services serviceapi
+```
+
+Sans bloc `server`, ces trois artefacts applicatifs ne sont pas créés et la génération
+historique des dix artefacts par catalogue reste inchangée.
 
 ## Hors périmètre de la tranche
 
-- génération ou paramétrage du programme serveur ILEastic et wrapper IWS ;
+- wrapper IWS ;
+- configuration CORS, journalisation et arrêt contrôlé du serveur ILEastic ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
@@ -284,6 +334,6 @@ dépendances de lien.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine verticale pourra intégrer `SERVREST.MODULE` à un programme serveur
-ILEastic généré ou paramétré, avant le wrapper IWS et la vérification du contrat HTTP
-de bout en bout depuis le DataProvider de `mySchadcn`.
+La prochaine verticale pourra valider la compilation du projet BOB sur IBM i, puis
+vérifier le contrat HTTP de bout en bout depuis le DataProvider de `mySchadcn`, avant
+d'aborder le wrapper IWS ou les mutations.

@@ -1,4 +1,5 @@
 export { buildCatalogSpecs } from './catalog-compiler.js';
+export { buildCatalogServerSpecs } from './server-compiler.js';
 export { generateCatalogBinder } from './binder.js';
 export { generateCatalogIleasticInterface } from './ileastic-interface.js';
 export { generateCatalogIleasticWrapper } from './ileastic.js';
@@ -6,7 +7,11 @@ export { generateCatalogReadInterface } from './read-interface.js';
 export {
     CatalogCompilationError,
     generateCatalogArtifacts,
-    type GeneratedCatalogArtifactPaths
+    generateCatalogProjectArtifacts,
+    type CatalogProjectDiagnostic,
+    type GeneratedCatalogArtifactPaths,
+    type GeneratedCatalogProjectArtifactPaths,
+    type GeneratedCatalogServerArtifactPaths
 } from './artifacts.js';
 export {
     generateOpenApiDocument,
@@ -21,6 +26,11 @@ export {
 export { generateRpgReadModule } from './rpg-read.js';
 export { generateCatalogDdl } from './ddl.js';
 export { generateCatalogRules } from './rules.js';
+export {
+    generateCatalogProjectRules,
+    generateCatalogServerMain,
+    generateCatalogServerRules
+} from './server.js';
 export type {
     CatalogCapability,
     CatalogCompilation,
@@ -32,3 +42,10 @@ export type {
     CatalogListSpec,
     CatalogSpec
 } from './catalog-spec.js';
+export type {
+    CatalogServerCatalogSpec,
+    CatalogServerCompilation,
+    CatalogServerDiagnostic,
+    CatalogServerDiagnosticCode,
+    CatalogServerSpec
+} from './server-spec.js';

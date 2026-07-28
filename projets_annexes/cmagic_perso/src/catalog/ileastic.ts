@@ -73,6 +73,10 @@ export type CatalogIleasticTemplateModel = {
     id: CatalogIleasticIdentifierModel;
 };
 
+export const catalogIleasticRegisterRoutesProcedure = (
+    entityName: string
+): string => `${entityName.toLowerCase()}_registerRoutes`;
+
 const identifierModel = (
     type: CatalogFieldType,
     rpgType: string
@@ -105,7 +109,9 @@ export const buildCatalogIleasticTemplateModel = (
     }
 
     const prefix = readModel.entityName;
-    const registerRoutes = `${prefix}_registerRoutes`;
+    const registerRoutes = catalogIleasticRegisterRoutesProcedure(
+        spec.entity
+    );
     const detailBooleanFields = spec.fields
         .filter(field => field.type.kind === 'boolean')
         .map(field => ({ name: field.name }));

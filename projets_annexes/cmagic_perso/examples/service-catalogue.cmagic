@@ -13,3 +13,7 @@ view list for Service {
 operations for Service {
     LIST, GET
 }
+
+server ServiceApi object "SERVAPI" port 44000 host "*ANY" {
+    Service
+}

@@ -14,3 +14,9 @@ export const catalogIleasticInterfaceSourceName = (
 
 export const catalogBinderSourceName = (resource: string): string =>
     `${resource}.bnd`;
+
+export const catalogServerBaseName = (serverName: string): string =>
+    serverName.toLowerCase();
+
+export const catalogServerSourceName = (serverName: string): string =>
+    `${catalogServerBaseName(serverName)}.main.sqlrpgle`;

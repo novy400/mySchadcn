@@ -6,11 +6,13 @@ import {
     catalogIleasticInterfaceSourceName,
     catalogIleasticSourceName,
     catalogRpgReadInterfaceSourceName,
-    catalogRpgReadSourceName
+    catalogRpgReadSourceName,
+    catalogServerBaseName,
+    catalogServerSourceName
 } from './artifact-names.js';
 import { generateCatalogBinder } from './binder.js';
 import { buildCatalogSpecs } from './catalog-compiler.js';
-import type { CatalogDiagnostic } from './catalog-spec.js';
+import type { CatalogDiagnostic, CatalogSpec } from './catalog-spec.js';
 import { generateCatalogDdl } from './ddl.js';
 import { generateCatalogIleasticInterface } from './ileastic-interface.js';
 import { generateCatalogIleasticWrapper } from './ileastic.js';
@@ -19,6 +21,16 @@ import { generateResourceContractSource } from './resource-contract.js';
 import { generateCatalogReadInterface } from './read-interface.js';
 import { generateRpgReadModule } from './rpg-read.js';
 import { generateCatalogRules } from './rules.js';
+import { buildCatalogServerSpecs } from './server-compiler.js';
+import type {
+    CatalogServerDiagnostic,
+    CatalogServerSpec
+} from './server-spec.js';
+import {
+    generateCatalogProjectRules,
+    generateCatalogServerMain,
+    generateCatalogServerRules
+} from './server.js';
 
 export type GeneratedCatalogArtifactPaths = {
     spec: string;
@@ -33,10 +45,25 @@ export type GeneratedCatalogArtifactPaths = {
     rules: string;
 };
 
-export class CatalogCompilationError extends Error {
-    readonly diagnostics: CatalogDiagnostic[];
+export type GeneratedCatalogServerArtifactPaths = {
+    main: string;
+    rules: string;
+};
 
-    constructor(diagnostics: CatalogDiagnostic[]) {
+export type GeneratedCatalogProjectArtifactPaths = {
+    catalogs: GeneratedCatalogArtifactPaths[];
+    servers: GeneratedCatalogServerArtifactPaths[];
+    projectRules?: string;
+};
+
+export type CatalogProjectDiagnostic =
+    | CatalogDiagnostic
+    | CatalogServerDiagnostic;
+
+export class CatalogCompilationError extends Error {
+    readonly diagnostics: CatalogProjectDiagnostic[];
+
+    constructor(diagnostics: CatalogProjectDiagnostic[]) {
         super(
             `Catalogue invalide:\n${diagnostics
                 .map(item => `- [${item.code}] ${item.message}`)
@@ -51,16 +78,19 @@ const writeArtifact = (filePath: string, content: string): void => {
     fs.writeFileSync(filePath, content, 'utf-8');
 };
 
-export const generateCatalogArtifacts = (
-    model: Model,
-    destination: string
-): GeneratedCatalogArtifactPaths[] => {
+const buildCatalogSpecsOrThrow = (model: Model): CatalogSpec[] => {
     const compilation = buildCatalogSpecs(model);
     if (compilation.diagnostics.length > 0) {
         throw new CatalogCompilationError(compilation.diagnostics);
     }
+    return compilation.specs;
+};
 
-    return compilation.specs.map(spec => {
+const writeCatalogArtifacts = (
+    specs: readonly CatalogSpec[],
+    destination: string
+): GeneratedCatalogArtifactPaths[] =>
+    specs.map(spec => {
         const resourceDirectory = path.join(destination, spec.resource);
         fs.mkdirSync(resourceDirectory, { recursive: true });
 
@@ -123,4 +153,66 @@ export const generateCatalogArtifacts = (
 
         return artifacts;
     });
+
+const writeCatalogServerArtifacts = (
+    specs: readonly CatalogServerSpec[],
+    destination: string
+): GeneratedCatalogServerArtifactPaths[] =>
+    specs.map(spec => {
+        const serverDirectory = path.join(
+            destination,
+            catalogServerBaseName(spec.name)
+        );
+        fs.mkdirSync(serverDirectory, { recursive: true });
+
+        const artifacts: GeneratedCatalogServerArtifactPaths = {
+            main: path.join(serverDirectory, catalogServerSourceName(spec.name)),
+            rules: path.join(serverDirectory, 'Rules.mk')
+        };
+        writeArtifact(artifacts.main, generateCatalogServerMain(spec));
+        writeArtifact(artifacts.rules, generateCatalogServerRules(spec));
+        return artifacts;
+    });
+
+export const generateCatalogArtifacts = (
+    model: Model,
+    destination: string
+): GeneratedCatalogArtifactPaths[] => {
+    const specs = buildCatalogSpecsOrThrow(model);
+    return writeCatalogArtifacts(specs, destination);
+};
+
+export const generateCatalogProjectArtifacts = (
+    model: Model,
+    destination: string
+): GeneratedCatalogProjectArtifactPaths => {
+    const catalogSpecs = buildCatalogSpecsOrThrow(model);
+    const serverCompilation = buildCatalogServerSpecs(
+        model,
+        catalogSpecs
+    );
+    if (serverCompilation.diagnostics.length > 0) {
+        throw new CatalogCompilationError(serverCompilation.diagnostics);
+    }
+
+    const catalogs = writeCatalogArtifacts(catalogSpecs, destination);
+    const servers = writeCatalogServerArtifacts(
+        serverCompilation.specs,
+        destination
+    );
+    if (servers.length === 0) {
+        return { catalogs, servers };
+    }
+
+    const projectRules = path.join(destination, 'Rules.mk');
+    writeArtifact(
+        projectRules,
+        generateCatalogProjectRules([
+            ...catalogSpecs.map(spec => spec.resource),
+            ...serverCompilation.specs.map(spec =>
+                catalogServerBaseName(spec.name)
+            )
+        ])
+    );
+    return { catalogs, servers, projectRules };
 };
