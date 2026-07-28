@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { Model } from '../language/generated/ast.js';
 import { buildCatalogSpecs } from './catalog-compiler.js';
 import type { CatalogDiagnostic } from './catalog-spec.js';
+import { generateCatalogDdl } from './ddl.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
 import { generateRpgReadModule } from './rpg-read.js';
@@ -12,6 +13,7 @@ export type GeneratedCatalogArtifactPaths = {
     openApi: string;
     resourceContract: string;
     rpgRead: string;
+    ddl: string;
 };
 
 export class CatalogCompilationError extends Error {
@@ -55,7 +57,8 @@ export const generateCatalogArtifacts = (
                 resourceDirectory,
                 `${spec.resource}.resource-contract.ts`
             ),
-            rpgRead: path.join(resourceDirectory, `${spec.resource}.read.sqlrpgle`)
+            rpgRead: path.join(resourceDirectory, `${spec.resource}.read.sqlrpgle`),
+            ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`)
         };
 
         writeArtifact(artifacts.spec, `${JSON.stringify(spec, null, 2)}\n`);
@@ -65,6 +68,7 @@ export const generateCatalogArtifacts = (
             generateResourceContractSource(spec)
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
+        writeArtifact(artifacts.ddl, generateCatalogDdl(spec));
 
         return artifacts;
     });

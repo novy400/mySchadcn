@@ -159,6 +159,36 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
+    test('rejects catalogue type arguments that cannot produce valid Db2 DDL', async () => {
+        const model = await parseCMagicString(`
+            enum EmptyStatus {}
+            entity InvalidTypes resource "invalid-types" table "INVALID_TYPES" {
+                id: Int column "ID" key required,
+                zeroLength: String(0) column "ZERO_LENGTH",
+                fractionalLength: String(2.5) column "FRACTIONAL_LENGTH",
+                excessiveLength: String(32740) column "EXCESSIVE_LENGTH",
+                excessivePrecision: Decimal(64, 0) column "EXCESSIVE_PRECISION",
+                invalidScale: Decimal(2, 5) column "INVALID_SCALE",
+                fractionalDecimal: Decimal(5.5, 2) column "FRACTIONAL_DECIMAL",
+                status: EmptyStatus column "STATUS"
+            }
+            operations for InvalidTypes { GET }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_STRING_LENGTH_INVALID',
+            'CATALOG_STRING_LENGTH_INVALID',
+            'CATALOG_STRING_LENGTH_INVALID',
+            'CATALOG_DECIMAL_SHAPE_INVALID',
+            'CATALOG_DECIMAL_SHAPE_INVALID',
+            'CATALOG_DECIMAL_SHAPE_INVALID',
+            'CATALOG_ENUM_EMPTY'
+        ]);
+    });
+
     test('limits free-text search to searchable fields exposed by the list view', async () => {
         const model = await parseCMagicString(`
             entity VisibleSearch resource "visible-search" table "VISIBLE_SEARCH" {
@@ -256,7 +286,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the four deterministic catalogue artifacts', async () => {
+    test('writes the five deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -287,6 +317,11 @@ describe('CMagic Catalogue v0', () => {
                     temporaryDirectory,
                     'services',
                     'services.read.sqlrpgle'
+                ),
+                ddl: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.ddl.sql'
                 )
             });
             expect(JSON.parse(fs.readFileSync(artifacts.spec, 'utf-8'))).toEqual(
@@ -300,6 +335,9 @@ describe('CMagic Catalogue v0', () => {
             );
             expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
                 'cmagic_computeSqlClauses(lContext : lSupportedFields'
+            );
+            expect(fs.readFileSync(artifacts.ddl, 'utf-8')).toContain(
+                'CREATE TABLE DEPARTMENT'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

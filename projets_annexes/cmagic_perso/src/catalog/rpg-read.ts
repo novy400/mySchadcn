@@ -5,9 +5,12 @@ import type {
     CatalogSpec
 } from './catalog-spec.js';
 import { renderTemplate } from '../generation/template-renderer.js';
+import {
+    assertSqlColumnIdentifier,
+    assertSqlObjectIdentifier
+} from './sql-identifier.js';
 
 const templateName = 'catalog-read.sqlrpgle.hbs';
-const sqlIdentifierPattern = /^[A-Za-z_][A-Za-z0-9_$#@]*$/;
 
 type FieldTypeTemplateModel = {
     rpgType: string;
@@ -34,16 +37,6 @@ type CatalogReadTemplateModel = {
     defaultSortField: string;
     defaultSortOrder: string;
     id: FieldTemplateModel;
-};
-
-const assertSqlIdentifier = (identifier: string): void => {
-    const parts = identifier.split('.');
-    if (
-        parts.length > 2 ||
-        parts.some(part => !sqlIdentifierPattern.test(part))
-    ) {
-        throw new Error(`Unsafe SQL identifier: ${identifier}`);
-    }
 };
 
 const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
@@ -74,9 +67,9 @@ const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
             };
         case 'boolean':
             return {
-                rpgType: 'ind',
-                sqlDefault: 'FALSE',
-                cmagicDataType: 'N'
+                rpgType: 'char(1)',
+                sqlDefault: "''",
+                cmagicDataType: 'C'
             };
         case 'enum':
             return {
@@ -128,9 +121,9 @@ const requireList = (spec: CatalogSpec): CatalogListSpec => {
 };
 
 const buildTemplateModel = (spec: CatalogSpec): CatalogReadTemplateModel => {
-    assertSqlIdentifier(spec.table);
+    assertSqlObjectIdentifier(spec.table);
     for (const field of spec.fields) {
-        assertSqlIdentifier(field.column);
+        assertSqlColumnIdentifier(field.column);
     }
 
     const hasList = spec.capabilities.includes('list');

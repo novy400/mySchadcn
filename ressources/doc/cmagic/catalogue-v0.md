@@ -11,7 +11,7 @@ source .cmagic -> CatalogSpec validé -> modèles de rendu -> templates Handleba
 
 `CatalogSpec` est la frontière stable. Le générateur adapte ce contrat en modèles de
 rendu, puis Handlebars produit les artefacts dans leur langage natif. Les futurs
-générateurs DDL, `Rules.mk`, ILEastic et IWS feront de même au lieu de relire directement
+générateurs `Rules.mk`, ILEastic et IWS feront de même au lieu de relire directement
 l'AST Langium ou d'assembler du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
@@ -34,7 +34,8 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.catalog-spec.json` ;
 - `{resource}.openapi.json` ;
 - `{resource}.resource-contract.ts` ;
-- `{resource}.read.sqlrpgle`.
+- `{resource}.read.sqlrpgle` ;
+- `{resource}.ddl.sql`.
 
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
 
@@ -83,6 +84,10 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - une capacité de liste exige une vue `list` non vide ;
 - la vue `list` expose obligatoirement l'identifiant public `id` ;
 - tous les champs de la vue existent dans l'entité ;
+- une longueur `String` explicite est un entier compris entre 1 et 32 739 ;
+- une précision `Decimal` est un entier compris entre 1 et 63, avec une échelle
+  entière comprise entre 0 et la précision ;
+- un enum utilisé par une entité catalogue contient au moins une valeur ;
 - l'opérateur `LIKE` est réservé aux chaînes ;
 - le tri par défaut est déterministe et utilise l'identifiant en ordre ascendant.
 
@@ -139,9 +144,34 @@ nettoyé. Avant un usage en production, le runtime CMagic devra aussi garantir
 l'échappement ou la liaison de toutes les valeurs de filtre ; cette responsabilité
 n'appartient pas au template d'entité.
 
+## DDL Db2 généré
+
+Le cinquième artefact est produit par
+`src/templates/catalog.ddl.sql.hbs`. Il génère un `CREATE TABLE` déterministe à partir
+des mappings du `CatalogSpec` :
+
+- nom de table éventuellement qualifié par un schéma et noms de colonnes simples
+  validés ;
+- `VARCHAR`, `INTEGER`, `DECIMAL`, `DATE`, booléens `CHAR(1)` en `Y/N` et stockage
+  textuel des enums ;
+- `NOT NULL` pour les champs `required` ;
+- clé primaire issue du champ `key` ;
+- contraintes `UNIQUE` et `CHECK` pour les booléens et les enums.
+
+Le DDL v0 ne fait pas de `CREATE OR REPLACE`, afin de ne pas rendre l'artefact
+destructif par défaut. Il ne tente pas non plus de reproduire les particularités du DDL
+historique de `DEPARTMENT` qui ne figurent pas dans le DSL : schéma `DB2SAMPLE`,
+colonnes `CHAR`, CCSID, clés étrangères, `RCDFMT` et autorisations. Ces informations
+nécessiteront des concepts DSL explicites avant d'être générées.
+
+La représentation `Y/N` est également utilisée dans les structures RPG de lecture et
+déclarée comme caractère dans `CMAGIC_supportedFields`, afin que DDL et module RPG
+restent cohérents sur IBM i 7.4.
+
 ## Hors périmètre de la tranche
 
 - publication ILEastic et wrapper IWS ;
+- génération des fichiers `Rules.mk` ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
@@ -149,6 +179,6 @@ n'appartient pas au template d'entité.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-Les prochains artefacts seront ajoutés comme templates autonomes, notamment le DDL et
-les fichiers `Rules.mk`, avant la publication ILEastic ou IWS et la vérification du
-contrat HTTP de bout en bout depuis le DataProvider de `mySchadcn`.
+Le prochain artefact sera ajouté comme template autonome pour les fichiers `Rules.mk`,
+avant la publication ILEastic ou IWS et la vérification du contrat HTTP de bout en bout
+depuis le DataProvider de `mySchadcn`.

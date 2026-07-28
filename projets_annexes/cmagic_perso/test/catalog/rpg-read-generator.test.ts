@@ -2,26 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
-    buildCatalogSpecs,
     generateRpgReadModule,
     type CatalogSpec
 } from '../../src/catalog/index.js';
-import { parseCMagicString } from '../generating/test-utils.js';
-
-const compileService = async (): Promise<CatalogSpec> => {
-    const source = fs.readFileSync(
-        path.resolve('examples/service-catalogue.cmagic'),
-        'utf-8'
-    );
-    const compilation = buildCatalogSpecs(await parseCMagicString(source));
-
-    expect(compilation.diagnostics).toEqual([]);
-    return compilation.specs[0];
-};
+import { compileServiceCatalog } from './test-utils.js';
 
 describe('Catalogue RPG read generator', () => {
     test('delegates LIST query preparation to the shared CMagic procedures', async () => {
-        const source = generateRpgReadModule(await compileService());
+        const source = generateRpgReadModule(await compileServiceCatalog());
 
         expect(source).toContain('dcl-proc service_search export;');
         expect(source).toContain('dcl-proc service_getSupportedFields export;');
@@ -66,7 +54,7 @@ describe('Catalogue RPG read generator', () => {
     });
 
     test('rejects SQL identifiers that cannot be safely generated', async () => {
-        const service = await compileService();
+        const service = await compileServiceCatalog();
         const unsafeSpec: CatalogSpec = {
             ...service,
             table: 'DEPARTMENT; DROP TABLE EMPLOYEE'
@@ -78,7 +66,7 @@ describe('Catalogue RPG read generator', () => {
     });
 
     test('only exposes operations declared by the catalogue capabilities', async () => {
-        const service = await compileService();
+        const service = await compileServiceCatalog();
 
         const getOnly = generateRpgReadModule({
             ...service,
@@ -115,7 +103,10 @@ describe('Catalogue RPG read generator', () => {
             );
 
             expect(
-                generateRpgReadModule(await compileService(), temporaryDirectory)
+                generateRpgReadModule(
+                    await compileServiceCatalog(),
+                    temporaryDirectory
+                )
             ).toBe('service|DEPARTMENT|LIST|GET\n');
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

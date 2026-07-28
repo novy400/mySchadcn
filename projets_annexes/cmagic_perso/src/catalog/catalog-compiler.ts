@@ -44,6 +44,9 @@ const filterOperators = new Set<CatalogFilterOperator>([
     'lt'
 ]);
 
+const DB2_MAX_VARCHAR_LENGTH = 32739;
+const DB2_MAX_DECIMAL_PRECISION = 63;
+
 const diagnostic = (
     code: CatalogDiagnosticCode,
     entity: Entity,
@@ -203,6 +206,50 @@ const compileEntity = (
     for (const field of entity.fields) {
         const operators = getFilterOperators(field);
         const fieldType = fieldTypes.get(field);
+        if (
+            fieldType?.kind === 'string' &&
+            fieldType.length !== undefined &&
+            (!Number.isInteger(fieldType.length) ||
+                fieldType.length < 1 ||
+                fieldType.length > DB2_MAX_VARCHAR_LENGTH)
+        ) {
+            diagnostics.push(
+                diagnostic(
+                    'CATALOG_STRING_LENGTH_INVALID',
+                    entity,
+                    `La longueur String de ${field.name} doit être un entier entre 1 et ${DB2_MAX_VARCHAR_LENGTH}.`,
+                    field
+                )
+            );
+        }
+        if (
+            fieldType?.kind === 'decimal' &&
+            (!Number.isInteger(fieldType.precision) ||
+                !Number.isInteger(fieldType.scale) ||
+                fieldType.precision < 1 ||
+                fieldType.precision > DB2_MAX_DECIMAL_PRECISION ||
+                fieldType.scale < 0 ||
+                fieldType.scale > fieldType.precision)
+        ) {
+            diagnostics.push(
+                diagnostic(
+                    'CATALOG_DECIMAL_SHAPE_INVALID',
+                    entity,
+                    `Le type Decimal de ${field.name} exige une précision entière entre 1 et ${DB2_MAX_DECIMAL_PRECISION} et une échelle entière comprise entre 0 et la précision.`,
+                    field
+                )
+            );
+        }
+        if (fieldType?.kind === 'enum' && fieldType.values.length === 0) {
+            diagnostics.push(
+                diagnostic(
+                    'CATALOG_ENUM_EMPTY',
+                    entity,
+                    `L'enum ${fieldType.name} utilisé par ${field.name} doit déclarer au moins une valeur.`,
+                    field
+                )
+            );
+        }
         if (operators.includes('like') && fieldType?.kind !== 'string') {
             diagnostics.push(
                 diagnostic(
