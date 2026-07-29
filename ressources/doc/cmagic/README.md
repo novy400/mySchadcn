@@ -10,6 +10,8 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
 - [Catalogue v0](./catalogue-v0.md) : contrat DSL et artefacts générés.
 - [Recette IBM i du catalogue](./recette-ibmi-catalogue.md) : build BOB, lancement
   ILEastic, tests HTTP et collecte des preuves.
+- [Recette IBM i du catalogue avec IWS](./recette-ibmi-catalogue-iws.md) : build du
+  wrapper IWS, déploiement dans IBM Web Administration, mapping PCML et tests HTTP.
 
 ## Matériaux de travail
 
