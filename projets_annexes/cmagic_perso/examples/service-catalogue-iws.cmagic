@@ -1,0 +1,15 @@
+entity Service resource "services" table "DEPARTMENT" iwsObject "SERVIWS" {
+    id: String(3) column "DEPTNO" key required searchable sortable filter(EQ, LIKE),
+    nom: String(36) column "DEPTNAME" required searchable sortable filter(EQ, LIKE),
+    idManageur: String(6) column "MGRNO" filter(EQ),
+    idServiceAdmin: String(3) column "ADMRDEPT" filter(EQ),
+    site: String(16) column "LOCATION" searchable filter(EQ, LIKE)
+}
+
+view list for Service {
+    id, nom, idManageur, idServiceAdmin, site
+}
+
+operations for Service {
+    LIST
+}

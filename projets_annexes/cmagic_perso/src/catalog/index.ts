@@ -3,6 +3,14 @@ export { buildCatalogServerSpecs } from './server-compiler.js';
 export { generateCatalogBinder } from './binder.js';
 export { generateCatalogIleasticInterface } from './ileastic-interface.js';
 export { generateCatalogIleasticWrapper } from './ileastic.js';
+export { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
+export { generateCatalogIwsBinder } from './iws-binder.js';
+export { generateCatalogIwsInterface } from './iws-interface.js';
+export {
+    buildCatalogIwsTemplateModel,
+    catalogIwsGetListProcedure,
+    generateCatalogIwsWrapper
+} from './iws.js';
 export { generateCatalogReadInterface } from './read-interface.js';
 export {
     CatalogCompilationError,

@@ -46,6 +46,7 @@ export type CatalogSpec = {
     resource: string;
     table: string;
     ileasticObject?: string;
+    iwsObject?: string;
     identifier: 'id';
     capabilities: CatalogCapability[];
     fields: CatalogFieldSpec[];
@@ -57,6 +58,10 @@ export type CatalogDiagnosticCode =
     | 'CATALOG_TABLE_REQUIRED'
     | 'CATALOG_ILEASTIC_OBJECT_INVALID'
     | 'CATALOG_ILEASTIC_OBJECT_COLLISION'
+    | 'CATALOG_IWS_OBJECT_INVALID'
+    | 'CATALOG_IWS_OBJECT_COLLISION'
+    | 'CATALOG_TRANSPORT_AMBIGUOUS'
+    | 'CATALOG_IWS_LIST_REQUIRED'
     | 'CATALOG_KEY_REQUIRED'
     | 'CATALOG_KEY_AMBIGUOUS'
     | 'CATALOG_IDENTIFIER_MUST_BE_ID'

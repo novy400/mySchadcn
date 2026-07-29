@@ -11,8 +11,8 @@ source .cmagic -> CatalogSpec validé -> modèles de rendu -> templates Handleba
 
 `CatalogSpec` est la frontière stable. Le générateur adapte ce contrat en modèles de
 rendu, puis Handlebars produit les artefacts dans leur langage natif. Les générateurs
-ILEastic et, plus tard, IWS font de même au lieu de relire directement l'AST Langium ou
-d'assembler du code ligne par ligne en TypeScript.
+ILEastic et IWS font de même au lieu de relire directement l'AST Langium ou d'assembler
+du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
 Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
@@ -41,6 +41,18 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.ddl.sql` ;
 - `{resource}.bnd` ;
 - `Rules.mk`.
+
+Pour préserver la compatibilité du générateur historique, les sources ILEastic restent
+toujours présentes. La propriété `ileasticObject` active leur cible de compilation BOB.
+Le choix IWS ajoute quatre artefacts :
+
+- `iwsObject` génère `{resource}.iws.rpgleinc`, `{resource}.iws.sqlrpgle` et
+  `{resource}.iws.bnd` ;
+- `{resource}.iws.bnddir` décrit le binding directory applicatif du wrapper.
+
+Les propriétés `ileasticObject` et `iwsObject` sont mutuellement exclusives : une seule
+cible de transport est ajoutée à `Rules.mk`. Sans propriété de transport, les sources
+ILEastic compatibles restent générées, mais aucune cible HTTP n'est créée.
 
 Lorsqu'un bloc `server` est présent, elle ajoute au projet généré :
 
@@ -74,6 +86,28 @@ server ServiceApi object "SERVAPI" port 44000 host "*ANY" {
 }
 ```
 
+Pour publier seulement `service_search` avec IBM Integrated Web Services, le choix
+devient :
+
+```cmagic
+entity Service resource "services" table "DEPARTMENT" iwsObject "SERVIWS" {
+    id: String(3) column "DEPTNO" key required searchable sortable filter(EQ, LIKE),
+    nom: String(36) column "DEPTNAME" required searchable sortable filter(EQ, LIKE)
+}
+
+view list for Service {
+    id, nom
+}
+
+operations for Service {
+    LIST
+}
+```
+
+L'exemple complet se trouve dans `examples/service-catalogue-iws.cmagic`. Un bloc
+`server` n'est pas nécessaire pour IWS : l'écoute HTTP est fournie par le serveur IWS
+IBM i, pas par un programme ILEastic généré.
+
 Les mots-clés historiques restent acceptés. Pour une entité catalogue, les alias sont :
 
 | Catalogue | Historique | Capacité sémantique |
@@ -96,6 +130,11 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - `resource` et `table` sont tous deux obligatoires ;
 - `ileasticObject` est facultatif ; lorsqu'il est présent, il contient un nom système
   IBM i de 1 à 10 caractères, normalisé en majuscules et distinct du module de lecture ;
+- `iwsObject` suit les mêmes règles de nommage et désigne le service program publié
+  par IBM Integrated Web Services ;
+- une entité choisit au plus un transport avec `ileasticObject` ou `iwsObject` ;
+- `iwsObject` exige la capacité `LIST` ou son alias `SEARCH` dans cette première
+  version ;
 - un serveur déclare un nom d'objet programme IBM i valide, un port entier compris
   entre 1 et 65 535 et au moins une entité catalogue ;
 - chaque entité publiée par un serveur est unique dans ce serveur et déclare
@@ -227,7 +266,47 @@ de sérialisation renvoie `500`. Aucune route de mutation ni route IWS n'est gé
 Lorsque l'entité déclare `ileasticObject`, le module de transport est également ajouté
 à `Rules.mk` sous ce nom système explicite. Le générateur ne déduit, n'abrège et ne
 tronque jamais ce second nom d'objet IBM i. Sans cette propriété, les sources ILEastic
-restent générées, mais aucune cible BOB de transport n'est créée.
+restent générées pour compatibilité, mais aucune cible BOB de transport n'est créée.
+
+## Interface, wrapper, binder et binding directory IWS générés
+
+Le transport IWS reprend le patron validé dans `projets_annexes/client` :
+
+1. `{entity}_getSupportedFields` fournit la liste blanche CMagic ;
+2. `CIWS_initRestRequest` transforme `QUERY_STRING` en `CMAGIC_context` ;
+3. `{entity}_search` exécute la recherche métier commune aux deux transports ;
+4. le wrapper copie la liste chaînée dans un tableau PCML limité par
+   `HTTPREST_MAX_ITEMS`, puis libère la liste ;
+5. `X-Total-Count` et `Access-Control-Expose-Headers` sont renvoyés comme en-têtes IWS.
+
+Le point d'entrée public est `{entity}_getlist_iws`. Sa signature PCML expose :
+
+- `items_LENGTH` et `items` ;
+- `totalCount` ;
+- `errors_LENGTH` et `errors` ;
+- `httpStatus` ;
+- `httpHeaders`.
+
+Le module contient `pgminfo(*pcml:*module:*dclcase)`. Après compilation, le déploiement
+IWS doit publier le service program désigné par `iwsObject`, sélectionner
+`{entity}_getlist_iws`, mapper `httpStatus` au code de réponse et `httpHeaders` aux
+en-têtes sortants. Le chemin REST public est choisi lors du déploiement IWS ; il n'est
+donc pas codé dans le wrapper RPG.
+
+Le projet IBM i cible doit déjà fournir `ciws.rpgleinc`, `httpRest.rpgleinc` et le
+service program `CIWS`, comme `applicationTemplate` et le projet de référence
+`projets_annexes/client`. Ces composants constituent le runtime partagé ; ils ne sont
+pas recopiés pour chaque catalogue généré.
+
+Le générateur produit également `{resource}.iws.bnddir` et la cible
+`{ENTITY}.BNDDIR`. Ce binding directory applicatif référence le service program de
+lecture (`SERVICE` dans l'exemple) et `CIWS`, puis le wrapper le déclare dans
+`ctl-opt bnddir`. La compilation ne demande donc plus d'ajouter manuellement les
+services générés au binding directory partagé `CKOOL`.
+
+Le contrat IWS v0 couvre uniquement `LIST`/`SEARCH`. `GET` par identifiant continue à
+être disponible avec ILEastic lorsqu'il est déclaré, mais n'est pas encore généré pour
+IWS.
 
 ## DDL Db2 généré
 
@@ -288,6 +367,18 @@ La cible `SERVREST.MODULE` provient directement de
 `SERVICE.MODULE`. Cette règle compile le transport et ne génère pas de binder pour ce
 module.
 
+Avec `iwsObject "SERVIWS"`, les règles de transport deviennent :
+
+```make
+SERVIWS.MODULE: services.iws.sqlrpgle
+SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM
+SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR
+```
+
+Le binder IWS utilise la signature `SERVIWS.0.0.1` et exporte uniquement
+`service_getlist_iws`. Les règles ILEastic et IWS ne sont jamais produites ensemble
+pour une même entité.
+
 ## Programme serveur ILEastic généré
 
 Le bloc `server ServiceApi` produit un sous-projet applicatif séparé. Son source
@@ -325,7 +416,7 @@ historique des dix artefacts par catalogue reste inchangée.
 
 ## Hors périmètre de la tranche
 
-- wrapper IWS ;
+- opération IWS `GET` par identifiant et mutations IWS ;
 - configuration CORS, journalisation et arrêt contrôlé du serveur ILEastic ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
@@ -334,6 +425,6 @@ historique des dix artefacts par catalogue reste inchangée.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine verticale pourra valider la compilation du projet BOB sur IBM i, puis
-vérifier le contrat HTTP de bout en bout depuis le DataProvider de `mySchadcn`, avant
-d'aborder le wrapper IWS ou les mutations.
+La prochaine verticale pourra valider la compilation des deux transports sur IBM i,
+puis vérifier leurs contrats HTTP de bout en bout avant d'étendre IWS à `GET` ou
+d'aborder les mutations.

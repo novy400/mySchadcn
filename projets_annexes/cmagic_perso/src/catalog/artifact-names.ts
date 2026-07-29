@@ -12,6 +12,20 @@ export const catalogIleasticInterfaceSourceName = (
     resource: string
 ): string => `${resource}.ileastic.rpgleinc`;
 
+export const catalogIwsSourceName = (resource: string): string =>
+    `${resource}.iws.sqlrpgle`;
+
+export const catalogIwsInterfaceSourceName = (
+    resource: string
+): string => `${resource}.iws.rpgleinc`;
+
+export const catalogIwsBinderSourceName = (resource: string): string =>
+    `${resource}.iws.bnd`;
+
+export const catalogIwsBindingDirectorySourceName = (
+    resource: string
+): string => `${resource}.iws.bnddir`;
+
 export const catalogBinderSourceName = (resource: string): string =>
     `${resource}.bnd`;
 

@@ -60,6 +60,26 @@ export const generateCatalogAction = async (
         console.log(
             chalk.green(`ILEastic wrapper generated: ${artifact.ileastic}`)
         );
+        if (artifact.iwsInterface) {
+            console.log(
+                chalk.green(`IWS interface generated: ${artifact.iwsInterface}`)
+            );
+        }
+        if (artifact.iws) {
+            console.log(chalk.green(`IWS wrapper generated: ${artifact.iws}`));
+        }
+        if (artifact.iwsBinder) {
+            console.log(
+                chalk.green(`IWS binder generated: ${artifact.iwsBinder}`)
+            );
+        }
+        if (artifact.iwsBindingDirectory) {
+            console.log(
+                chalk.green(
+                    `IWS binding directory generated: ${artifact.iwsBindingDirectory}`
+                )
+            );
+        }
         console.log(chalk.green(`Db2 DDL generated: ${artifact.ddl}`));
         console.log(chalk.green(`binder generated: ${artifact.binder}`));
         console.log(chalk.green(`BOB rules generated: ${artifact.rules}`));
@@ -101,7 +121,7 @@ export default function (): void {
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'catalogue output directory')
         .description(
-            'generates catalogue contracts, RPG/ILEastic artifacts and optional application server projects'
+            'generates catalogue contracts, RPG transport artifacts and optional ILEastic application server projects'
         )
         .action(generateCatalogAction);
 

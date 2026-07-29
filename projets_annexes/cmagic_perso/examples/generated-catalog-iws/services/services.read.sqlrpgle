@@ -1,20 +1,13 @@
 **free
-{{! Catalogue read module. CatalogSpec is adapted to this template by rpg-read.ts. }}
-{{#*inline "failQuery"}}
-    {{@root.procedures.rejectQuery}}(
-      pErrors : 'sql' : '{{message}}');
-    list_dispose(lItems);
-    return *off;
-{{/inline}}
 // Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
-/include '{{readInterfaceSource}}'
+/include 'services.read.rpgleinc'
 /include 'sqlstates.rpginc'
 /include 'llist/llist_h.rpgle'
 
 exec sql set option commit = *none, datfmt = *iso, closqlcsr = *endmod;
 
-dcl-proc {{procedures.rejectQuery}};
+dcl-proc service_reject_query;
   dcl-pi *n;
     pErrors likeDS(GLOBAL_listError);
     pField varchar(32) const;
@@ -26,25 +19,41 @@ dcl-proc {{procedures.rejectQuery}};
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
-{{#if procedures.hasList}}
-dcl-proc {{procedureSignatures.getSupportedFields.name}} export;
-  dcl-pi *n {{procedureSignatures.getSupportedFields.returnType}};
-{{#each procedureSignatures.getSupportedFields.parameters}}
-    {{name}} {{type}}{{#if isConst}} const{{/if}};
-{{/each}}
+dcl-proc service_getSupportedFields export;
+  dcl-pi *n ind;
+    pSupportedFields likeDS(CMAGIC_supportedFields);
+    pErrors likeDS(GLOBAL_listError);
   end-pi;
   dcl-s lIt int(10) inz(0);
   dcl-s ErrorHappened ind;
 
   clear pSupportedFields;
   clear pErrors;
-{{#each supportedFields}}
   lIt += 1;
-  pSupportedFields.supportedFields(lIt).name = '{{name}}';
-  pSupportedFields.supportedFields(lIt).sqlField = '{{column}}';
-  pSupportedFields.supportedFields(lIt).dataType = '{{cmagicDataType}}';
+  pSupportedFields.supportedFields(lIt).name = 'id';
+  pSupportedFields.supportedFields(lIt).sqlField = 'DEPTNO';
+  pSupportedFields.supportedFields(lIt).dataType = 'C';
   pSupportedFields.supportedFields(lIt).orderTri = lIt;
-{{/each}}
+  lIt += 1;
+  pSupportedFields.supportedFields(lIt).name = 'nom';
+  pSupportedFields.supportedFields(lIt).sqlField = 'DEPTNAME';
+  pSupportedFields.supportedFields(lIt).dataType = 'C';
+  pSupportedFields.supportedFields(lIt).orderTri = lIt;
+  lIt += 1;
+  pSupportedFields.supportedFields(lIt).name = 'idManageur';
+  pSupportedFields.supportedFields(lIt).sqlField = 'MGRNO';
+  pSupportedFields.supportedFields(lIt).dataType = 'C';
+  pSupportedFields.supportedFields(lIt).orderTri = lIt;
+  lIt += 1;
+  pSupportedFields.supportedFields(lIt).name = 'idServiceAdmin';
+  pSupportedFields.supportedFields(lIt).sqlField = 'ADMRDEPT';
+  pSupportedFields.supportedFields(lIt).dataType = 'C';
+  pSupportedFields.supportedFields(lIt).orderTri = lIt;
+  lIt += 1;
+  pSupportedFields.supportedFields(lIt).name = 'site';
+  pSupportedFields.supportedFields(lIt).sqlField = 'LOCATION';
+  pSupportedFields.supportedFields(lIt).dataType = 'C';
+  pSupportedFields.supportedFields(lIt).orderTri = lIt;
   pSupportedFields.fieldsCount = lIt;
   sorta %subarr(pSupportedFields.supportedFields(*).orderTri
     : 1 : pSupportedFields.fieldsCount);
@@ -57,17 +66,18 @@ dcl-proc {{procedureSignatures.getSupportedFields.name}} export;
     endif;
 end-proc;
 
-dcl-proc {{procedureSignatures.search.name}} export;
-  dcl-pi *n {{procedureSignatures.search.returnType}};
-{{#each procedureSignatures.search.parameters}}
-    {{name}} {{type}}{{#if isConst}} const{{/if}};
-{{/each}}
+dcl-proc service_search export;
+  dcl-pi *n ind;
+    pContext likeDS(CMAGIC_context) const;
+    pTotalCount like(CMAGIC_totalCount);
+    pItems pointer;
+    pErrors likeDS(GLOBAL_listError);
   end-pi;
   dcl-ds lErrors likeDS(GLOBAL_listError) inz;
   dcl-ds lRequestedContext likeDS(CMAGIC_context) inz;
   dcl-ds lContext likeDS(CMAGIC_context) inz;
   dcl-ds lSupportedFields likeDS(CMAGIC_supportedFields) inz;
-  dcl-ds lRow likeDS({{entityName}}_item_t) inz;
+  dcl-ds lRow likeDS(service_item_t) inz;
   dcl-s lSelect varchar(5000) inz;
   dcl-s lSelCount like(lSelect) inz;
   dcl-s lWhere like(lSelect) inz;
@@ -81,11 +91,11 @@ dcl-proc {{procedureSignatures.search.name}} export;
   clear pErrors;
   lRequestedContext = pContext;
   if %trim(lRequestedContext.sort(1).field) = *blanks;
-    lRequestedContext.sort(1).field = '{{defaultSortField}}';
-    lRequestedContext.sort(1).order = '{{defaultSortOrder}}';
+    lRequestedContext.sort(1).field = 'id';
+    lRequestedContext.sort(1).order = 'ASC';
   endif;
 
-  if not {{procedures.getSupportedFields}}(lSupportedFields : lErrors);
+  if not service_getSupportedFields(lSupportedFields : lErrors);
     pErrors = lErrors;
     return *off;
   endif;
@@ -102,7 +112,7 @@ dcl-proc {{procedureSignatures.search.name}} export;
     return *off;
   endif;
 
-  lSelect += ' FROM {{table}}';
+  lSelect += ' FROM DEPARTMENT';
   if lWhere <> *blanks;
     lSelect = %trim(lSelect) + ' ' + %trim(lWhere);
   endif;
@@ -122,13 +132,19 @@ dcl-proc {{procedureSignatures.search.name}} export;
   lItems = list_create();
   exec sql prepare CATALOG_LIST_STATEMENT from :lSelect;
   if sqlState <> SQL_OK;
-{{> failQuery message="Unable to prepare search query"}}
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to prepare search query');
+    list_dispose(lItems);
+    return *off;
   endif;
 
   exec sql declare CATALOG_LIST cursor for CATALOG_LIST_STATEMENT;
   exec sql open CATALOG_LIST;
   if sqlState <> SQL_OK;
-{{> failQuery message="Unable to open search cursor"}}
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to open search cursor');
+    list_dispose(lItems);
+    return *off;
   endif;
 
   dow sqlState = SQL_OK;
@@ -139,7 +155,10 @@ dcl-proc {{procedureSignatures.search.name}} export;
     endif;
     if sqlState <> SQL_OK;
       exec sql close CATALOG_LIST;
-  {{> failQuery message="Unable to fetch search row"}}
+      service_reject_query(
+        pErrors : 'sql' : 'Unable to fetch search row');
+      list_dispose(lItems);
+      return *off;
     endif;
     list_add(lItems : %addr(lRow) : %size(lRow));
   enddo;
@@ -147,18 +166,27 @@ dcl-proc {{procedureSignatures.search.name}} export;
 
   exec sql prepare CATALOG_COUNT_STATEMENT from :lSelCount;
   if sqlState <> SQL_OK;
-{{> failQuery message="Unable to prepare count query"}}
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to prepare count query');
+    list_dispose(lItems);
+    return *off;
   endif;
 
   exec sql declare CATALOG_COUNT cursor for CATALOG_COUNT_STATEMENT;
   exec sql open CATALOG_COUNT;
   if sqlState <> SQL_OK;
-{{> failQuery message="Unable to open count cursor"}}
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to open count cursor');
+    list_dispose(lItems);
+    return *off;
   endif;
   exec sql fetch next from CATALOG_COUNT into :lCount;
   if sqlState <> SQL_OK and sqlState <> SQL_NOT_FOUND;
     exec sql close CATALOG_COUNT;
-{{> failQuery message="Unable to fetch total count"}}
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to fetch total count');
+    list_dispose(lItems);
+    return *off;
   endif;
   exec sql close CATALOG_COUNT;
 
@@ -176,34 +204,3 @@ dcl-proc {{procedureSignatures.search.name}} export;
       return *off;
     endif;
 end-proc;
-{{/if}}{{#if procedures.hasGet}}
-dcl-proc {{procedureSignatures.get.name}} export;
-  dcl-pi *n {{procedureSignatures.get.returnType}};
-{{#each procedureSignatures.get.parameters}}
-    {{name}} {{type}}{{#if isConst}} const{{/if}};
-{{/each}}
-  end-pi;
-  clear pDetail;
-  clear pErrors;
-  exec sql
-    select
-{{#each detailFields}}
-      {{#if required}}{{column}}{{else}}COALESCE({{column}}, {{sqlDefault}}){{/if}}{{#unless @last}},{{/unless}}
-{{/each}}
-    into :pDetail
-    FROM {{table}}
-    WHERE {{id.column}} = :pId
-    fetch first 1 row only;
-  if sqlState = SQL_NOT_FOUND;
-    {{procedures.rejectQuery}}(
-      pErrors : 'id' : '{{entityDisplayName}} not found');
-    return *off;
-  endif;
-  if sqlState <> SQL_OK;
-    {{procedures.rejectQuery}}(
-      pErrors : 'sql' : 'Unable to read {{entityDisplayName}}');
-    return *off;
-  endif;
-  return *on;
-end-proc;
-{{/if}}

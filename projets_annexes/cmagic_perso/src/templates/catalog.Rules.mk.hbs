@@ -8,3 +8,9 @@
 # {{entityName}} ILEastic transport module
 {{ileasticObjectName}}.MODULE: {{ileasticSource}}
 {{/if}}
+{{#if iwsObjectName}}
+# {{entityName}} IBM Integrated Web Services transport service program
+{{iwsObjectName}}.MODULE: {{iwsSource}}
+{{objectName}}.BNDDIR: {{iwsBindingDirectorySource}} {{objectName}}.SRVPGM CIWS.SRVPGM
+{{iwsObjectName}}.SRVPGM: {{iwsBinderSource}} {{iwsObjectName}}.MODULE {{objectName}}.BNDDIR
+{{/if}}

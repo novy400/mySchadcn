@@ -2,7 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { generateCatalogRules } from '../../src/catalog/index.js';
-import { compileServiceCatalog } from './test-utils.js';
+import {
+    compileIwsServiceCatalog,
+    compileServiceCatalog
+} from './test-utils.js';
 
 describe('Catalogue Rules.mk generator', () => {
     test('generates the BOB rules for read and ILEastic modules', async () => {
@@ -32,6 +35,23 @@ describe('Catalogue Rules.mk generator', () => {
         expect(source).not.toContain('services.ileastic.sqlrpgle');
     });
 
+    test('generates IWS instead of ILEastic when iwsObject is selected', async () => {
+        const source = generateCatalogRules(
+            await compileIwsServiceCatalog()
+        );
+
+        expect(source).toContain(
+            'SERVIWS.MODULE: services.iws.sqlrpgle'
+        );
+        expect(source).toContain(
+            'SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM'
+        );
+        expect(source).toContain(
+            'SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR'
+        );
+        expect(source).not.toContain('SERVREST.MODULE:');
+    });
+
     test('rejects entity names that cannot be IBM i object names', async () => {
         const service = await compileServiceCatalog();
 
@@ -51,7 +71,7 @@ describe('Catalogue Rules.mk generator', () => {
         try {
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog.Rules.mk.hbs'),
-                '{{objectName}}|{{ileasticObjectName}}|{{rpgReadSource}}|{{ileasticSource}}|{{binderSource}}\n',
+                '{{objectName}}|{{ileasticObjectName}}|{{iwsObjectName}}|{{rpgReadSource}}|{{ileasticSource}}|{{iwsSource}}|{{iwsBinderSource}}|{{iwsBindingDirectorySource}}|{{binderSource}}\n',
                 'utf-8'
             );
 
@@ -61,7 +81,7 @@ describe('Catalogue Rules.mk generator', () => {
                     temporaryDirectory
                 )
             ).toBe(
-                'SERVICE|SERVREST|services.read.sqlrpgle|services.ileastic.sqlrpgle|services.bnd\n'
+                'SERVICE|SERVREST||services.read.sqlrpgle|services.ileastic.sqlrpgle|services.iws.sqlrpgle|services.iws.bnd|services.iws.bnddir|services.bnd\n'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

@@ -249,6 +249,68 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
+    test('compiles IWS as an alternative transport for LIST', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.diagnostics).toEqual([]);
+        expect(compilation.specs[0]).toEqual(
+            expect.objectContaining({
+                entity: 'Service',
+                iwsObject: 'SERVIWS',
+                capabilities: ['list']
+            })
+        );
+        expect(compilation.specs[0]).not.toHaveProperty('ileasticObject');
+    });
+
+    test('validates the exclusive IWS transport choice', async () => {
+        const model = await parseCMagicString(`
+            entity BadIws resource "bad-iws" table "BADIWS"
+                iwsObject "TOO-LONG-NAME" {
+                id: Int column "ID" key required
+            }
+            view list for BadIws { id }
+            operations for BadIws { LIST }
+
+            entity Collision resource "collisions" table "COLLISION"
+                iwsObject "COLLISION" {
+                id: Int column "ID" key required
+            }
+            view list for Collision { id }
+            operations for Collision { LIST }
+
+            entity Both resource "both" table "BOTH"
+                ileasticObject "BOTHREST" iwsObject "BOTHIWS" {
+                id: Int column "ID" key required
+            }
+            view list for Both { id }
+            operations for Both { LIST }
+
+            entity NoList resource "no-list" table "NOLIST"
+                iwsObject "NOLISTIWS" {
+                id: Int column "ID" key required
+            }
+            operations for NoList { GET }
+        `);
+
+        const compilation = buildCatalogSpecs(model);
+
+        expect(compilation.specs).toEqual([]);
+        expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
+            'CATALOG_IWS_OBJECT_INVALID',
+            'CATALOG_IWS_OBJECT_COLLISION',
+            'CATALOG_TRANSPORT_AMBIGUOUS',
+            'CATALOG_IWS_LIST_REQUIRED'
+        ]);
+    });
+
     test('generates the OpenAPI and frontend contract from the same CatalogSpec', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
@@ -390,9 +452,9 @@ describe('CMagic Catalogue v0', () => {
                 'cmagic_computeSqlClauses(lContext : lSupportedFields'
             );
             expect(
-                fs.readFileSync(artifacts.ileasticInterface, 'utf-8')
+                fs.readFileSync(artifacts.ileasticInterface as string, 'utf-8')
             ).toContain('dcl-pr service_registerRoutes extproc(*dclcase);');
-            expect(fs.readFileSync(artifacts.ileastic, 'utf-8')).toContain(
+            expect(fs.readFileSync(artifacts.ileastic as string, 'utf-8')).toContain(
                 'dcl-proc service_registerRoutes export;'
             );
             expect(fs.readFileSync(artifacts.ddl, 'utf-8')).toContain(
@@ -407,6 +469,79 @@ describe('CMagic Catalogue v0', () => {
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
                 'SERVREST.MODULE: services.ileastic.sqlrpgle'
             );
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('adds the four IWS artifacts when iwsObject is selected', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-catalog-iws-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+
+            expect(artifacts.iws).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.iws.sqlrpgle'
+                )
+            );
+            expect(artifacts.iwsInterface).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.iws.rpgleinc'
+                )
+            );
+            expect(artifacts.iwsBinder).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.iws.bnd'
+                )
+            );
+            expect(artifacts.iwsBindingDirectory).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.iws.bnddir'
+                )
+            );
+            expect(fs.readFileSync(artifacts.iws as string, 'utf-8')).toContain(
+                'dcl-proc service_getlist_iws export;'
+            );
+            expect(
+                fs.readFileSync(artifacts.iwsInterface as string, 'utf-8')
+            ).toContain('dcl-pr service_getlist_iws extproc(*dclcase);');
+            expect(
+                fs.readFileSync(artifacts.iwsBinder as string, 'utf-8')
+            ).toContain("EXPORT SYMBOL('service_getlist_iws')");
+            expect(
+                fs.readFileSync(
+                    artifacts.iwsBindingDirectory as string,
+                    'utf-8'
+                )
+            ).toContain('OBJ((*LIBL/SERVICE *SRVPGM))');
+            expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
+                'SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR'
+            );
+            expect(fs.readFileSync(artifacts.rules, 'utf-8')).not.toContain(
+                'SERVREST.MODULE:'
+            );
+            expect(artifacts.ileastic).toBeDefined();
+            expect(artifacts.ileasticInterface).toBeDefined();
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

@@ -5,6 +5,10 @@ import {
     catalogBinderSourceName,
     catalogIleasticInterfaceSourceName,
     catalogIleasticSourceName,
+    catalogIwsBinderSourceName,
+    catalogIwsBindingDirectorySourceName,
+    catalogIwsInterfaceSourceName,
+    catalogIwsSourceName,
     catalogRpgReadInterfaceSourceName,
     catalogRpgReadSourceName,
     catalogServerBaseName,
@@ -16,6 +20,10 @@ import type { CatalogDiagnostic, CatalogSpec } from './catalog-spec.js';
 import { generateCatalogDdl } from './ddl.js';
 import { generateCatalogIleasticInterface } from './ileastic-interface.js';
 import { generateCatalogIleasticWrapper } from './ileastic.js';
+import { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
+import { generateCatalogIwsBinder } from './iws-binder.js';
+import { generateCatalogIwsInterface } from './iws-interface.js';
+import { generateCatalogIwsWrapper } from './iws.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
 import { generateCatalogReadInterface } from './read-interface.js';
@@ -40,6 +48,10 @@ export type GeneratedCatalogArtifactPaths = {
     rpgReadInterface: string;
     ileastic: string;
     ileasticInterface: string;
+    iws?: string;
+    iwsInterface?: string;
+    iwsBinder?: string;
+    iwsBindingDirectory?: string;
     ddl: string;
     binder: string;
     rules: string;
@@ -94,6 +106,27 @@ const writeCatalogArtifacts = (
         const resourceDirectory = path.join(destination, spec.resource);
         fs.mkdirSync(resourceDirectory, { recursive: true });
 
+        const iwsArtifacts =
+            spec.iwsObject === undefined
+                ? {}
+                : {
+                      iws: path.join(
+                          resourceDirectory,
+                          catalogIwsSourceName(spec.resource)
+                      ),
+                      iwsInterface: path.join(
+                          resourceDirectory,
+                          catalogIwsInterfaceSourceName(spec.resource)
+                      ),
+                      iwsBinder: path.join(
+                          resourceDirectory,
+                          catalogIwsBinderSourceName(spec.resource)
+                      ),
+                      iwsBindingDirectory: path.join(
+                          resourceDirectory,
+                          catalogIwsBindingDirectorySourceName(spec.resource)
+                      )
+                  };
         const artifacts: GeneratedCatalogArtifactPaths = {
             spec: path.join(
                 resourceDirectory,
@@ -120,6 +153,7 @@ const writeCatalogArtifacts = (
                 resourceDirectory,
                 catalogIleasticInterfaceSourceName(spec.resource)
             ),
+            ...iwsArtifacts,
             ddl: path.join(resourceDirectory, `${spec.resource}.ddl.sql`),
             binder: path.join(
                 resourceDirectory,
@@ -147,6 +181,26 @@ const writeCatalogArtifacts = (
             artifacts.ileastic,
             generateCatalogIleasticWrapper(spec)
         );
+        if (
+            artifacts.iws !== undefined &&
+            artifacts.iwsInterface !== undefined &&
+            artifacts.iwsBinder !== undefined &&
+            artifacts.iwsBindingDirectory !== undefined
+        ) {
+            writeArtifact(
+                artifacts.iwsInterface,
+                generateCatalogIwsInterface(spec)
+            );
+            writeArtifact(artifacts.iws, generateCatalogIwsWrapper(spec));
+            writeArtifact(
+                artifacts.iwsBinder,
+                generateCatalogIwsBinder(spec)
+            );
+            writeArtifact(
+                artifacts.iwsBindingDirectory,
+                generateCatalogIwsBindingDirectory(spec)
+            );
+        }
         writeArtifact(artifacts.ddl, generateCatalogDdl(spec));
         writeArtifact(artifacts.binder, generateCatalogBinder(spec));
         writeArtifact(artifacts.rules, generateCatalogRules(spec));

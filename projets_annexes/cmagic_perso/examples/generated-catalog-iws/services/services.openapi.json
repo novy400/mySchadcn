@@ -1,0 +1,192 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Service catalogue API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/services": {
+      "get": {
+        "operationId": "listService",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "nom"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "x-cmagic-operators": [
+              "like"
+            ]
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 3
+            },
+            "x-cmagic-operators": [
+              "eq",
+              "like"
+            ]
+          },
+          {
+            "name": "nom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 36
+            },
+            "x-cmagic-operators": [
+              "eq",
+              "like"
+            ]
+          },
+          {
+            "name": "idManageur",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 6
+            },
+            "x-cmagic-operators": [
+              "eq"
+            ]
+          },
+          {
+            "name": "idServiceAdmin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 3
+            },
+            "x-cmagic-operators": [
+              "eq"
+            ]
+          },
+          {
+            "name": "site",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "x-cmagic-operators": [
+              "eq",
+              "like"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Service"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "total"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "nom": {
+            "type": "string",
+            "maxLength": 36
+          },
+          "idManageur": {
+            "type": "string",
+            "maxLength": 6
+          },
+          "idServiceAdmin": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "site": {
+            "type": "string",
+            "maxLength": 16
+          }
+        },
+        "required": [
+          "id",
+          "nom"
+        ]
+      }
+    }
+  }
+}

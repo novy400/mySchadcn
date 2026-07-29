@@ -17,6 +17,7 @@ Entity:
     ('resource' resourceName=STRING)?
     ('table' tableName=STRING)?
     ('ileasticObject' ileasticObjectName=STRING)?
+    ('iwsObject' iwsObjectName=STRING)?
     '{'
         (fields+=Field (',')?)*
     '}';

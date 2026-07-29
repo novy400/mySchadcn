@@ -65,6 +65,52 @@ const diagnostic = (
     ...(field ? { field: field.name } : {})
 });
 
+type TransportObjectValidation = {
+    objectName?: string;
+    diagnostics: CatalogDiagnostic[];
+};
+
+const validateTransportObject = (
+    entity: Entity,
+    rawObjectName: string | undefined,
+    transportName: 'ILEastic' | 'IWS',
+    invalidCode: CatalogDiagnosticCode,
+    collisionCode: CatalogDiagnosticCode,
+    collisionTarget: string
+): TransportObjectValidation => {
+    if (rawObjectName === undefined) {
+        return { diagnostics: [] };
+    }
+
+    const objectName = normalizeIbmIObjectName(rawObjectName);
+    if (!isIbmIObjectName(objectName)) {
+        return {
+            objectName,
+            diagnostics: [
+                diagnostic(
+                    invalidCode,
+                    entity,
+                    `L'objet ${transportName} ${objectName || 'vide'} doit etre un nom systeme IBM i de 1 a 10 caracteres.`
+                )
+            ]
+        };
+    }
+    if (isSameIbmIObjectName(objectName, entity.name)) {
+        return {
+            objectName,
+            diagnostics: [
+                diagnostic(
+                    collisionCode,
+                    entity,
+                    `L'objet ${transportName} ${objectName} doit etre different du ${collisionTarget}.`
+                )
+            ]
+        };
+    }
+
+    return { objectName, diagnostics: [] };
+};
+
 const toFieldType = (
     type: TypeDefinition,
     model: Model
@@ -149,27 +195,34 @@ const compileEntity = (
             )
         );
     }
-    const ileasticObject =
-        entity.ileasticObjectName === undefined
-            ? undefined
-            : normalizeIbmIObjectName(entity.ileasticObjectName);
-    if (ileasticObject !== undefined && !isIbmIObjectName(ileasticObject)) {
+    const ileasticTransport = validateTransportObject(
+        entity,
+        entity.ileasticObjectName,
+        'ILEastic',
+        'CATALOG_ILEASTIC_OBJECT_INVALID',
+        'CATALOG_ILEASTIC_OBJECT_COLLISION',
+        'module de lecture'
+    );
+    const iwsTransport = validateTransportObject(
+        entity,
+        entity.iwsObjectName,
+        'IWS',
+        'CATALOG_IWS_OBJECT_INVALID',
+        'CATALOG_IWS_OBJECT_COLLISION',
+        'service program de lecture'
+    );
+    const ileasticObject = ileasticTransport.objectName;
+    const iwsObject = iwsTransport.objectName;
+    diagnostics.push(
+        ...ileasticTransport.diagnostics,
+        ...iwsTransport.diagnostics
+    );
+    if (ileasticObject !== undefined && iwsObject !== undefined) {
         diagnostics.push(
             diagnostic(
-                'CATALOG_ILEASTIC_OBJECT_INVALID',
+                'CATALOG_TRANSPORT_AMBIGUOUS',
                 entity,
-                `L'objet ILEastic ${ileasticObject || 'vide'} doit être un nom système IBM i de 1 à 10 caractères.`
-            )
-        );
-    } else if (
-        ileasticObject !== undefined &&
-        isSameIbmIObjectName(ileasticObject, entity.name)
-    ) {
-        diagnostics.push(
-            diagnostic(
-                'CATALOG_ILEASTIC_OBJECT_COLLISION',
-                entity,
-                `L'objet ILEastic ${ileasticObject} doit être différent du module de lecture.`
+                `L'entité catalogue ${entity.name} doit choisir ileasticObject ou iwsObject, pas les deux.`
             )
         );
     }
@@ -314,6 +367,15 @@ const compileEntity = (
             )
         );
     }
+    if (iwsObject !== undefined && !capabilities.includes('list')) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_IWS_LIST_REQUIRED',
+                entity,
+                `L'exposition IWS de ${entity.name} exige la capacité LIST ou SEARCH.`
+            )
+        );
+    }
 
     const fieldNames = new Set(entity.fields.map(field => field.name));
     const entityViews = model.views.filter(view => view.entity.ref === entity);
@@ -390,6 +452,7 @@ const compileEntity = (
         resource: entity.resourceName,
         table: entity.tableName,
         ...(ileasticObject === undefined ? {} : { ileasticObject }),
+        ...(iwsObject === undefined ? {} : { iwsObject }),
         identifier: 'id',
         capabilities,
         fields

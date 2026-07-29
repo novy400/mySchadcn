@@ -95,6 +95,7 @@ describe('Catalogue RPG read generator', () => {
             'dcl-proc service_getSupportedFields export;'
         );
         expect(listOnly).not.toContain('dcl-proc service_get export;');
+        expect(listOnly).not.toMatch(/\n\n$/);
     });
 
     test('renders the artifact through a replaceable Handlebars template', async () => {
