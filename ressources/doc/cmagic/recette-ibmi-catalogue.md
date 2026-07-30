@@ -271,6 +271,7 @@ ADDLIBLE LIB(CKOOLBIN) POSITION(*LAST)
 ADDLIBLE LIB(DB2SAMPLE) POSITION(*LAST)
 ADDLIBLE LIB(ILEASTIC) POSITION(*LAST)
 ```
+![alt text](image-1.png)
 
 Démarrer ensuite le programme dans un job séparé. `INLLIBL(*CURRENT)` rend explicite
 l'héritage de cette liste et `CURLIB(CMAGICTST)` fixe la bibliothèque courante :
@@ -278,6 +279,7 @@ l'héritage de cette liste et `CURLIB(CMAGICTST)` fixe la bibliothèque courante
 ```bash
 system "SBMJOB CMD(CALL PGM(CMAGICTST/SERVAPI)) JOB(SERVAPI) JOBQ(QSYSNOMAX) INLLIBL(*CURRENT) CURLIB(CMAGICTST) ALWMLTTHD(*YES)"
 ```
+![alt text](image-2.png)
 
 Puis contrôler :
 
@@ -285,7 +287,7 @@ Puis contrôler :
 netstat -an | grep 44000
 curl -sS -i "http://localhost:44000/api/services?page=1&perPage=1"
 ```
-
+cela ne marche pas , le job existe mais je ne vois pas le point dans netstat, je me demande si cela ne provient pas que dans mon projet on avait 2 modules serroute et servrest alors que notre cas nous avons melangé les rutes et les es procedures rest.
 Résultat attendu : port en écoute et réponse HTTP `200`. Si le job se termine
 immédiatement, relever son joblog depuis `WRKACTJOB` ou `WRKSPLF` avant toute nouvelle
 tentative.
