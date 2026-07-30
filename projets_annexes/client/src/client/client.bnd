@@ -1,0 +1,10 @@
+STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('CLIENT.0.0.2')
+  EXPORT SYMBOL('client_search')
+  EXPORT SYMBOL('client_getSupportedFields')
+  EXPORT SYMBOL('client_table')
+ENDPGMEXP
+STRPGMEXP  PGMLVL(*PRV) SIGNATURE('CLIENT.0.0.1')
+  EXPORT SYMBOL('client_search')
+  EXPORT SYMBOL('client_getSupportedFields')
+ENDPGMEXP
+

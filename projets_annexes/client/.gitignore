@@ -1,0 +1,19 @@
+# Images directory
+images/
+images/*
+
+# Environment file
+.env
+
+# Event directory
+.evfevent/
+.evfevent/*
+
+# Logs directory
+.logs/
+.logs/*
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+*.log

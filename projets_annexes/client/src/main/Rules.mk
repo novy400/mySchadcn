@@ -1,0 +1,1 @@
+CLIENT.BNDDIR: client.bnddir CLIENT.SRVPGM

@@ -1,0 +1,20 @@
+meta {
+  name: BDX_perPage_3_page_1_nbCTRs_ge_4
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://cmspw7t:10074/web/services/CLIENT/?codeEtablissement=BDX&page=2&perpage=3&sort=nombreContrats&nombreContrats_gte=4&order=DESC
+  body: none
+  auth: none
+}
+
+query {
+  codeEtablissement: BDX
+  page: 2
+  perpage: 3
+  sort: nombreContrats
+  nombreContrats_gte: 4
+  order: DESC
+}

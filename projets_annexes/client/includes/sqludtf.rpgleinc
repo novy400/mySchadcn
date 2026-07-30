@@ -1,0 +1,18 @@
+**free
+/if defined(SQLUDTF_H_DEFINED)       
+/eof                               
+/endif                             
+/define SQLUDTF_H_DEFINED  
+
+Dcl-C SQLUDTF_CALL_STARTUP -2;
+Dcl-C SQLUDTF_CALL_OPEN  -1;
+Dcl-C SQLUDTF_CALL_FETCH 0;
+Dcl-C SQLUDTF_CALL_CLOSE 1;
+Dcl-C SQLUDTF_CALL_FINAL 2;
+
+Dcl-C SQLUDTF_PARM_NULL  -1;
+Dcl-C SQLUDTF_PARM_NOTNULL 0;
+
+dcl-c SQLUDTF_SQL_STATE_OK   '00000';
+dcl-c SQLUDTF_SQL_STATE_EOT  '02000';
+dcl-c SQLUDTF_SQL_STATE_ERR  '38501';

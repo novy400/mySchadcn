@@ -1,0 +1,105 @@
+     --%CSTD===========================================================*
+     --* Application. : PROPSGPRD  PROPSG - Prêt sur gage              *
+     --* Composant. . : CONTFIGDAV                    Type: VIEW       *
+     --*===============================================================*
+     --* Sous-système :                                                *
+     --* Fonction . . :                                                *
+     --* Sous-fonction:                                                *
+     --*%S=============================================================*
+     --* Description des fonctionnalités:                              *
+     --*                                                               *
+     --*                                                               *
+     --*                                                               *
+     --*%E=============================================================*
+     --* AUTEUR:    GIYVOVIE   08/01/2026 14:54  YV.00.10              *
+     --* MODIFS: ** GIYVOVIE   08/01/2026 14:54  YV.00.10 FM 26/    3  *
+     --*           TES-57 figer les intêrets                           *
+     --%ECSTD==========================================================*
+CREATE OR REPLACE VIEW client_liste 
+FOR SYSTEM NAME CLIENTLIST (
+	CODEETABLISSEMENT FOR COLUMN CODETA     ,
+	NOMETABLISSEMENT FOR COLUMN NOMETA ,
+	CODEAGENCE FOR COLUMN CODAGE,
+	NOMAGENCE FOR COLUMN NOMAGE,
+	NUMEROCLIENT FOR COLUMN CODCLI ,
+	NOM ,
+	PRENOM ,  
+  DATENAISSANCE FOR COLUMN DTNAISS,
+  CODEPAYSNAISSANCE FOR COLUMN PAYSNAISS,
+  VILLENAISSANCE FOR COLUMN VILNAISS,
+  VILLERESIDENCE FOR COLUMN VILRESID,  
+  TELEPHONE1 FOR COLUMN NUMTEL1 ,
+  TELEPHONE2 FOR COLUMN NUMTEL2 ,
+  NOMBRECONTRAT FOR COLUMN NBRCTR ,
+  TOTALPRET FOR COLUMN TOTPRET
+)
+AS
+SELECT
+    cli.etacli CODEETABLISSEMENT,
+    ets.NOMETA nomEtablissement,
+    cli.agecli codeAgence,
+    age.NOMAGE nomAgence,
+    cli.codcli numeroClient,
+    cli.NOMCLI nom,
+    cli.prncli prenom,
+    cli.dnacli dateNaissance,
+    cli.pnacli codePaysNaissance,
+    cli.vnacli villeNaissance,
+    adr.viladc villeResidence,
+    cli.tl1cli telephone1,
+    cli.tl2cli telephone2,
+    ctr.nbrCtr nombreContrat,
+    ctr.totalPret totalPret
+    FROM clients cli
+    left join clieadr adr 
+    on adr.etaadc = cli.etacli 
+      and adr.cliadc = cli.codcli and adr.natadc ='R'
+    LEFT JOIN ETABLIS ets
+        ON ets.CODETA = cli.etacli
+    LEFT JOIN AGENCES age
+        ON age.CODETA = cli.etacli
+        AND age.CODAGE = cli.agecli  
+    left join (
+      select etacon,clicon,count(*) nbrCtr
+      , sum(mntcon) totalPret 
+      from contrat 
+      where poscon in ('ENG','ENS','PRO','PRV','MEV') 
+      group by etacon,clicon
+      ) ctr 
+      on ctr.etacon = cli.etacli and ctr.clicon = cli.codcli
+;
+
+-- =====================================================
+-- Commentaires sur les colonnes (optionnel)
+-- =====================================================
+
+LABEL ON COLUMN CLIENTLIST
+(
+    CODEETABLISSEMENT     TEXT IS 'Code établissement',
+    nomEtablissement      TEXT IS 'Nom établissement',
+    codeAgence            TEXT IS 'Code agence contrat',
+    nomAgence             TEXT IS 'Nom agence',
+    numeroClient          TEXT IS 'id client',
+    nom                   TEXT IS 'Nom client',
+    prenom          TEXT IS 'Prénom client',
+    dateNaissance         TEXT IS 'Date de naissance',
+    codePaysNaissance     TEXT IS 'Code pays de naissance',
+    villeNaissance        TEXT IS 'Ville de naissance',
+    villeResidence        TEXT IS 'Ville de résidence',
+    telephone1            TEXT IS 'Téléphone 1',
+    telephone2            TEXT IS 'Téléphone 2',
+    nombreContrat         TEXT IS 'Nombre de contrat',
+    totalPret             TEXT IS 'Total prêt'
+);
+
+-- =====================================================
+-- Exemple d'utilisation
+-- =====================================================
+
+-- Consultation simple
+-- SELECT * FROM CONTFIGDAV WHERE ID = 12345;
+
+-- Avec filtre sur établissement
+-- SELECT * FROM CLIENTLIST
+-- WHERE CODEETABLISSEMENT = '001'
+-- ORDER BY DATEFIGEMENTCONTRAT DESC;

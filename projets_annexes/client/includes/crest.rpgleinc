@@ -1,0 +1,105 @@
+**free
+/if defined(CREST_H_DEFINED)       
+/eof                               
+/endif                             
+/define CREST_H_DEFINED  
+
+// Include des dépendances
+/include 'ileastic/ileastic.rpgle'
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+// ========================================
+// CREST - CMAGIC REST Framework
+// Prototypes pour service program CREST
+// Fusion de CMAGIC + ILEASTIC pour APIs REST standard IBM i
+// ========================================
+// ========================================
+// Gestion des headers et réponses HTTP
+// ========================================
+
+///
+// Add standard REST headers to HTTP response
+//
+// Adds required headers for REST API compatibility including CORS
+// and total count for collections.
+///
+dcl-pr CREST_addHeaders extproc(*dclcase);
+  response likeds(IL_response);
+  totalCount like(CMAGIC_totalCount) const options(*nopass);
+end-pr;
+
+// ========================================
+// Initialisation REST simplifiée
+// ========================================
+
+///
+// Initialize REST request processing with validation and context setup
+//
+// Combines common REST request initialization tasks:
+// 1. Validates Accept header for JSON compatibility
+// 2. Parses query parameters into CMAGIC context
+// This procedure should be called at the beginning of GET operations.
+///
+dcl-pr CREST_initRestRequest ind extproc(*dclcase);
+  request likeds(IL_request) const;
+  supportedFields likeDs(CMAGIC_supportedFields) const;
+  response likeds(IL_response);
+  context likeDS(CMAGIC_context);
+end-pr;
+
+///
+// Initialize simple REST request with basic validation only
+//
+// Validates common REST request headers without parameter parsing.
+// Used for simple GET operations that don't need filtering/pagination.
+///
+dcl-pr CREST_initSimpleRestRequest ind extproc(*dclcase);
+  request likeds(IL_request) const;
+  response likeds(IL_response);
+end-pr;
+
+///
+// Initialize REST request for write operations (POST/PUT)
+//
+// Validates Content-Type header for write operations expecting JSON payload.
+// Used for POST/PUT operations that modify data.
+///
+dcl-pr CREST_initWriteRestRequest ind extproc(*dclcase);
+  request likeds(IL_request) const;
+  response likeds(IL_response);
+end-pr;
+
+// ========================================
+// Utilitaires JSON
+// ========================================
+
+///
+// Convert errors to standard JSON format
+//
+// Converts GLOBAL_listError structure to JSON for REST responses.
+///
+dcl-pr CREST_errorsToJson varchar(2048) extproc(*dclcase);
+  errors likeds(GLOBAL_listError) const;
+end-pr;
+
+////
+// Convertit une liste d'erreurs CMagic au format React-Admin
+//
+// Format de sortie : { "message": "...", "errors": { "champ": "msg", ... } }
+//
+// @param **in** errors   Structure GLOBAL_listError
+// @return Pointer JSON Object (NOXDB)
+///
+dcl-pr CREST_errorsToReactAdmin pointer extproc(*dclcase);
+  errors likeds(GLOBAL_listError) const;
+end-pr;
+
+///
+// Create simple JSON error response
+//
+// Creates a simple JSON error response with message.
+///
+dcl-pr CREST_simpleError varchar(1000) extproc(*dclcase);
+  errorMessage varchar(500) const;
+end-pr;

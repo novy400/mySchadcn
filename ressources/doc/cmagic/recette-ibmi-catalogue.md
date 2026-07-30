@@ -228,7 +228,29 @@ DSPOBJD OBJ(CMAGICTST/SERVAPI) OBJTYPE(*PGM)
 
 Les cinq objets doivent avoir une date de création ou de modification correspondant à
 la recette.
-
+### pb
+- pas de bnddir pour CMAGIC
+```
+ctl-opt nomain
+        option(*nodebugio:*srcstmt:*nounref)
+        alwnull(*usrctl)
+        datfmt(*iso)
+        bnddir('QC2LE':'CKOOL');
+```
+idem pour le main
+``` 
+ctl-opt thread(*CONCURRENT)
+        option(*nodebugio:*srcstmt:*nounref)
+        pgminfo(*PCML:*MODULE)
+        datfmt(*iso)
+        alwnull(*usrctl)
+        main(main)
+        bnddir('QC2LE':'CKOOL':'ILEASTIC'); 
+```         
+puis ajout du SERVICE dans le BND CKOOL     
+manque les exports dans  service_getlist_rest export; 
+manque includes de service dans le main
+![alt text](image.png)
 ## Porte 5 — Démarrer le serveur
 
 Vérifier d'abord que le port n'est pas déjà occupé :

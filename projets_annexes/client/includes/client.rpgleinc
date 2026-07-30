@@ -1,0 +1,190 @@
+**free
+/if defined(CLIENT_H_DEFINED)
+/eof
+/endif
+/define CLIENT_H_DEFINED
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+
+///
+// recherche client.
+//
+// @param **in** le code etablissement.
+// @param **in** le nom de l'etablissement.
+// @param **out** le numero du client.
+// @return
+// @throws ....
+// @example Exemple d'appel :
+// @tag Environnement
+// @tag GLOBAL
+///
+dcl-ds CLIENT_searchClientIn template qualified;
+  codeEtablissement like(GLOBAL_contexte.codeEtablissement);
+end-ds;
+dcl-ds CLIENT_searchClientOut template qualified;
+  numeroClient packed(7:0);
+end-ds;
+dcl-pr CLIENT_searchClient extpgm('INVCLIENT');
+  pIn likeDS(CLIENT_searchClientIn) const;
+  pOut likeDS(CLIENT_searchClientOut);
+end-pr;
+
+// ------------------------------------------------------------------//
+// Entité Client                                                     //
+// ------------------------------------------------------------------//
+///
+// ID client template
+///
+dcl-ds client_id_t template qualified;
+    codeEtablissement like(GLOBAL_contexte.codeEtablissement);
+    numeroClient packed(7:0);
+ end-ds;
+
+///
+// client Detail template
+///
+dcl-ds client_detail_t template qualified;
+  id likeDS(client_id_t);
+  codeAgence like(GLOBAL_contexte.codeAgence);  
+  nomClient varchar(38);
+  prenomClient varchar(38);
+  dateNaissance date;
+  codePaysNaissance char(3);
+  villeNaissance varchar(50);
+  villeResidence varchar(50);
+  telephone1 varchar(20);
+  telephone2 varchar(20);
+  nombreContrats int(10);
+  totalPret packed(15:2) inz(0);
+end-ds;
+dcl-ds client_detail_sql_t template qualified;
+  codeEtablissement like(client_id_t.codeEtablissement);
+  numeroClient like(client_id_t.numeroClient);
+  codeAgence like(GLOBAL_contexte.codeAgence);
+  nomClient like(client_detail_t.nomClient);
+  prenomClient like(client_detail_t.prenomClient);
+  dateNaissance like(client_detail_t.dateNaissance);
+  codePaysNaissance like(client_detail_t.codePaysNaissance);
+  villeNaissance like(client_detail_t.villeNaissance);
+  villeResidence like(client_detail_t.villeResidence);  
+  telephone1 like(client_detail_t.telephone1);
+  telephone2 like(client_detail_t.telephone2);
+  nombreContrats like(client_detail_t.nombreContrats);
+  totalPret like(client_detail_t.totalPret);
+end-ds;
+///
+// client List Item template
+///
+dcl-ds client_item_t template qualified;
+  id likeDS(client_id_t);
+  codeAgence like(GLOBAL_contexte.codeAgence);  
+  nomClient varchar(38);
+  prenomClient varchar(38);
+  dateNaissance date;
+  codePaysNaissance char(3);
+  villeNaissance varchar(50);
+  villeResidence varchar(50);
+  telephone1 varchar(20);
+  telephone2 varchar(20);
+  nombreContrats int(10);
+  totalPret packed(15:2) inz(0);
+end-ds;
+dcl-ds client_item_sql_t template qualified;
+  codeEtablissement like(client_id_t.codeEtablissement);
+  numeroClient like(client_id_t.numeroClient);
+  codeAgence like(GLOBAL_contexte.codeAgence);
+  nomClient like(client_item_t.nomClient);
+  prenomClient like(client_item_t.prenomClient);
+  dateNaissance like(client_item_t.dateNaissance);
+  codePaysNaissance like(client_item_t.codePaysNaissance);
+  villeNaissance like(client_item_t.villeNaissance);
+  villeResidence like(client_item_t.villeResidence);  
+  telephone1 like(client_item_t.telephone1);
+  telephone2 like(client_item_t.telephone2);
+  nombreContrats like(client_item_t.nombreContrats);
+  totalPret like(client_item_t.totalPret);
+end-ds;
+
+///
+// Search clients
+//
+// Returns a paginate list of found clients 
+//  regarding the search critÃ©ria send in the context.
+//
+// @param **in**  context (pagination,sort,filter) critÃ©rias
+// @param **out** itemCount count of item found based on filter critÃ©rias
+// @param **out** items pointer to the linked list of item client
+// @param **out** errors list of errors
+// @return *on if ok, *off if error
+// @throws ....
+// @tag client
+// @tag CMAGIC
+///
+dcl-pr client_search ind extproc(*dclcase);
+   context likeDS(CMAGIC_context) const;
+   totalCount like(CMAGIC_totalCount);
+   items pointer;
+   errors likeDS(GLOBAL_listError);
+end-pr;
+
+
+// ========================================
+// Configuration des champs supportés pour client
+// ========================================
+
+///
+// Get client supported fields configuration
+//
+// Returns pointer to supported fields configuration for client entity.
+// Used by REST clients for filtering and validation.
+//
+// @return pointer to supported fields array
+// @tag client
+// @tag REST
+// @tag Configuration
+///
+dcl-pr client_getSupportedFields ind  extproc(*dclcase);
+      supportedFields likeds(CMAGIC_supportedFields);
+      errors likeDS(GLOBAL_listError);
+end-pr;
+
+
+dcl-ds client_table_UdtfCtx qualified template;
+  CodeEtablissement char(3);
+  NumeroClient      zoned(7:0);
+  NomClient         varchar(38);
+
+  NullCodeEtab      int(5);
+  NullNumeroClient  int(5);
+  NullNomClient     int(5);
+
+  StateSQL          char(5);
+  ErrorMsg          varchar(1000);
+  Opened            ind;
+end-ds;
+///
+// List of client used by UDTF.
+//
+// Returns pointer to supported fields configuration for client entity.
+// Used by REST clients for filtering and validation.
+//
+// @return pointer to supported fields array
+// @tag client
+// @tag REST
+// @tag Configuration
+///
+dcl-pr client_table  extproc(*dclcase);
+      codeEtablissement char(3);
+      numeroClient zoned(7:0);
+      nomClient varchar(38);
+      // null indicateur for each parameter
+      nullCodeEtablissement int(5);
+      nullNumeroClient int(5);
+      nullNomClient int(5);
+      // SQL parameters
+      stateSQL char(5);
+      function varchar(517) const;
+      specific varchar(128) const;
+      errorMsg varchar(1000);
+      callType int(10) const;
+end-pr;

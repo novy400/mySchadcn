@@ -1,0 +1,54 @@
+**free
+/if defined(clientiws_H_DEFINED)
+/eof
+/endif
+/define clientiws_H_DEFINED
+
+/include 'client.rpgleinc'
+/include 'global.rpgleinc'
+/include 'httpRest.rpgleinc'
+
+// ========================================
+// clientiws - client IWS wrappers
+// Prototype standard IWS / PCML
+// ========================================
+
+// Structure de sortie IWS pour une ligne de liste
+// On aplatit l'id pour faciliter l'exposition IWS
+
+dcl-ds client_item_rest_t qualified;
+  id like(client_id_t);
+  codeEtablissement like(client_id_t.codeEtablissement);
+  numeroClient like(client_id_t.numeroClient);
+  nom like(client_detail_t.nomClient);
+  prenom like(client_detail_t.prenomClient);
+  dateNaissance like(client_detail_t.dateNaissance);
+  codePaysNaissance like(client_detail_t.codePaysNaissance);
+  villeNaissance like(client_detail_t.villeNaissance);
+  villeResidence like(client_detail_t.villeResidence);
+  telephone1 like(client_detail_t.telephone1);
+  nombreContrats like(client_detail_t.nombreContrats);
+end-ds;
+
+///
+// GET LIST - Wrapper IWS standard pour client
+//
+// Contrat standard retenu :
+// - items_LENGTH
+// - items dim(100)
+// - totalCount
+// - errors_LENGTH
+// - errors dim(...)
+// - httpStatus
+// - httpHeaders_LENGTH
+// - httpHeaders dim(...)
+///
+dcl-pr client_getlist_iws extproc(*dclcase);
+  items_LENGTH int(10);
+  items likeDS(client_item_rest_t) dim(HTTPREST_MAX_ITEMS);
+  totalCount like(CMAGIC_totalCount);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;

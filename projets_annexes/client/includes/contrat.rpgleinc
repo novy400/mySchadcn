@@ -1,0 +1,37 @@
+**free
+/if defined(CONTRAT_H_DEFINED)
+/eof
+/endif
+/define CONTRAT_H_DEFINED
+dcl-enum CONTRAT_listeStatutActif qualified;
+  engagement 'ENG';
+  prolongation 'PRO';
+  enPreparationVente 'PRV';
+  miseEnVente 'MEV';
+end-enum;
+///
+// recherche contrat.
+//
+// @param **in** le code etablissement.
+// @param **in** le code agence.
+// @param **in** le numero du client.
+// @param **out** le numero du contrat.
+// @return
+// @throws ....
+// @example Exemple d'appel :
+// @tag Environnement
+// @tag CONTRAT
+///
+dcl-pr CONTRAT_searchContrat extpgm('CONAFF');
+  codeEtablissement like(GLOBAL_contexte.codeEtablissement) const;
+  codeAgence like(GLOBAL_contexte.codeAgence) const;
+  numeroClient packed(7:0);
+  numeroContrat packed(9:0);
+  mdus char(11);
+  pose1 char(3);
+  pose2 char(3);
+  pose3 char(3);
+  pose4 char(3);
+  pose5 char(3);
+end-pr;
+

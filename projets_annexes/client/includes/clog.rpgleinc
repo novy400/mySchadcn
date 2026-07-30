@@ -1,0 +1,229 @@
+**free
+/if defined(CLOG_H_DEFINED)
+/eof
+/endif
+/define CLOG_H_DEFINED
+/include 'global.rpgleinc'
+
+// Log level constants
+dcl-c CLOG_LEVEL_DEBUG  10;
+dcl-c CLOG_LEVEL_INFO   20;
+dcl-c CLOG_LEVEL_WARN   30;
+dcl-c CLOG_LEVEL_ERROR  40;
+dcl-c CLOG_LEVEL_FATAL  50;
+
+dcl-c CLOG_EVENT_VERSION '2.0';
+dcl-c CLOG_PAYLOAD_SEPARATOR '|';
+dcl-c CLOG_PAYLOAD_ESCAPED_BSLASH_TOKEN '{CKOOL_BSLASH}';
+dcl-c CLOG_PAYLOAD_ESCAPED_PIPE_TOKEN '{CKOOL_PIPE}';
+
+// Data queue name for log events (max 10 chars, IBM i object name)
+dcl-c CLOG_QUEUE_NAME 'CLOGIWS';
+
+// Configuration table
+dcl-c CLOGCFG_TABLE 'CLOGCFG';
+dcl-c CLOGCFG_LIB   '*LIBL';
+
+// IFS paths
+dcl-c CLOG_IFS_LOGS_ROOT '/logs/iws';
+dcl-c CLOG_IFS_EVENTS_DIR '/logs/iws/events';
+dcl-c CLOG_IFS_JOBCLOG_DIR '/logs/iws/joblog';
+dcl-c CLOG_IFS_EVENTS_FILE '/logs/iws/events/app-events.jsonl';
+// Target constants
+dcl-c CLOG_TARGET_IFS    'IFS';
+dcl-c CLOG_TARGET_JOBLOG 'JOBLOG';
+dcl-c CLOG_TARGET_SYSLOG 'SYSLOG';
+
+// ------------------------------------------------------------------//
+// Data structure for a structured log event.                        //
+// Sent via data queue to the LOGDEMON consumer daemon.              //
+// ------------------------------------------------------------------//
+dcl-ds CLOG_event template qualified;
+  eventVersion          char(5);        // Contract version
+  timestamp             timestamp;      // Timestamp when the event was created
+  level                 varchar(10);    // DEBUG / INFO / WARN / ERROR / FATAL
+  service               varchar(64);    // Service or component name
+  environment           char(10);       // DEV / TEST / PROD
+  requestId             varchar(64);    // Correlation id
+  jobName               char(10);       // IBM i job name
+  jobUser               char(10);       // IBM i job user profile
+  jobNumber             char(6);        // IBM i job number
+  program               char(10);       // Caller program name
+  procedure             varchar(128);   // Caller procedure name
+  eventType             varchar(64);    // Functional or technical event code
+  message               varchar(256);   // Log message text
+  details               varchar(2048);  // Additional details
+  httpMethod            varchar(10);    // HTTP method when relevant
+  httpPath              varchar(256);   // HTTP path when relevant
+  httpStatus            int(10);        // HTTP status code
+  durationMs            int(10);        // Processing duration
+  sqlCode               int(10);        // SQLCODE if relevant
+  errorCode             varchar(20);    // Business or technical error code
+  actionHint            varchar(256);   // Next action hint
+  joblogCaptureRequested ind;           // Explicit snapshot request
+  joblogCaptureReason   varchar(64);    // Snapshot trigger reason
+  // V2 output fields (populated by consumer daemon)
+  joblogCaptured        ind;            // Snapshot capture success status
+  joblogSnapshotPath    varchar(256);   // IFS path to snapshot file
+  joblogSnapshotStatus  varchar(20);    // SUCCESS / FAILED / SKIPPED
+  joblogSnapshotError   varchar(1024);  // Error detail if capture failed
+end-ds;
+
+// ------------------------------------------------------------------//
+// Configuration data structure (from CLOGCFG table)                  //
+// ------------------------------------------------------------------//
+dcl-ds CLOG_config template qualified;
+  cfgId              int(10);
+  cfgType            char(10);        // GLOBAL or SERVICE
+  serviceName        varchar(64);     // Service name (NULL if GLOBAL)
+  minLevel           varchar(10);     // DEBUG,INFO,WARN,ERROR,FATAL
+  logTargets         varchar(100);    // IFS,JOBLOG,SYSLOG
+  joblogCapture      char(1);         // Y or N
+  joblogOnError      char(1);         // Y or N
+  active             char(1);         // Y or N
+end-ds;
+
+///
+// Initialize a log event data structure.
+//
+// Populates pEvent with the current timestamp, job identity
+// (from the PSDS), and the supplied service / level / event type.
+//
+// @param pEvent      Output – log event DS to populate.
+// @param pService    Service or component name.
+// @param pLevel      Log level (use CLOG_LEVEL_* constants).
+// @param pEventType  Functional or technical event type.
+// @throws nothing
+// @example
+//   dcl-ds lEvent likeDS(CLOG_event);
+//   clear lEvent;
+//   CLOG_initEvent('MYPROGRAM' : CLOG_LEVEL_INFO : 'IWS.REQUEST.START' : lEvent);
+//   lEvent.requestId  = 'REQ-20260519-000123';
+//   lEvent.httpMethod = 'GET';
+//   lEvent.httpPath   = '/iws/services';
+//   lEvent.message    = 'Début du traitement service_getlist_iws';
+//   if CLOG_isEnabled(CLOG_LEVEL_INFO);
+//     CLOG_logEvent(lEvent);
+//   endif;
+///
+dcl-pr CLOG_initEvent extproc(*dclcase);
+  pService   varchar(64) const;
+  pLevel     int(3)      const;
+  pEventType varchar(64) const;
+  pEvent     likeDS(CLOG_event);
+end-pr;
+
+///
+// Check whether a given log level is currently enabled.
+//
+// Compares pLevel against the module-level minimum threshold
+// configured via CLOG_setLevel().  Default threshold is DEBUG (10).
+//
+// @param pLevel Log level to test.
+// @return *ON if pLevel >= current minimum level, *OFF otherwise.
+// @throws nothing
+///
+dcl-pr CLOG_isEnabled ind extproc(*dclcase);
+  pLevel int(3) const;
+end-pr;
+
+///
+// Publish a log event to the CKOOL_LOG data queue.
+//
+// The event is sent asynchronously (fire-and-forget).
+// If the queue is unavailable the call is silently ignored
+// so that logging never disrupts the calling program.
+// Does nothing when CLOG_isEnabled() returns *OFF for pEvent.level.
+//
+// @param pEvent The log event to publish.
+// @throws nothing
+///
+dcl-pr CLOG_logEvent extproc(*dclcase);
+  pEvent likeDS(CLOG_event) const;
+end-pr;
+
+dcl-pr CLOG_logDebug extproc(*dclcase);
+  pService   varchar(64)   const;
+  pEventType varchar(64)   const;
+  pMessage   varchar(256)  const;
+  pDetails   varchar(2048) const;
+end-pr;
+
+dcl-pr CLOG_logInfo extproc(*dclcase);
+  pService   varchar(64)   const;
+  pEventType varchar(64)   const;
+  pMessage   varchar(256)  const;
+  pDetails   varchar(2048) const;
+end-pr;
+
+dcl-pr CLOG_logWarn extproc(*dclcase);
+  pService   varchar(64)   const;
+  pEventType varchar(64)   const;
+  pMessage   varchar(256)  const;
+  pDetails   varchar(2048) const;
+end-pr;
+
+dcl-pr CLOG_logError extproc(*dclcase);
+  pService   varchar(64)   const;
+  pEventType varchar(64)   const;
+  pMessage   varchar(256)  const;
+  pDetails   varchar(2048) const;
+end-pr;
+
+dcl-pr CLOG_requestJoblogSnapshot extproc(*dclcase);
+  pEvent  likeDS(CLOG_event);
+  pReason varchar(64) const;
+end-pr;
+
+dcl-pr CLOG_buildPayload varchar(32767) extproc(*dclcase);
+  pEvent likeDS(CLOG_event) const;
+end-pr;
+
+dcl-pr CLOG_sendToDtaq ind extproc(*dclcase);
+  pPayload varchar(32767) const;
+end-pr;
+
+dcl-pr CLOG_logMessage extproc(*dclcase);
+  pEvent likeDS(CLOG_event) const;
+end-pr;
+
+///
+// Set the minimum log level threshold at runtime.
+//
+// Events whose level is below this threshold are silently
+// discarded by CLOG_logEvent and CLOG_isEnabled.
+//
+// @param pLevel Minimum level (use CLOG_LEVEL_* constants).
+// @throws nothing
+// @example
+//   CLOG_setLevel(CLOG_LEVEL_WARN); // suppress DEBUG and INFO
+///
+dcl-pr CLOG_setLevel extproc(*dclcase);
+  pLevel int(3) const;
+end-pr;
+
+///
+// Resolve configuration for a service.
+// Returns global config if no service-specific override exists.
+//
+// @param pService  Service name to lookup.
+// @param pConfig   Output – configuration data structure.
+// @return *ON if config found, *OFF if not.
+///
+dcl-pr CLOG_resolveConfig ind extproc(*dclcase);
+  pService varchar(64) const;
+  pConfig  likeDS(CLOG_config);
+end-pr;
+
+///
+// Check if a level is enabled for a given service.
+// Consults CLOGCFG table.
+//
+// @param pService Service name.
+// @param pLevel   Log level constant (CLOG_LEVEL_*).
+// @return *ON if enabled, *OFF if not.
+///
+dcl-pr CLOG_isEnabledForService ind extproc(*dclcase);
+  pService varchar(64) const;
+  pLevel   int(3)      const;
+end-pr;
