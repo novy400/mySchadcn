@@ -283,7 +283,9 @@ Le transport IWS reprend le patron validé dans `projets_annexes/client` :
 3. `{entity}_search` exécute la recherche métier commune aux deux transports ;
 4. le wrapper copie la liste chaînée dans un tableau PCML limité par
    `HTTPREST_MAX_ITEMS`, puis libère la liste ;
-5. `X-Total-Count` et `Access-Control-Expose-Headers` sont renvoyés comme en-têtes IWS.
+5. `CIWS_setErrors` adapte les erreurs métier au tableau PCML ;
+6. `CIWS_addCollectionHeaders` produit `X-Total-Count` et
+   `Access-Control-Expose-Headers` comme en-têtes IWS.
 
 Le point d'entrée public est `{entity}_getlist_iws`. Sa signature PCML expose :
 

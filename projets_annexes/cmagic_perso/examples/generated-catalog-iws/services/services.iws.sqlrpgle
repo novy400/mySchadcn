@@ -39,14 +39,14 @@ dcl-proc service_getlist_iws export;
   if not service_getSupportedFields(
     lSupportedFields : lErrors);
     httpStatus = HTTPREST_SERVERERROR;
-    errors_LENGTH = service_copyIwsErrors(lErrors : errors);
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
     return;
   endif;
 
   if not CIWS_initRestRequest(
     lSupportedFields : lContext : lErrors);
     httpStatus = HTTPREST_BADREQUEST;
-    errors_LENGTH = service_copyIwsErrors(lErrors : errors);
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
     return;
   endif;
 
@@ -57,12 +57,12 @@ dcl-proc service_getlist_iws export;
     else;
       httpStatus = HTTPREST_BADREQUEST;
     endif;
-    errors_LENGTH = service_copyIwsErrors(lErrors : errors);
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
     return;
   endif;
 
   service_copyIwsItems(lItems : items_LENGTH : items);
-  service_addIwsCollectionHeaders(totalCount : httpHeaders);
+  CIWS_addCollectionHeaders(totalCount : httpHeaders);
 
   on-exit lAbended;
     if lItems <> *null;
@@ -104,40 +104,4 @@ dcl-proc service_copyIwsItems;
     eval-corr pItems(pItemsLength) = lSource;
     lItemPointer = list_iterate(pList);
   enddo;
-end-proc;
-
-dcl-proc service_copyIwsErrors;
-  dcl-pi *n int(10);
-    pSource likeDS(GLOBAL_listError) const;
-    pTarget likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
-  end-pi;
-  dcl-s lIndex int(10);
-  dcl-s lLength int(10) inz(0);
-
-  clear pTarget;
-  for lIndex = 1 to %elem(pTarget);
-    if pSource.listError(lIndex).code = *blanks;
-      leave;
-    endif;
-    lLength += 1;
-    pTarget(lLength) = pSource.listError(lIndex);
-  endfor;
-  return lLength;
-end-proc;
-
-dcl-proc service_addIwsCollectionHeaders;
-  dcl-pi *n;
-    pTotalCount like(CMAGIC_totalCount) const;
-    pHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
-  end-pi;
-
-  clear pHeaders;
-  if HTTPREST_nbHeaders >= 1;
-    pHeaders(1) =
-      'X-Total-Count: ' + %trim(%char(pTotalCount));
-  endif;
-  if HTTPREST_nbHeaders >= 2;
-    pHeaders(2) =
-      'Access-Control-Expose-Headers: X-Total-Count';
-  endif;
 end-proc;

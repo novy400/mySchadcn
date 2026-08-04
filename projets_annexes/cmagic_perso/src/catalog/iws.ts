@@ -26,8 +26,6 @@ type CatalogIwsProceduresModel =
     CatalogReadTemplateModel['procedures'] & {
         getListIws: string;
         copyItems: string;
-        copyErrors: string;
-        addCollectionHeaders: string;
     };
 
 export type CatalogIwsTemplateModel = {
@@ -64,9 +62,7 @@ export const buildCatalogIwsTemplateModel = (
         procedures: {
             ...readModel.procedures,
             getListIws: catalogIwsGetListProcedure(spec.entity),
-            copyItems: `${prefix}_copyIwsItems`,
-            copyErrors: `${prefix}_copyIwsErrors`,
-            addCollectionHeaders: `${prefix}_addIwsCollectionHeaders`
+            copyItems: `${prefix}_copyIwsItems`
         },
         itemType: `${prefix}_item_iws_t`,
         itemFields: readModel.itemFields.map(field => ({

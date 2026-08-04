@@ -54,10 +54,14 @@ describe('Catalogue IWS generator', () => {
             'eval-corr pItems(pItemsLength) = lSource;'
         );
         expect(source).toContain(
-            "'X-Total-Count: ' + %trim(%char(pTotalCount));"
+            'errors_LENGTH = CIWS_setErrors(lErrors : errors);'
         );
         expect(source).toContain(
-            "'Access-Control-Expose-Headers: X-Total-Count';"
+            'CIWS_addCollectionHeaders(totalCount : httpHeaders);'
+        );
+        expect(source).not.toContain('dcl-proc service_copyIwsErrors;');
+        expect(source).not.toContain(
+            'dcl-proc service_addIwsCollectionHeaders;'
         );
         expect(source).toContain('list_dispose(lItems);');
         expect(source).toContain(
