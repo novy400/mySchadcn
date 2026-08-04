@@ -1,6 +1,10 @@
 **free
 // Generated from CatalogSpec with catalog-read.sqlrpgle.hbs. Do not edit.
-ctl-opt nomain option(*srcstmt:*nounref) alwnull(*usrctl);
+ctl-opt nomain
+        option(*nodebugio:*srcstmt:*nounref)
+        alwnull(*usrctl)
+        datfmt(*iso)
+        bnddir('QC2LE':'CKOOL');
 /include 'services.read.rpgleinc'
 /include 'sqlstates.rpginc'
 /include 'llist/llist_h.rpgle'

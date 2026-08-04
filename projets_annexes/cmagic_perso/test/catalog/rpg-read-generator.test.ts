@@ -11,6 +11,13 @@ describe('Catalogue RPG read generator', () => {
     test('delegates LIST query preparation to the shared CMagic procedures', async () => {
         const source = generateRpgReadModule(await compileServiceCatalog());
 
+        expect(source).toContain(
+            "ctl-opt nomain\n" +
+                "        option(*nodebugio:*srcstmt:*nounref)\n" +
+                "        alwnull(*usrctl)\n" +
+                "        datfmt(*iso)\n" +
+                "        bnddir('QC2LE':'CKOOL');"
+        );
         expect(source).toContain('dcl-proc service_search export;');
         expect(source).toContain('dcl-proc service_getSupportedFields export;');
         expect(source).toContain('dcl-proc service_get export;');

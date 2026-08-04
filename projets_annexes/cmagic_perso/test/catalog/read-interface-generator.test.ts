@@ -14,6 +14,8 @@ describe('Catalogue RPG read interface generator', () => {
         );
 
         expect(source).toContain('/define SERVICE_READ_H_DEFINED');
+        expect(source).toContain("/include 'includes/cmagic.rpgleinc'");
+        expect(source).toContain("/include 'includes/global.rpgleinc'");
         expect(source).toContain('dcl-ds service_item_t qualified template;');
         expect(source).toContain('  id varchar(3);');
         expect(source).toContain('  nom varchar(36);');
