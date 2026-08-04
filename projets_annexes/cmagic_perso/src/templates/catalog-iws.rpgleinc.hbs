@@ -4,9 +4,9 @@
 /eof
 /endif
 /define {{includeGuard}}
-/include 'cmagic.rpgleinc'
-/include 'global.rpgleinc'
-/include 'httpRest.rpgleinc'
+/include '{{runtimeIncludes.cmagic}}'
+/include '{{runtimeIncludes.global}}'
+/include '{{runtimeIncludes.httpRest}}'
 
 {{#if hasList}}
 dcl-ds {{itemType}} qualified template;

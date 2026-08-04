@@ -13,3 +13,20 @@ export const generateCatalogIwsInterface = (
         buildCatalogIwsTemplateModel(spec),
         templatesDirectory
     );
+
+export const generateCatalogTestIwsInterface = (
+    spec: CatalogSpec,
+    templatesDirectory?: string
+): string =>
+    renderTemplate(
+        templateName,
+        {
+            ...buildCatalogIwsTemplateModel(spec),
+            runtimeIncludes: {
+                cmagic: 'includes/cmagic.rpgleinc',
+                global: 'includes/global.rpgleinc',
+                httpRest: 'includes/httpRest.rpgleinc'
+            }
+        },
+        templatesDirectory
+    );

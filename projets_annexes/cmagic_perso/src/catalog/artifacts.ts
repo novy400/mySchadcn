@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Model } from '../language/generated/ast.js';
 import {
+    extractManualCode,
+    injectManualCode
+} from '../generation/manual-code.js';
+import {
     catalogBinderSourceName,
     catalogIleasticInterfaceSourceName,
     catalogIleasticSourceName,
@@ -9,8 +13,10 @@ import {
     catalogIwsBindingDirectorySourceName,
     catalogIwsInterfaceSourceName,
     catalogIwsSourceName,
+    catalogIwsTestSourceName,
     catalogRpgReadInterfaceSourceName,
     catalogRpgReadSourceName,
+    catalogRpgReadTestSourceName,
     catalogServerBaseName,
     catalogServerSourceName
 } from './artifact-names.js';
@@ -22,7 +28,11 @@ import { generateCatalogIleasticInterface } from './ileastic-interface.js';
 import { generateCatalogIleasticWrapper } from './ileastic.js';
 import { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
 import { generateCatalogIwsBinder } from './iws-binder.js';
-import { generateCatalogIwsInterface } from './iws-interface.js';
+import {
+    generateCatalogIwsInterface,
+    generateCatalogTestIwsInterface
+} from './iws-interface.js';
+import { generateCatalogIwsTest } from './iws-test.js';
 import { generateCatalogIwsWrapper } from './iws.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
@@ -31,6 +41,7 @@ import {
     generateCatalogTestReadInterface
 } from './read-interface.js';
 import { generateRpgReadModule } from './rpg-read.js';
+import { generateCatalogReadTest } from './read-test.js';
 import { generateCatalogRules } from './rules.js';
 import { buildCatalogServerSpecs } from './server-compiler.js';
 import type {
@@ -50,10 +61,13 @@ export type GeneratedCatalogArtifactPaths = {
     rpgRead: string;
     rpgReadInterface: string;
     rpgTestReadInterface: string;
+    rpgReadTest: string;
     ileastic: string;
     ileasticInterface: string;
     iws?: string;
     iwsInterface?: string;
+    iwsTest?: string;
+    iwsTestInterface?: string;
     iwsBinder?: string;
     iwsBindingDirectory?: string;
     ddl: string;
@@ -94,6 +108,19 @@ const writeArtifact = (filePath: string, content: string): void => {
     fs.writeFileSync(filePath, content, 'utf-8');
 };
 
+const writeArtifactPreservingManualCode = (
+    filePath: string,
+    generatedContent: string
+): void => {
+    const manualCode = extractManualCode(filePath);
+    writeArtifact(
+        filePath,
+        manualCode === null
+            ? generatedContent
+            : injectManualCode(generatedContent, manualCode)
+    );
+};
+
 const buildCatalogSpecsOrThrow = (model: Model): CatalogSpec[] => {
     const compilation = buildCatalogSpecs(model);
     if (compilation.diagnostics.length > 0) {
@@ -123,6 +150,14 @@ const writeCatalogArtifacts = (
                       ),
                       iwsInterface: path.join(
                           resourceDirectory,
+                          catalogIwsInterfaceSourceName(spec.resource)
+                      ),
+                      iwsTest: path.join(
+                          resourceDirectory,
+                          catalogIwsTestSourceName(spec.iwsObject)
+                      ),
+                      iwsTestInterface: path.join(
+                          testIncludesDirectory,
                           catalogIwsInterfaceSourceName(spec.resource)
                       ),
                       iwsBinder: path.join(
@@ -156,6 +191,10 @@ const writeCatalogArtifacts = (
                 testIncludesDirectory,
                 catalogRpgReadInterfaceSourceName(spec.resource)
             ),
+            rpgReadTest: path.join(
+                resourceDirectory,
+                catalogRpgReadTestSourceName(spec.entity)
+            ),
             ileastic: path.join(
                 resourceDirectory,
                 catalogIleasticSourceName(spec.resource)
@@ -187,6 +226,10 @@ const writeCatalogArtifacts = (
             artifacts.rpgTestReadInterface,
             generateCatalogTestReadInterface(spec)
         );
+        writeArtifactPreservingManualCode(
+            artifacts.rpgReadTest,
+            generateCatalogReadTest(spec)
+        );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(
             artifacts.ileasticInterface,
@@ -214,6 +257,19 @@ const writeCatalogArtifacts = (
             writeArtifact(
                 artifacts.iwsBindingDirectory,
                 generateCatalogIwsBindingDirectory(spec)
+            );
+        }
+        if (
+            artifacts.iwsTest !== undefined &&
+            artifacts.iwsTestInterface !== undefined
+        ) {
+            writeArtifact(
+                artifacts.iwsTestInterface,
+                generateCatalogTestIwsInterface(spec)
+            );
+            writeArtifactPreservingManualCode(
+                artifacts.iwsTest,
+                generateCatalogIwsTest(spec)
             );
         }
         writeArtifact(artifacts.ddl, generateCatalogDdl(spec));

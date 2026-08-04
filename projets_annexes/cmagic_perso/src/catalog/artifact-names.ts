@@ -5,6 +5,9 @@ export const catalogRpgReadInterfaceSourceName = (
     resource: string
 ): string => `${resource}.read.rpgleinc`;
 
+export const catalogRpgReadTestSourceName = (entity: string): string =>
+    `${entity.toLowerCase()}.test.sqlrpgle`;
+
 export const catalogIleasticSourceName = (resource: string): string =>
     `${resource}.ileastic.sqlrpgle`;
 
@@ -18,6 +21,9 @@ export const catalogIwsSourceName = (resource: string): string =>
 export const catalogIwsInterfaceSourceName = (
     resource: string
 ): string => `${resource}.iws.rpgleinc`;
+
+export const catalogIwsTestSourceName = (iwsObject: string): string =>
+    `${iwsObject.toLowerCase()}.test.sqlrpgle`;
 
 export const catalogIwsBinderSourceName = (resource: string): string =>
     `${resource}.iws.bnd`;

@@ -33,6 +33,11 @@ export type CatalogIwsTemplateModel = {
     entityDisplayName: string;
     includeGuard: string;
     readObjectName: string;
+    runtimeIncludes: {
+        cmagic: string;
+        global: string;
+        httpRest: string;
+    };
     hasList: boolean;
     interfaces: CatalogIwsInterfacesModel;
     procedures: CatalogIwsProceduresModel;
@@ -54,6 +59,11 @@ export const buildCatalogIwsTemplateModel = (
         entityDisplayName: readModel.entityDisplayName,
         includeGuard: `${spec.entity.toUpperCase()}_IWS_H_DEFINED`,
         readObjectName: catalogObjectName(spec.entity),
+        runtimeIncludes: {
+            cmagic: 'cmagic.rpgleinc',
+            global: 'global.rpgleinc',
+            httpRest: 'httpRest.rpgleinc'
+        },
         hasList: readModel.hasList,
         interfaces: {
             read: catalogRpgReadInterfaceSourceName(spec.resource),

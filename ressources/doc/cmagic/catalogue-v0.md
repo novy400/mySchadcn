@@ -36,6 +36,7 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.resource-contract.ts` ;
 - `{resource}.read.rpgleinc` ;
 - `{resource}.read.sqlrpgle` ;
+- `{entity}.test.sqlrpgle`, enveloppe RPGUnit de lecture à compléter ;
 - `{resource}.ileastic.rpgleinc` ;
 - `{resource}.ileastic.sqlrpgle` ;
 - `{resource}.ddl.sql` ;
@@ -44,11 +45,13 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 
 Pour préserver la compatibilité du générateur historique, les sources ILEastic restent
 toujours présentes. La propriété `ileasticObject` active leur cible de compilation BOB.
-Le choix IWS ajoute quatre artefacts :
+Le choix IWS ajoute six artefacts :
 
 - `iwsObject` génère `{resource}.iws.rpgleinc`, `{resource}.iws.sqlrpgle` et
   `{resource}.iws.bnd` ;
-- `{resource}.iws.bnddir` décrit le binding directory applicatif du wrapper.
+- `{resource}.iws.bnddir` décrit le binding directory applicatif du wrapper ;
+- `includes/{resource}.iws.rpgleinc` adapte les chemins d'include aux tests ;
+- `{iwsObject}.test.sqlrpgle` fournit l'enveloppe RPGUnit du transport IWS.
 
 Les propriétés `ileasticObject` et `iwsObject` sont mutuellement exclusives : une seule
 cible de transport est ajoutée à `Rules.mk`. Sans propriété de transport, les sources
@@ -187,9 +190,29 @@ aux tests sous `<destination>/includes/{resource}.read.rpgleinc` ; seule cette c
 utilise les chemins `includes/cmagic.rpgleinc` et `includes/global.rpgleinc` attendus
 par les tests RPGUnit exécutés depuis la racine du projet IBM i.
 
+## Enveloppes RPGUnit générées
+
+Le générateur crée systématiquement `{entity}.test.sqlrpgle` dans le dossier de la
+ressource. Si `iwsObject` est déclaré, il crée aussi `{iwsObject}.test.sqlrpgle`. Ces
+fichiers fournissent uniquement l'infrastructure technique : includes, binding
+directories, procédures `setUpSuite`, `setUp`, `tearDown` et `tearDownSuite`, ainsi
+que les utilitaires de chaîne de requête pour IWS. Ils ne contiennent ni identifiants
+métier, ni hypothèse sur le contenu de la table, ni résultat attendu.
+
+Le développeur ajoute les cas propres au projet entre les marqueurs suivants :
+
+```rpgle
+// [CMAGIC:MANUAL_START]
+// tests RPGUnit spécifiques au projet
+// [CMAGIC:MANUAL_END]
+```
+
+Le contenu situé entre ces deux marqueurs est conservé lors des générations
+suivantes. Le reste de l'enveloppe demeure sous la responsabilité du générateur.
+
 ## Module RPG de lecture généré
 
-Le cinquième artefact implémente directement les capacités de lecture déclarées :
+Le module RPG généré implémente directement les capacités de lecture déclarées :
 
 - une procédure publique `{entity}_search` si `LIST` est présent ;
 - une procédure publique `{entity}_getSupportedFields` qui décrit la projection à

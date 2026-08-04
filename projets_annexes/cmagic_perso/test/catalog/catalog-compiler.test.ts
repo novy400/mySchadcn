@@ -373,7 +373,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the eleven deterministic catalogue artifacts', async () => {
+    test('writes the twelve deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -414,6 +414,11 @@ describe('CMagic Catalogue v0', () => {
                     temporaryDirectory,
                     'includes',
                     'services.read.rpgleinc'
+                ),
+                rpgReadTest: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'service.test.sqlrpgle'
                 ),
                 ileastic: path.join(
                     temporaryDirectory,
@@ -479,7 +484,52 @@ describe('CMagic Catalogue v0', () => {
         }
     });
 
-    test('adds the four IWS artifacts when iwsObject is selected', async () => {
+    test('generates a data-free RPGUnit envelope for the read service', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-read-test-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+
+            expect(artifacts.rpgReadTest).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'service.test.sqlrpgle'
+                )
+            );
+            const source = fs.readFileSync(
+                artifacts.rpgReadTest as string,
+                'utf-8'
+            );
+            expect(source).toContain(
+                "bnddir('QC2LE':'SERVICE':'CKOOL')"
+            );
+            expect(source).toContain('/include qinclude,TESTCASE');
+            expect(source).toContain(
+                "/include 'includes/services.read.rpgleinc'"
+            );
+            expect(source).toContain('dcl-proc setUpSuite export;');
+            expect(source).toContain('// [CMAGIC:MANUAL_START]');
+            expect(source).toContain('// [CMAGIC:MANUAL_END]');
+            expect(source).not.toContain('A00');
+            expect(source).not.toContain('DB2SAMPLE');
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('adds the IWS runtime artifacts when iwsObject is selected', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
                 path.resolve('examples/service-catalogue-iws.cmagic'),
@@ -547,6 +597,121 @@ describe('CMagic Catalogue v0', () => {
             );
             expect(artifacts.ileastic).toBeDefined();
             expect(artifacts.ileasticInterface).toBeDefined();
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('generates the data-free RPGUnit IWS envelope and its test include', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-iws-test-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+
+            expect(artifacts.iwsTest).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'serviws.test.sqlrpgle'
+                )
+            );
+            expect(artifacts.iwsTestInterface).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'includes',
+                    'services.iws.rpgleinc'
+                )
+            );
+
+            const source = fs.readFileSync(
+                artifacts.iwsTest as string,
+                'utf-8'
+            );
+            expect(source).toContain(
+                "bnddir('QC2LE':'SERVICE':'CKOOL':'NOXDB')"
+            );
+            expect(source).toContain(
+                "/include 'includes/services.iws.rpgleinc'"
+            );
+            expect(source).toContain(
+                "/include 'includes/services.read.rpgleinc'"
+            );
+            expect(source).toContain('dcl-proc setQueryString;');
+            expect(source).toContain('dcl-proc clearQueryString;');
+            expect(source).toContain('// [CMAGIC:MANUAL_START]');
+            expect(source).not.toContain('A00');
+            expect(source).not.toContain('DB2SAMPLE');
+
+            const testInterface = fs.readFileSync(
+                artifacts.iwsTestInterface as string,
+                'utf-8'
+            );
+            expect(testInterface).toContain(
+                "/include 'includes/httpRest.rpgleinc'"
+            );
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('preserves developer-owned RPGUnit cases when both envelopes are regenerated', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-test-preserve-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+            const manualCase = `
+dcl-proc test_project_case export;
+    dcl-pi *N;
+    end-pi;
+    assert(*on : 'project-specific case');
+end-proc;
+`;
+            const testPaths = [
+                artifacts.rpgReadTest,
+                artifacts.iwsTest as string
+            ];
+
+            for (const testPath of testPaths) {
+                const generated = fs.readFileSync(testPath, 'utf-8');
+                fs.writeFileSync(
+                    testPath,
+                    generated.replace(
+                        '// [CMAGIC:MANUAL_START]\n// [CMAGIC:MANUAL_END]',
+                        `// [CMAGIC:MANUAL_START]${manualCase}// [CMAGIC:MANUAL_END]`
+                    ),
+                    'utf-8'
+                );
+            }
+
+            generateCatalogArtifacts(model, temporaryDirectory);
+
+            expect(
+                testPaths.map(testPath =>
+                    fs.readFileSync(testPath, 'utf-8').includes(manualCase)
+                )
+            ).toEqual([true, true]);
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

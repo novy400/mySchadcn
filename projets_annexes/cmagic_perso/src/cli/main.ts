@@ -56,6 +56,9 @@ export const generateCatalogAction = async (
                 `RPG test include generated: ${artifact.rpgTestReadInterface}`
             )
         );
+        console.log(
+            chalk.green(`RPGUnit read envelope generated: ${artifact.rpgReadTest}`)
+        );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
         console.log(
             chalk.green(
@@ -70,8 +73,20 @@ export const generateCatalogAction = async (
                 chalk.green(`IWS interface generated: ${artifact.iwsInterface}`)
             );
         }
+        if (artifact.iwsTestInterface) {
+            console.log(
+                chalk.green(
+                    `IWS test include generated: ${artifact.iwsTestInterface}`
+                )
+            );
+        }
         if (artifact.iws) {
             console.log(chalk.green(`IWS wrapper generated: ${artifact.iws}`));
+        }
+        if (artifact.iwsTest) {
+            console.log(
+                chalk.green(`RPGUnit IWS envelope generated: ${artifact.iwsTest}`)
+            );
         }
         if (artifact.iwsBinder) {
             console.log(

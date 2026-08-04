@@ -5,7 +5,11 @@ export { generateCatalogIleasticInterface } from './ileastic-interface.js';
 export { generateCatalogIleasticWrapper } from './ileastic.js';
 export { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
 export { generateCatalogIwsBinder } from './iws-binder.js';
-export { generateCatalogIwsInterface } from './iws-interface.js';
+export {
+    generateCatalogIwsInterface,
+    generateCatalogTestIwsInterface
+} from './iws-interface.js';
+export { generateCatalogIwsTest } from './iws-test.js';
 export {
     buildCatalogIwsTemplateModel,
     catalogIwsGetListProcedure,
@@ -35,6 +39,10 @@ export {
     type GeneratedResourceContract
 } from './resource-contract.js';
 export { generateRpgReadModule } from './rpg-read.js';
+export {
+    buildCatalogReadTestTemplateModel,
+    generateCatalogReadTest
+} from './read-test.js';
 export { generateCatalogDdl } from './ddl.js';
 export { generateCatalogRules } from './rules.js';
 export {
