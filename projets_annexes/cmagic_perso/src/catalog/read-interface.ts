@@ -13,3 +13,19 @@ export const generateCatalogReadInterface = (
         buildCatalogReadTemplateModel(spec),
         templatesDirectory
     );
+
+export const generateCatalogTestReadInterface = (
+    spec: CatalogSpec,
+    templatesDirectory?: string
+): string =>
+    renderTemplate(
+        templateName,
+        {
+            ...buildCatalogReadTemplateModel(spec),
+            runtimeIncludes: {
+                cmagic: 'includes/cmagic.rpgleinc',
+                global: 'includes/global.rpgleinc'
+            }
+        },
+        templatesDirectory
+    );

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
     generateCatalogReadInterface,
+    generateCatalogTestReadInterface,
     generateRpgReadModule
 } from '../../src/catalog/index.js';
 import { compileServiceCatalog } from './test-utils.js';
@@ -14,8 +15,8 @@ describe('Catalogue RPG read interface generator', () => {
         );
 
         expect(source).toContain('/define SERVICE_READ_H_DEFINED');
-        expect(source).toContain("/include 'includes/cmagic.rpgleinc'");
-        expect(source).toContain("/include 'includes/global.rpgleinc'");
+        expect(source).toContain("/include 'cmagic.rpgleinc'");
+        expect(source).toContain("/include 'global.rpgleinc'");
         expect(source).toContain('dcl-ds service_item_t qualified template;');
         expect(source).toContain('  id varchar(3);');
         expect(source).toContain('  nom varchar(36);');
@@ -32,6 +33,15 @@ describe('Catalogue RPG read interface generator', () => {
             'dcl-pr service_get ind extproc(*dclcase);'
         );
         expect(source).not.toContain('_local');
+    });
+
+    test('uses project-root include paths in the test copy', async () => {
+        const source = generateCatalogTestReadInterface(
+            await compileServiceCatalog()
+        );
+
+        expect(source).toContain("/include 'includes/cmagic.rpgleinc'");
+        expect(source).toContain("/include 'includes/global.rpgleinc'");
     });
 
     test('declares only capabilities exposed by the catalogue', async () => {

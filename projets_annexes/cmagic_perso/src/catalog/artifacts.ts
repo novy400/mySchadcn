@@ -26,7 +26,10 @@ import { generateCatalogIwsInterface } from './iws-interface.js';
 import { generateCatalogIwsWrapper } from './iws.js';
 import { generateOpenApiSource } from './openapi.js';
 import { generateResourceContractSource } from './resource-contract.js';
-import { generateCatalogReadInterface } from './read-interface.js';
+import {
+    generateCatalogReadInterface,
+    generateCatalogTestReadInterface
+} from './read-interface.js';
 import { generateRpgReadModule } from './rpg-read.js';
 import { generateCatalogRules } from './rules.js';
 import { buildCatalogServerSpecs } from './server-compiler.js';
@@ -46,6 +49,7 @@ export type GeneratedCatalogArtifactPaths = {
     resourceContract: string;
     rpgRead: string;
     rpgReadInterface: string;
+    rpgTestReadInterface: string;
     ileastic: string;
     ileasticInterface: string;
     iws?: string;
@@ -101,8 +105,11 @@ const buildCatalogSpecsOrThrow = (model: Model): CatalogSpec[] => {
 const writeCatalogArtifacts = (
     specs: readonly CatalogSpec[],
     destination: string
-): GeneratedCatalogArtifactPaths[] =>
-    specs.map(spec => {
+): GeneratedCatalogArtifactPaths[] => {
+    const testIncludesDirectory = path.join(destination, 'includes');
+    fs.mkdirSync(testIncludesDirectory, { recursive: true });
+
+    return specs.map(spec => {
         const resourceDirectory = path.join(destination, spec.resource);
         fs.mkdirSync(resourceDirectory, { recursive: true });
 
@@ -145,6 +152,10 @@ const writeCatalogArtifacts = (
                 resourceDirectory,
                 catalogRpgReadInterfaceSourceName(spec.resource)
             ),
+            rpgTestReadInterface: path.join(
+                testIncludesDirectory,
+                catalogRpgReadInterfaceSourceName(spec.resource)
+            ),
             ileastic: path.join(
                 resourceDirectory,
                 catalogIleasticSourceName(spec.resource)
@@ -171,6 +182,10 @@ const writeCatalogArtifacts = (
         writeArtifact(
             artifacts.rpgReadInterface,
             generateCatalogReadInterface(spec)
+        );
+        writeArtifact(
+            artifacts.rpgTestReadInterface,
+            generateCatalogTestReadInterface(spec)
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(
@@ -207,6 +222,7 @@ const writeCatalogArtifacts = (
 
         return artifacts;
     });
+};
 
 const writeCatalogServerArtifacts = (
     specs: readonly CatalogServerSpec[],

@@ -51,6 +51,11 @@ export const generateCatalogAction = async (
                 `RPG read interface generated: ${artifact.rpgReadInterface}`
             )
         );
+        console.log(
+            chalk.green(
+                `RPG test include generated: ${artifact.rpgTestReadInterface}`
+            )
+        );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
         console.log(
             chalk.green(

@@ -181,6 +181,12 @@ Le fichier possède un garde d'inclusion et ne déclare aucune procédure de mut
 types et noms de procédures sont issus du même modèle de rendu que le module RPG et son
 binder ; le wrapper ILEastic inclut donc ce contrat sans recopier leurs signatures.
 
+Le générateur conserve ce contrat dans le dossier de la ressource avec les includes
+historiques `cmagic.rpgleinc` et `global.rpgleinc`. Il produit aussi une copie destinée
+aux tests sous `<destination>/includes/{resource}.read.rpgleinc` ; seule cette copie
+utilise les chemins `includes/cmagic.rpgleinc` et `includes/global.rpgleinc` attendus
+par les tests RPGUnit exécutés depuis la racine du projet IBM i.
+
 ## Module RPG de lecture généré
 
 Le cinquième artefact implémente directement les capacités de lecture déclarées :

@@ -3,8 +3,8 @@
 /eof
 /endif
 /define SERVICE_READ_H_DEFINED
-/include 'includes/cmagic.rpgleinc'
-/include 'includes/global.rpgleinc'
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
 
 dcl-ds service_item_t qualified template;
   id varchar(3);

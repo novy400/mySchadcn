@@ -52,6 +52,10 @@ export type CatalogReadTemplateModel = {
     entityName: string;
     entityDisplayName: string;
     includeGuard: string;
+    runtimeIncludes: {
+        cmagic: string;
+        global: string;
+    };
     readInterfaceSource: string;
     table: string;
     hasList: boolean;
@@ -216,6 +220,10 @@ export const buildCatalogReadTemplateModel = (
         entityName,
         entityDisplayName: spec.entity,
         includeGuard: `${spec.entity.toUpperCase()}_READ_H_DEFINED`,
+        runtimeIncludes: {
+            cmagic: 'cmagic.rpgleinc',
+            global: 'global.rpgleinc'
+        },
         readInterfaceSource: catalogRpgReadInterfaceSourceName(spec.resource),
         table: spec.table,
         hasList: procedures.hasList,

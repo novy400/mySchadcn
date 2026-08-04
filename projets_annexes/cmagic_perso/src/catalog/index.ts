@@ -11,7 +11,10 @@ export {
     catalogIwsGetListProcedure,
     generateCatalogIwsWrapper
 } from './iws.js';
-export { generateCatalogReadInterface } from './read-interface.js';
+export {
+    generateCatalogReadInterface,
+    generateCatalogTestReadInterface
+} from './read-interface.js';
 export {
     CatalogCompilationError,
     generateCatalogArtifacts,

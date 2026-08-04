@@ -373,7 +373,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the ten deterministic catalogue artifacts', async () => {
+    test('writes the eleven deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -408,6 +408,11 @@ describe('CMagic Catalogue v0', () => {
                 rpgReadInterface: path.join(
                     temporaryDirectory,
                     'services',
+                    'services.read.rpgleinc'
+                ),
+                rpgTestReadInterface: path.join(
+                    temporaryDirectory,
+                    'includes',
                     'services.read.rpgleinc'
                 ),
                 ileastic: path.join(
@@ -542,6 +547,46 @@ describe('CMagic Catalogue v0', () => {
             );
             expect(artifacts.ileastic).toBeDefined();
             expect(artifacts.ileasticInterface).toBeDefined();
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('keeps the source read interface unchanged and writes a test include copy', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-catalog-test-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+            const testInterface = artifacts.rpgTestReadInterface;
+
+            expect(testInterface).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'includes',
+                    'services.read.rpgleinc'
+                )
+            );
+            expect(
+                fs.readFileSync(artifacts.rpgReadInterface, 'utf-8')
+            ).toContain("/include 'cmagic.rpgleinc'");
+            expect(
+                fs.readFileSync(artifacts.rpgReadInterface, 'utf-8')
+            ).not.toContain("/include 'includes/cmagic.rpgleinc'");
+            expect(testInterface).toBeDefined();
+            expect(fs.readFileSync(testInterface as string, 'utf-8')).toContain(
+                "/include 'includes/cmagic.rpgleinc'"
+            );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

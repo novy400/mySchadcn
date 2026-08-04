@@ -4,8 +4,8 @@
 /eof
 /endif
 /define {{includeGuard}}
-/include 'includes/cmagic.rpgleinc'
-/include 'includes/global.rpgleinc'
+/include '{{runtimeIncludes.cmagic}}'
+/include '{{runtimeIncludes.global}}'
 
 {{#if procedures.hasList}}
 dcl-ds {{entityName}}_item_t qualified template;
