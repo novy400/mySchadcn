@@ -112,7 +112,11 @@ const writeArtifactPreservingManualCode = (
     filePath: string,
     generatedContent: string
 ): void => {
+    const alreadyExists = fs.existsSync(filePath);
     const manualCode = extractManualCode(filePath);
+    if (alreadyExists && manualCode === null) {
+        return;
+    }
     writeArtifact(
         filePath,
         manualCode === null

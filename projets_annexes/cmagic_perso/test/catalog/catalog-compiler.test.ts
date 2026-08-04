@@ -717,6 +717,42 @@ end-proc;
         }
     });
 
+    test('does not overwrite existing RPGUnit files that predate manual markers', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-test-legacy-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+            const legacyReadTest = '**free\n// Existing project read tests\n';
+            const legacyIwsTest = '**free\n// Existing project IWS tests\n';
+            fs.writeFileSync(artifacts.rpgReadTest, legacyReadTest, 'utf-8');
+            fs.writeFileSync(
+                artifacts.iwsTest as string,
+                legacyIwsTest,
+                'utf-8'
+            );
+
+            generateCatalogArtifacts(model, temporaryDirectory);
+
+            expect([
+                fs.readFileSync(artifacts.rpgReadTest, 'utf-8'),
+                fs.readFileSync(artifacts.iwsTest as string, 'utf-8')
+            ]).toEqual([legacyReadTest, legacyIwsTest]);
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
     test('keeps the source read interface unchanged and writes a test include copy', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(

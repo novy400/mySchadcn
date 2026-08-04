@@ -208,7 +208,10 @@ Le développeur ajoute les cas propres au projet entre les marqueurs suivants :
 ```
 
 Le contenu situé entre ces deux marqueurs est conservé lors des générations
-suivantes. Le reste de l'enveloppe demeure sous la responsabilité du générateur.
+suivantes. Le reste de l'enveloppe demeure sous la responsabilité du générateur. Un
+fichier de test déjà présent mais dépourvu de ces marqueurs est considéré comme
+entièrement manuel et n'est jamais écrasé ; cela permet d'adopter le générateur dans
+un projet qui possède déjà ses propres tests RPGUnit.
 
 ## Module RPG de lecture généré
 
