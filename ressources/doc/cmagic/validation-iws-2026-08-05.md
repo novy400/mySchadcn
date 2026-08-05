@@ -4,6 +4,7 @@ Ce relevé conserve les résultats observés directement sur le service de test 
 
 - URL : `http://cmspw7t:10074/web/services/SERVIWS3` ;
 - serveur : Apache sur IBM i ;
+- version du serveur : IWS 2.6, confirmée dans Web Administration ;
 - heure des appels initiaux : `2026-08-05 13:17:52 UTC` ;
 - heure du contrôle final après redéploiement : `2026-08-05 14:46:26 UTC` ;
 - transport : HTTP, environnement de test uniquement.
@@ -123,9 +124,13 @@ métadonnée `maxLength = 3`. La correction a été compilée et testée sur IBM
 `CMAGIC`, `SERVICE` et `SERVIWS`. Les suites RPGUnit ont été confirmées vertes et le
 contrôle HTTP final valide le comportement de bout en bout.
 
-## Contrat IWS restant à archiver
+## Swagger IWS 2.6 restant à archiver
 
-L'URL `/openapi/` du serveur de test a répondu `404`. Le fichier
-`services.openapi.json` de CMagic n'est pas l'export du serveur IWS. La description
-Swagger/OpenAPI issue de l'administration IWS reste donc à télécharger pour fermer la
-porte documentaire correspondante.
+Les URL `/openapi`, `/openapi/`, `/openapi/ui` et `/openapi/ui/` du serveur de test ont
+répondu `404`. Ce comportement est normal sur la version IWS 2.6 confirmée : les URL
+OpenAPI publiques sont une fonction IWS 3.0.
+
+Le fichier `services.openapi.json` de CMagic n'est pas le document produit par IWS. Le
+Swagger du service `SERVIWS3` reste donc à télécharger depuis Web Administration et à
+archiver sous `validation-cmagic-iws-20260730/swagger-iws-2.6.json` pour fermer la
+dernière réserve documentaire.

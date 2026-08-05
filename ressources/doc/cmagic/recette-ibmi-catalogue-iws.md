@@ -50,7 +50,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 | Bibliothèque de test | `CMAGICTST` | |
 | Bibliothèque contenant `CIWS` | `CKOOLBIN` ou autre | |
 | Nom du serveur IWS | `CMAGICIWS` | |
-| Version IWS | `2.6` ou `3.0` | |
+| Version IWS | `2.6` ou `3.0` | `2.6` |
 | Port HTTP du serveur IWS | `10074` | `10074` |
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
 | Nom public du service | `SERVICES` | `SERVIWS3` |
@@ -443,12 +443,22 @@ Valider le déploiement et attendre que le service apparaisse actif.
 
 ## 8. Porte 6 — Sauvegarder le contrat exposé par IWS
 
-Depuis l'action de consultation ou de téléchargement disponible dans l'administration
-IWS, enregistrer la description Swagger/OpenAPI générée sous :
+Le serveur de recette utilise **IWS 2.6**. Cette version n'expose pas les URL publiques
+`/openapi/` et `/openapi/ui/` ajoutées avec IWS 3.0 ; leur réponse `404` est donc
+normale et ne constitue pas un échec de la recette.
+
+Pour IWS 2.6, ouvrir `Manage > Application Servers`, sélectionner le serveur du port
+`10074`, puis le service REST `SERVIWS3`. Depuis l'action de consultation ou de
+téléchargement de sa définition, enregistrer le document Swagger généré sous :
 
 ```text
-validation-cmagic-iws-20260730/openapi-iws.json
+validation-cmagic-iws-20260730/swagger-iws-2.6.json
 ```
+
+Pour une future recette IWS 3.0, la spécification agrégée sera disponible par défaut à
+`http://<hote>:<port>/openapi/` et l'interface à
+`http://<hote>:<port>/openapi/ui/`, sauf désactivation ou changement du chemin dans
+les propriétés du serveur.
 
 Ne pas la confondre avec `services.openapi.json` généré par CMagic. Ce dernier décrit
 encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la description
@@ -709,14 +719,15 @@ l'analyse des résultats.
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
 | 4. Cinq objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
-| 6. Contrat IWS sauvegardé | À compléter | archiver la description OpenAPI issue d'IWS |
+| 6. Contrat IWS sauvegardé | Partiel | IWS 2.6 confirmé et `/openapi/` non applicable ; archiver `swagger-iws-2.6.json` depuis Web Administration |
 | 7. Requêtes HTTP exécutées | OK | [relevé HTTP](./validation-iws-2026-08-05.md) : `id=A000` retourne `400/CMG0003`, puis `id=A00` retourne `200` |
 | 8. Preuves conservées | Partiel | capture nominale et relevé HTTP archivés ; export OpenAPI IWS encore absent |
 
 Conclusion de la session : **GO fonctionnel avec réserve documentaire**. Le service
 IWS répond avec les helpers CIWS génériques, la validation de longueur est centralisée
 dans `cmagic_sanitizeContext` et la reprise après erreur est confirmée. Les en-têtes
-HTTP sont archivés ; seul le contrat OpenAPI IWS reste à récupérer.
+HTTP sont archivés ; seul le Swagger IWS 2.6 issu de Web Administration reste à
+récupérer. L'absence de `/openapi/` est normale pour cette version.
 
 Conclusion :
 
@@ -733,6 +744,7 @@ Conclusion :
 - [Tutoriel IBM de déploiement REST IWS](https://developer.ibm.com/tutorials/i-rest-web-services-server2/)
 - [Principes REST IWS : paramètres, statuts et en-têtes](https://www.ibm.com/support/pages/system/files/inline-files/IWS-Building-REST-Service-Part-1-1.pdf)
 - [Support actuel des versions IWS](https://www.ibm.com/support/pages/node/687889)
+- [OpenAPI public introduit avec IWS 3.0](https://www.ibm.com/support/pages/node/7248102)
 - [Métadonnée `QUERY_STRING` et mises à jour IWS](https://www.ibm.com/support/pages/system/files/inline-files/IWS-Updates-AUG2015.pdf)
 
 
