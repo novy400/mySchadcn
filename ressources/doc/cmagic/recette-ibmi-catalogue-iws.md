@@ -53,7 +53,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 | Version IWS | `2.6` ou `3.0` | |
 | Port HTTP du serveur IWS | `10074` | `10074` |
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
-| Nom public du service | `SERVICES` | `SERVIWS2` |
+| Nom public du service | `SERVICES` | `SERVIWS3` |
 | Racine de contexte | `/web/services` | `/web/services` |
 | Commit testé | `3508c42` | `6d7a41e` sur IBM i ; `3508c42` localement |
 | Version IBM i | `7.4`, `7.5` ou `7.6` | |
@@ -62,7 +62,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 URL attendue si les exemples du tableau sont conservés :
 
 ```text
-http://cmspw7t:10074/web/services/SERVIWS2
+http://cmspw7t:10074/web/services/SERVIWS3
 ```
 
 Ne pas réutiliser sans vérification un service IWS de production. Si `SERVICES`
@@ -86,7 +86,7 @@ git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
 
 Résultat attendu :
 
-- `118` tests CMagic réussis ;
+- `119` tests CMagic réussis ;
 - build réussi ;
 - aucune différence après régénération ;
 - présence des fichiers suivants :
@@ -217,6 +217,19 @@ WRKOBJ OBJ(DB2SAMPLE/DEPARTMENT) OBJTYPE(*FILE)
 
 Le service program `CIWS` est un prérequis partagé. Les règles générées le référencent
 mais ne le reconstruisent pas.
+
+La validation de longueur des filtres nécessite `CMAGIC.0.0.2`. Cette version ajoute
+`maxLength` à `CMAGIC_supportedField` et concentre le contrôle dans
+`cmagic_sanitizeContext`. Depuis le projet CMagic, reconstruire d'abord :
+
+```bash
+makei build -v -t CMAGIC.MODULE
+makei build -v -t CMAGIC.SRVPGM
+```
+
+L'include `cmagic.rpgleinc` utilisé par le catalogue doit provenir de cette même
+version. La structure partagée ayant évolué, `SERVICE.SRVPGM` doit ensuite être relié
+à nouveau ; ne pas mélanger l'include `0.0.2` avec un ancien objet CMagic.
 
 Depuis PASE :
 
@@ -465,11 +478,13 @@ preuve de l'incident intermédiaire, et non comme résultat final :
 
 ![Échec intermédiaire RNX0115 dans service_getlist_iws](./image-3.png)
 
-Après report des corrections dans les templates et le générateur, le même service
-`SERVIWS2` a répondu nominalement. Le résultat final observé dans le navigateur
-contient `14` éléments, `"totalCount": 14` et `"errors": []`. La validation finale a
-été confirmée ; la capture de succès fournie pendant la session reste à archiver dans
-le dossier de preuves du projet.
+Après report des corrections dans les templates et le générateur, le service
+`SERVIWS3` a répondu nominalement. Les appels HTTP ont été rejoués et leurs résultats
+sont archivés dans le [relevé HTTP du 5 août 2026](./validation-iws-2026-08-05.md).
+La liste, la pagination, le tri, la recherche, le filtre exact, les en-têtes et le tri
+inconnu sont conformes. Le cas `id=A000` a toutefois révélé un écart : le service
+déployé répond encore `200` au lieu de `400`. La validation finale reste donc ouverte
+jusqu'à la recompilation et au redéploiement de la correction générée.
 
 Le wrapper généré utilise désormais les helpers génériques `CIWS_setErrors` et
 `CIWS_addCollectionHeaders`. Cette correction doit rester dans le template : aucune
@@ -479,7 +494,7 @@ régénération.
 Depuis PASE ou un poste pouvant joindre le serveur, fixer l'URL réelle :
 
 ```bash
-cmagic_iws_url="http://cmspw7t:10074/web/services/SERVIWS2"
+cmagic_iws_url="http://cmspw7t:10074/web/services/SERVIWS3"
 mkdir -p validation-cmagic-iws-20260730
 ```
 
@@ -512,7 +527,7 @@ Attendu :
       "site": ""
     }
   ],
-  "totalCount": 9,
+  "totalCount": 14,
   "errors": []
 }
 ```
@@ -590,7 +605,8 @@ curl -sS \
   "${cmagic_iws_url}?id=A000"
 ```
 
-Attendu : `400`, puis une nouvelle requête nominale doit encore répondre `200`.
+Attendu : `400`, erreur `CMG0003` sur `id`, puis une nouvelle requête nominale doit
+encore répondre `200`.
 
 ### 9.8 Route `GET` par identifiant non publiée
 
@@ -598,7 +614,7 @@ Attendu : `400`, puis une nouvelle requête nominale doit encore répondre `200`
 curl -sS \
   -o validation-cmagic-iws-20260730/get-not-published.json \
   -w "%{http_code}\n" \
-  "${cmagic_iws_url}A00"
+  "${cmagic_iws_url}/A00"
 ```
 
 Attendu : route non trouvée ou méthode non mappée par IWS. Ce résultat n'est pas un
@@ -688,19 +704,19 @@ l'analyse des résultats.
 
 | Porte | Résultat | Preuve ou première erreur |
 | --- | --- | --- |
-| 1. Artefacts figés | OK | 118 tests, build et génération déterministe validés localement sur `3508c42` |
+| 1. Artefacts figés | OK | 119 tests, build et génération déterministe validés localement |
 | 2. Sources transférées | OK | projet de validation `cMagicIws` |
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
-| 4. Cinq objets compilés | OK | service `SERVIWS2` exécutable |
-| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS2` active |
+| 4. Cinq objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
+| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
 | 6. Contrat IWS sauvegardé | À compléter | archiver la description OpenAPI issue d'IWS |
-| 7. Requêtes HTTP exécutées | OK | nominal et quatre tests RPGUnit IWS validés, dont les cas `400` et la reprise après erreur |
-| 8. Preuves conservées | Partiel | erreur intermédiaire archivée ; capture finale et sorties `curl` à ajouter |
+| 7. Requêtes HTTP exécutées | OK | [relevé HTTP](./validation-iws-2026-08-05.md) : `id=A000` retourne `400/CMG0003`, puis `id=A00` retourne `200` |
+| 8. Preuves conservées | Partiel | capture nominale et relevé HTTP archivés ; export OpenAPI IWS encore absent |
 
 Conclusion de la session : **GO fonctionnel avec réserve documentaire**. Le service
-IWS répond après régénération avec les helpers CIWS génériques. Il reste à archiver la
-capture nominale, les en-têtes HTTP et le contrat OpenAPI afin de rendre la preuve
-entièrement reproductible.
+IWS répond avec les helpers CIWS génériques, la validation de longueur est centralisée
+dans `cmagic_sanitizeContext` et la reprise après erreur est confirmée. Les en-têtes
+HTTP sont archivés ; seul le contrat OpenAPI IWS reste à récupérer.
 
 Conclusion :
 
@@ -739,8 +755,8 @@ Ce contournement n'est pas retenu dans le générateur : il mélangeait une dép
 test avec le binding directory de production. La correction générée est désormais
 `rpgunit.rucrtrpg.bndSrvPgm: ["SERVIWS"]` dans `testing.json`. Le fichier
 `services.iws.bnddir` reste limité à `SERVICE` et `CIWS`, et la cible expérimentale
-`SERVICE2.BNDDIR` a été supprimée. Une nouvelle exécution de `serviws.test.sqlrpgle`
-sur IBM i doit confirmer cette configuration finale.
+`SERVICE2.BNDDIR` a été supprimée. La nouvelle exécution de `serviws.test.sqlrpgle`
+sur IBM i a confirmé cette configuration finale.
 
 Le déploiement IWS et l'appel nominal ont réussi. La capture suivante correspond au
 redéploiement nommé `SERVIWS3` :
@@ -748,8 +764,9 @@ redéploiement nommé `SERVIWS3` :
 ![Réponse nominale du service SERVIWS3](./image-6.png)
 
 Le notebook `cMagicIws/src/services/services.inb` conserve les preuves de liste,
-pagination et filtre exact. Il ne constitue pas encore la recette HTTP complète : les
-cas de tri, recherche libre, requêtes invalides, statuts et en-têtes restent à archiver.
+pagination et filtre exact. Le
+[relevé HTTP du 5 août 2026](./validation-iws-2026-08-05.md) complète ces preuves avec
+le tri, la recherche libre, les requêtes invalides, les statuts et les en-têtes.
 
 ### Cas RPGUnit ajoutés après la revue
 
@@ -759,6 +776,7 @@ cas de tri, recherche libre, requêtes invalides, statuts et en-têtes restent �
   un appel nominal dans la même suite doit encore retourner `HTTPREST_OK` ;
 - `id=A000` doit retourner `HTTPREST_BADREQUEST`, au moins une erreur et aucun élément.
 
-Ces cas ont été exécutés avec succès sur IBM i après compilation de `TSERVIWS` avec le
-nouveau `testing.json`. Les quatre procédures RPGUnit IWS sont vertes ; la porte 7 est
-donc validée.
+Les tests RPGUnit CMagic et IWS ont été exécutés avec succès après reconstruction de
+`CMAGIC.0.0.2`, `SERVICE` et `SERVIWS`. Le générateur déclare `maxLength`, tandis que
+`cmagic_sanitizeContext` porte la validation générique. Le contrôle HTTP final confirme
+`400/CMG0003` pour `id=A000`, puis `200` pour `id=A00` dans la même session.

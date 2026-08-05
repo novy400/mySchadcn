@@ -67,6 +67,16 @@ describe('Catalogue RPG read generator', () => {
         expect(source).toContain('WHERE DEPTNO = :pId');
     });
 
+    test('publishes catalogue field lengths to the generic sanitizer', async () => {
+        const source = generateRpgReadModule(await compileServiceCatalog());
+
+        expect(source).toContain(
+            'pSupportedFields.supportedFields(lIt).maxLength = 3;'
+        );
+        expect(source).not.toContain('dcl-s lFilterIndex int(10);');
+        expect(source).not.toContain('Filter value exceeds maximum length');
+    });
+
     test('rejects SQL identifiers that cannot be safely generated', async () => {
         const service = await compileServiceCatalog();
         const unsafeSpec: CatalogSpec = {

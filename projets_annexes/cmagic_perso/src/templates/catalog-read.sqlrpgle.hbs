@@ -47,6 +47,7 @@ dcl-proc {{procedureSignatures.getSupportedFields.name}} export;
   pSupportedFields.supportedFields(lIt).name = '{{name}}';
   pSupportedFields.supportedFields(lIt).sqlField = '{{column}}';
   pSupportedFields.supportedFields(lIt).dataType = '{{cmagicDataType}}';
+  pSupportedFields.supportedFields(lIt).maxLength = {{maxLength}};
   pSupportedFields.supportedFields(lIt).orderTri = lIt;
 {{/each}}
   pSupportedFields.fieldsCount = lIt;

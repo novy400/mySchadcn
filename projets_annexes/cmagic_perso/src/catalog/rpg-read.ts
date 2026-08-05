@@ -21,6 +21,7 @@ type FieldTypeTemplateModel = {
     rpgType: string;
     sqlDefault: string;
     cmagicDataType: 'C' | 'N' | 'D';
+    maxLength: number;
 };
 
 type FieldTemplateModel = FieldTypeTemplateModel & {
@@ -76,31 +77,36 @@ const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
             return {
                 rpgType: `varchar(${type.length ?? 256})`,
                 sqlDefault: "''",
-                cmagicDataType: 'C'
+                cmagicDataType: 'C',
+                maxLength: type.length ?? 256
             };
         case 'integer':
             return {
                 rpgType: 'int(20)',
                 sqlDefault: '0',
-                cmagicDataType: 'N'
+                cmagicDataType: 'N',
+                maxLength: 0
             };
         case 'decimal':
             return {
                 rpgType: `packed(${type.precision}:${type.scale})`,
                 sqlDefault: '0',
-                cmagicDataType: 'N'
+                cmagicDataType: 'N',
+                maxLength: 0
             };
         case 'date':
             return {
                 rpgType: 'date',
                 sqlDefault: "DATE('0001-01-01')",
-                cmagicDataType: 'D'
+                cmagicDataType: 'D',
+                maxLength: 0
             };
         case 'boolean':
             return {
                 rpgType: 'char(1)',
                 sqlDefault: "''",
-                cmagicDataType: 'C'
+                cmagicDataType: 'C',
+                maxLength: 1
             };
         case 'enum':
             return {
@@ -109,7 +115,11 @@ const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
                     ...type.values.map(value => value.length)
                 )})`,
                 sqlDefault: "''",
-                cmagicDataType: 'C'
+                cmagicDataType: 'C',
+                maxLength: Math.max(
+                    1,
+                    ...type.values.map(value => value.length)
+                )
             };
     }
 };
