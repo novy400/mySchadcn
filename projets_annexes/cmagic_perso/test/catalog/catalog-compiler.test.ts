@@ -674,7 +674,7 @@ describe('CMagic Catalogue v0', () => {
         }
     });
 
-    test('generates RPGUnit configuration for the modules exercised by IWS tests', async () => {
+    test('generates RPGUnit link and coverage configuration for IWS tests', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
                 path.resolve('examples/service-catalogue-iws.cmagic'),
@@ -708,7 +708,8 @@ describe('CMagic Catalogue v0', () => {
                             tgtCcsid: '*JOB',
                             dbgView: '*SOURCE',
                             rpgPpOpt: '*LVL2',
-                            cOption: ['*EVENTF']
+                            cOption: ['*EVENTF'],
+                            bndSrvPgm: ['SERVIWS']
                         }
                     },
                     codecov: {
@@ -742,7 +743,8 @@ describe('CMagic Catalogue v0', () => {
                     rpgunit: {
                         rucrtrpg: {
                             dbgView: '*LIST',
-                            incDir: ['custom/includes']
+                            incDir: ['custom/includes'],
+                            bndSrvPgm: ['CUSTOMSRV']
                         },
                         rucalltst: {
                             detail: '*ALL'
@@ -768,7 +770,8 @@ describe('CMagic Catalogue v0', () => {
                         dbgView: '*LIST',
                         rpgPpOpt: '*LVL2',
                         cOption: ['*EVENTF'],
-                        incDir: ['custom/includes']
+                        incDir: ['custom/includes'],
+                        bndSrvPgm: ['CUSTOMSRV', 'SERVIWS']
                     },
                     rucalltst: {
                         detail: '*ALL'

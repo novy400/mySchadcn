@@ -5,6 +5,7 @@ import { catalogObjectName } from './ibmi-object-name.js';
 const templateName = 'catalog-testing.json.hbs';
 
 type CatalogTestingTemplateModel = {
+    bindServicePrograms: string[];
     codecovModules: string[];
 };
 
@@ -39,6 +40,10 @@ const stringArrayProperty = (
 const buildTemplateModel = (
     spec: CatalogSpec
 ): CatalogTestingTemplateModel => ({
+    bindServicePrograms:
+        spec.iwsObject === undefined
+            ? []
+            : [catalogObjectName(spec.iwsObject)],
     codecovModules: [
         catalogObjectName(spec.entity),
         ...(spec.iwsObject === undefined
@@ -65,8 +70,14 @@ export const mergeCatalogTestingConfiguration = (
     const generated = parseJsonObject(generatedContent);
     const existingRpgunit = objectProperty(existing, 'rpgunit');
     const generatedRpgunit = objectProperty(generated, 'rpgunit');
+    const existingRucrtrpg = objectProperty(existingRpgunit, 'rucrtrpg');
+    const generatedRucrtrpg = objectProperty(generatedRpgunit, 'rucrtrpg');
     const existingCodecov = objectProperty(existing, 'codecov');
     const generatedCodecov = objectProperty(generated, 'codecov');
+    const bindServicePrograms = [
+        ...stringArrayProperty(existingRucrtrpg, 'bndSrvPgm'),
+        ...stringArrayProperty(generatedRucrtrpg, 'bndSrvPgm')
+    ];
     const modules = [
         ...stringArrayProperty(existingCodecov, 'module'),
         ...stringArrayProperty(generatedCodecov, 'module')
@@ -80,8 +91,13 @@ export const mergeCatalogTestingConfiguration = (
                 ...generatedRpgunit,
                 ...existingRpgunit,
                 rucrtrpg: {
-                    ...objectProperty(generatedRpgunit, 'rucrtrpg'),
-                    ...objectProperty(existingRpgunit, 'rucrtrpg')
+                    ...generatedRucrtrpg,
+                    ...existingRucrtrpg,
+                    ...(bindServicePrograms.length === 0
+                        ? {}
+                        : {
+                              bndSrvPgm: [...new Set(bindServicePrograms)]
+                          })
                 }
             },
             codecov: {

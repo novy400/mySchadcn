@@ -6,6 +6,9 @@
       "rpgPpOpt": "*LVL2",
       "cOption": [
         "*EVENTF"
+      ],
+      "bndSrvPgm": [
+        "SERVIWS"
       ]
     }
   },

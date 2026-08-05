@@ -6,7 +6,12 @@
       "rpgPpOpt": "*LVL2",
       "cOption": [
         "*EVENTF"
-      ]
+      ]{{#if bindServicePrograms}},
+      "bndSrvPgm": [
+{{#each bindServicePrograms}}
+        "{{this}}"{{#unless @last}},{{/unless}}
+{{/each}}
+      ]{{/if}}
     }
   },
   "codecov": {

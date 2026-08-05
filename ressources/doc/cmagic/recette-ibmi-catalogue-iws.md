@@ -722,22 +722,31 @@ Conclusion :
 
 ## Compte rendu de la session de tests du 5 août 2026
 
-- npm test,build ok
-- node bin/cli.js generate-catalog ok
-- git diff ok
-- transfert vers projet BOB/TOBi ok
-- compilation des cinq objets ok
-- test rpgunit service.test.sqlrpgle ok
-- test rpgunit serviws.test.sqlrpgle KO
-  ![alt text](image-4.png)
-  => ajouter SERVIWS dans le bnddir service de testbin
-  ![alt text](image-5.png)
-  à ajouter dans services.iws.bnddir (??)
-  ==> tester à nouveau serviws.test.sqlrpgle ok
-- déploiement IWS ok
-- test basique ok 
-![alt text](image-6.png)
-- test complet via services.test.inb (TODO)
-  src\services\services.inb
-  ok
-  
+- `npm test`, `npm run build`, `generate-catalog` et contrôle du diff : OK ;
+- transfert vers le projet BOB/TOBi et compilation des cinq objets : OK ;
+- `service.test.sqlrpgle` : OK ;
+- première compilation de `serviws.test.sqlrpgle` : KO, car l'import
+  `service_getlist_iws` n'était pas résolu :
+
+  ![Échec initial de l'édition de liens de TSERVIWS](./image-4.png)
+
+- contournement essayé pendant la session : ajout de `SERVIWS` dans
+  `SERVICE.BNDDIR`, puis test RPGUnit réussi :
+
+  ![Binding directory SERVICE enrichi temporairement avec SERVIWS](./image-5.png)
+
+Ce contournement n'est pas retenu dans le générateur : il mélangeait une dépendance de
+test avec le binding directory de production. La correction générée est désormais
+`rpgunit.rucrtrpg.bndSrvPgm: ["SERVIWS"]` dans `testing.json`. Le fichier
+`services.iws.bnddir` reste limité à `SERVICE` et `CIWS`, et la cible expérimentale
+`SERVICE2.BNDDIR` a été supprimée. Une nouvelle exécution de `serviws.test.sqlrpgle`
+sur IBM i doit confirmer cette configuration finale.
+
+Le déploiement IWS et l'appel nominal ont réussi. La capture suivante correspond au
+redéploiement nommé `SERVIWS3` :
+
+![Réponse nominale du service SERVIWS3](./image-6.png)
+
+Le notebook `cMagicIws/src/services/services.inb` conserve les preuves de liste,
+pagination et filtre exact. Il ne constitue pas encore la recette HTTP complète : les
+cas de tri, recherche libre, requêtes invalides, statuts et en-têtes restent à archiver.
