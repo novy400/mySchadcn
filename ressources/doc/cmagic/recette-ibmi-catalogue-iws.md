@@ -3,8 +3,11 @@
 Cette procédure permet de compiler, déployer et tester sur IBM i le catalogue
 `Service` généré par CMagic pour **IBM Integrated Web Services (IWS)**.
 
-Elle est préparée pour la séance du **30 juillet 2026** à partir du commit
-`adbef30` (`feat(cmagic): generate IWS read adapters`).
+Elle a été préparée pour la séance du **30 juillet 2026**, puis mise à jour le
+**5 août 2026** après la validation fonctionnelle du service IWS. La correction
+du wrapper IWS validée sur IBM i est incluse dans `6d7a41e`. Le générateur courant
+(`3508c42`) ajoute aussi les enveloppes et la configuration RPGUnit/BOB, validées
+localement.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -41,25 +44,25 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 
 | Paramètre | Exemple | Valeur du test |
 | --- | --- | --- |
-| Hôte IBM i | `cmspw7t` | |
+| Hôte IBM i | `cmspw7t` | `cmspw7t` |
 | Utilisateur de déploiement | `GIYVOVIE` | |
 | Racine du projet BOB/TOBi | `/home/user/projects/applicationTemplate` | |
 | Bibliothèque de test | `CMAGICTST` | |
 | Bibliothèque contenant `CIWS` | `CKOOLBIN` ou autre | |
 | Nom du serveur IWS | `CMAGICIWS` | |
 | Version IWS | `2.6` ou `3.0` | |
-| Port HTTP du serveur IWS | `10074` | |
+| Port HTTP du serveur IWS | `10074` | `10074` |
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
-| Nom public du service | `SERVICES` | |
-| Racine de contexte | `/web/services` | |
-| Commit testé | `adbef30` | |
+| Nom public du service | `SERVICES` | `SERVIWS2` |
+| Racine de contexte | `/web/services` | `/web/services` |
+| Commit testé | `3508c42` | `6d7a41e` sur IBM i ; `3508c42` localement |
 | Version IBM i | `7.4`, `7.5` ou `7.6` | |
 | Version BOB/TOBi | sortie de `makei --version` | |
 
 URL attendue si les exemples du tableau sont conservés :
 
 ```text
-http://cmspw7t:10074/web/services/SERVICES/
+http://cmspw7t:10074/web/services/SERVIWS2
 ```
 
 Ne pas réutiliser sans vérification un service IWS de production. Si `SERVICES`
@@ -83,49 +86,63 @@ git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
 
 Résultat attendu :
 
-- `109` tests CMagic réussis ;
+- `118` tests CMagic réussis ;
 - build réussi ;
 - aucune différence après régénération ;
 - présence des fichiers suivants :
 
 ```text
 generated-catalog-iws/
+├── Rules.mk
+├── includes/
+│   ├── services.read.rpgleinc
+│   └── services.iws.rpgleinc
 └── services/
     ├── Rules.mk
+    ├── service.test.sqlrpgle
     ├── services.bnd
     ├── services.iws.bnd
     ├── services.iws.bnddir
     ├── services.read.rpgleinc
     ├── services.read.sqlrpgle
     ├── services.iws.rpgleinc
-    └── services.iws.sqlrpgle
+    ├── services.iws.sqlrpgle
+    ├── serviws.test.sqlrpgle
+    └── testing.json
 ```
 
 Les fichiers `services.ileastic.*` sont encore générés pour compatibilité, mais
 `Rules.mk` ne contient aucune cible `SERVREST` dans cet exemple IWS.
+
+Les fichiers sous `services/` sont les sources de production. Les copies sous
+`includes/` sont réservées aux tests : le générateur ne doit pas déplacer ni remplacer
+`services/services.read.rpgleinc`. Les enveloppes `service.test.sqlrpgle` et
+`serviws.test.sqlrpgle` sont volontairement minimales afin que le développeur complète
+les cas propres à son catalogue. `testing.json` déclare les objets `SERVICE` et
+`SERVIWS` à RPGUnit.
 
 Arrêter la recette si la régénération produit une différence : les sources testées ne
 correspondraient plus au commit annoncé.
 
 ## 4. Porte 2 — Installer les sources dans le projet BOB/TOBi
 
-Transférer le contenu de :
+Transférer l'ensemble de :
 
 ```text
-projets_annexes/cmagic_perso/examples/generated-catalog-iws/services/
+projets_annexes/cmagic_perso/examples/generated-catalog-iws/
 ```
 
 vers un dossier dédié du projet IBM i, par exemple :
 
 ```text
-<applicationTemplate>/src/cmagic-generated-iws/services/
+<applicationTemplate>/src/cmagic-generated-iws/
 ```
 
 Vérifier sur IBM i :
 
 ```bash
 cd /home/user/projects/applicationTemplate
-find src/cmagic-generated-iws/services -maxdepth 1 -type f | sort
+find src/cmagic-generated-iws -maxdepth 2 -type f | sort
 ```
 
 Ajouter le dossier généré à `includePath` dans `iproj.json`, sans supprimer les
@@ -135,6 +152,7 @@ entrées existantes :
 {
   "includePath": [
     "includes",
+    "src/cmagic-generated-iws",
     "src/cmagic-generated-iws/services",
     "/usr/local/include"
   ]
@@ -439,10 +457,29 @@ des longueurs.
 
 ## 9. Porte 7 — Exécuter la recette HTTP
 
+### Résultat de la session du 5 août 2026
+
+Un premier appel a atteint `service_getlist_iws`, mais s'est terminé par l'erreur
+RPG `RNX0115` sur une variable à longueur variable. Cette capture est conservée comme
+preuve de l'incident intermédiaire, et non comme résultat final :
+
+![Échec intermédiaire RNX0115 dans service_getlist_iws](./image-3.png)
+
+Après report des corrections dans les templates et le générateur, le même service
+`SERVIWS2` a répondu nominalement. Le résultat final observé dans le navigateur
+contient `14` éléments, `"totalCount": 14` et `"errors": []`. La validation finale a
+été confirmée ; la capture de succès fournie pendant la session reste à archiver dans
+le dossier de preuves du projet.
+
+Le wrapper généré utilise désormais les helpers génériques `CIWS_setErrors` et
+`CIWS_addCollectionHeaders`. Cette correction doit rester dans le template : aucune
+modification manuelle de `services.iws.sqlrpgle` ne doit être nécessaire après une
+régénération.
+
 Depuis PASE ou un poste pouvant joindre le serveur, fixer l'URL réelle :
 
 ```bash
-cmagic_iws_url="http://cmspw7t:10074/web/services/SERVICES/"
+cmagic_iws_url="http://cmspw7t:10074/web/services/SERVIWS2"
 mkdir -p validation-cmagic-iws-20260730
 ```
 
@@ -651,14 +688,19 @@ l'analyse des résultats.
 
 | Porte | Résultat | Preuve ou première erreur |
 | --- | --- | --- |
-| 1. Artefacts figés | OK / KO | |
-| 2. Sources transférées | OK / KO | |
-| 3. Prérequis vérifiés | OK / KO | |
-| 4. Cinq objets compilés | OK / KO | |
-| 5. Service IWS déployé | OK / KO | |
-| 6. Contrat IWS sauvegardé | OK / KO | |
-| 7. Requêtes HTTP exécutées | OK / KO | |
-| 8. Preuves conservées | OK / KO | |
+| 1. Artefacts figés | OK | 118 tests, build et génération déterministe validés localement sur `3508c42` |
+| 2. Sources transférées | OK | projet de validation `cMagicIws` |
+| 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
+| 4. Cinq objets compilés | OK | service `SERVIWS2` exécutable |
+| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS2` active |
+| 6. Contrat IWS sauvegardé | À compléter | archiver la description OpenAPI issue d'IWS |
+| 7. Requêtes HTTP exécutées | OK | réponse nominale : 14 éléments, `totalCount: 14`, `errors: []` |
+| 8. Preuves conservées | Partiel | erreur intermédiaire archivée ; capture finale et sorties `curl` à ajouter |
+
+Conclusion de la session : **GO fonctionnel avec réserve documentaire**. Le service
+IWS répond après régénération avec les helpers CIWS génériques. Il reste à archiver la
+capture nominale, les en-têtes HTTP et le contrat OpenAPI afin de rendre la preuve
+entièrement reproductible.
 
 Conclusion :
 
@@ -676,3 +718,26 @@ Conclusion :
 - [Principes REST IWS : paramètres, statuts et en-têtes](https://www.ibm.com/support/pages/system/files/inline-files/IWS-Building-REST-Service-Part-1-1.pdf)
 - [Support actuel des versions IWS](https://www.ibm.com/support/pages/node/687889)
 - [Métadonnée `QUERY_STRING` et mises à jour IWS](https://www.ibm.com/support/pages/system/files/inline-files/IWS-Updates-AUG2015.pdf)
+
+
+## Compte rendu de la session de tests du 5 août 2026
+
+- npm test,build ok
+- node bin/cli.js generate-catalog ok
+- git diff ok
+- transfert vers projet BOB/TOBi ok
+- compilation des cinq objets ok
+- test rpgunit service.test.sqlrpgle ok
+- test rpgunit serviws.test.sqlrpgle KO
+  ![alt text](image-4.png)
+  => ajouter SERVIWS dans le bnddir service de testbin
+  ![alt text](image-5.png)
+  à ajouter dans services.iws.bnddir (??)
+  ==> tester à nouveau serviws.test.sqlrpgle ok
+- déploiement IWS ok
+- test basique ok 
+![alt text](image-6.png)
+- test complet via services.test.inb (TODO)
+  src\services\services.inb
+  ok
+  
