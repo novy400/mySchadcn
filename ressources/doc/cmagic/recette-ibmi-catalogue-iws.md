@@ -694,7 +694,7 @@ l'analyse des résultats.
 | 4. Cinq objets compilés | OK | service `SERVIWS2` exécutable |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS2` active |
 | 6. Contrat IWS sauvegardé | À compléter | archiver la description OpenAPI issue d'IWS |
-| 7. Requêtes HTTP exécutées | OK | réponse nominale : 14 éléments, `totalCount: 14`, `errors: []` |
+| 7. Requêtes HTTP exécutées | OK | nominal et quatre tests RPGUnit IWS validés, dont les cas `400` et la reprise après erreur |
 | 8. Preuves conservées | Partiel | erreur intermédiaire archivée ; capture finale et sorties `curl` à ajouter |
 
 Conclusion de la session : **GO fonctionnel avec réserve documentaire**. Le service
@@ -750,3 +750,15 @@ redéploiement nommé `SERVIWS3` :
 Le notebook `cMagicIws/src/services/services.inb` conserve les preuves de liste,
 pagination et filtre exact. Il ne constitue pas encore la recette HTTP complète : les
 cas de tri, recherche libre, requêtes invalides, statuts et en-têtes restent à archiver.
+
+### Cas RPGUnit ajoutés après la revue
+
+`serviws.test.sqlrpgle` couvre désormais deux comportements supplémentaires :
+
+- `sort=inconnu&order=ASC` doit retourner `HTTPREST_BADREQUEST` avec une erreur, puis
+  un appel nominal dans la même suite doit encore retourner `HTTPREST_OK` ;
+- `id=A000` doit retourner `HTTPREST_BADREQUEST`, au moins une erreur et aucun élément.
+
+Ces cas ont été exécutés avec succès sur IBM i après compilation de `TSERVIWS` avec le
+nouveau `testing.json`. Les quatre procédures RPGUnit IWS sont vertes ; la porte 7 est
+donc validée.
