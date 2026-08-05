@@ -18,7 +18,8 @@ import {
     catalogRpgReadSourceName,
     catalogRpgReadTestSourceName,
     catalogServerBaseName,
-    catalogServerSourceName
+    catalogServerSourceName,
+    catalogTestingSourceName
 } from './artifact-names.js';
 import { generateCatalogBinder } from './binder.js';
 import { buildCatalogSpecs } from './catalog-compiler.js';
@@ -43,6 +44,7 @@ import {
 import { generateRpgReadModule } from './rpg-read.js';
 import { generateCatalogReadTest } from './read-test.js';
 import { generateCatalogRules } from './rules.js';
+import { generateCatalogTestingConfiguration } from './testing.js';
 import { buildCatalogServerSpecs } from './server-compiler.js';
 import type {
     CatalogServerDiagnostic,
@@ -62,6 +64,7 @@ export type GeneratedCatalogArtifactPaths = {
     rpgReadInterface: string;
     rpgTestReadInterface: string;
     rpgReadTest: string;
+    testing: string;
     ileastic: string;
     ileasticInterface: string;
     iws?: string;
@@ -199,6 +202,10 @@ const writeCatalogArtifacts = (
                 resourceDirectory,
                 catalogRpgReadTestSourceName(spec.entity)
             ),
+            testing: path.join(
+                resourceDirectory,
+                catalogTestingSourceName()
+            ),
             ileastic: path.join(
                 resourceDirectory,
                 catalogIleasticSourceName(spec.resource)
@@ -233,6 +240,10 @@ const writeCatalogArtifacts = (
         writeArtifactPreservingManualCode(
             artifacts.rpgReadTest,
             generateCatalogReadTest(spec)
+        );
+        writeArtifact(
+            artifacts.testing,
+            generateCatalogTestingConfiguration(spec)
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(
@@ -330,7 +341,7 @@ export const generateCatalogProjectArtifacts = (
         serverCompilation.specs,
         destination
     );
-    if (servers.length === 0) {
+    if (catalogs.length === 0 && servers.length === 0) {
         return { catalogs, servers };
     }
 

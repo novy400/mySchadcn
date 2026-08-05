@@ -8,6 +8,8 @@ export const catalogRpgReadInterfaceSourceName = (
 export const catalogRpgReadTestSourceName = (entity: string): string =>
     `${entity.toLowerCase()}.test.sqlrpgle`;
 
+export const catalogTestingSourceName = (): string => 'testing.json';
+
 export const catalogIleasticSourceName = (resource: string): string =>
     `${resource}.ileastic.sqlrpgle`;
 

@@ -1,0 +1,19 @@
+{
+  "rpgunit": {
+    "rucrtrpg": {
+      "tgtCcsid": "*JOB",
+      "dbgView": "*SOURCE",
+      "rpgPpOpt": "*LVL2",
+      "cOption": [
+        "*EVENTF"
+      ]
+    }
+  },
+  "codecov": {
+    "module": [
+{{#each codecovModules}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+{{/each}}
+    ]
+  }
+}

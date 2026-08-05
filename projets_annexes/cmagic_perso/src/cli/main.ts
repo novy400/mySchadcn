@@ -59,6 +59,9 @@ export const generateCatalogAction = async (
         console.log(
             chalk.green(`RPGUnit read envelope generated: ${artifact.rpgReadTest}`)
         );
+        console.log(
+            chalk.green(`RPGUnit configuration generated: ${artifact.testing}`)
+        );
         console.log(chalk.green(`RPG read module generated: ${artifact.rpgRead}`));
         console.log(
             chalk.green(

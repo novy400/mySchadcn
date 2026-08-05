@@ -373,7 +373,7 @@ describe('CMagic Catalogue v0', () => {
         expect(resourceContractSource).toContain('as const;');
     });
 
-    test('writes the twelve deterministic catalogue artifacts', async () => {
+    test('writes the thirteen deterministic catalogue artifacts', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(path.resolve('examples/service-catalogue.cmagic'), 'utf-8')
         );
@@ -419,6 +419,11 @@ describe('CMagic Catalogue v0', () => {
                     temporaryDirectory,
                     'services',
                     'service.test.sqlrpgle'
+                ),
+                testing: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'testing.json'
                 ),
                 ileastic: path.join(
                     temporaryDirectory,
@@ -479,6 +484,10 @@ describe('CMagic Catalogue v0', () => {
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
                 'SERVREST.MODULE: services.ileastic.sqlrpgle'
             );
+            expect(
+                JSON.parse(fs.readFileSync(artifacts.testing, 'utf-8'))
+                    .codecov.module
+            ).toEqual(['SERVICE']);
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }
@@ -660,6 +669,53 @@ describe('CMagic Catalogue v0', () => {
             expect(testInterface).toContain(
                 "/include 'includes/httpRest.rpgleinc'"
             );
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
+    test('generates RPGUnit configuration for the modules exercised by IWS tests', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-testing-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+
+            expect({
+                path: artifacts.testing,
+                configuration: JSON.parse(
+                    fs.readFileSync(artifacts.testing, 'utf-8')
+                )
+            }).toEqual({
+                path: path.join(
+                    temporaryDirectory,
+                    'services',
+                    'testing.json'
+                ),
+                configuration: {
+                    rpgunit: {
+                        rucrtrpg: {
+                            tgtCcsid: '*JOB',
+                            dbgView: '*SOURCE',
+                            rpgPpOpt: '*LVL2',
+                            cOption: ['*EVENTF']
+                        }
+                    },
+                    codecov: {
+                        module: ['SERVICE', 'SERVIWS']
+                    }
+                }
+            });
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

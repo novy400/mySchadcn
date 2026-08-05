@@ -37,6 +37,7 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 - `{resource}.read.rpgleinc` ;
 - `{resource}.read.sqlrpgle` ;
 - `{entity}.test.sqlrpgle`, enveloppe RPGUnit de lecture à compléter ;
+- `testing.json`, configuration RPGUnit et couverture des modules générés ;
 - `{resource}.ileastic.rpgleinc` ;
 - `{resource}.ileastic.sqlrpgle` ;
 - `{resource}.ddl.sql` ;
@@ -57,9 +58,10 @@ Les propriétés `ileasticObject` et `iwsObject` sont mutuellement exclusives : 
 cible de transport est ajoutée à `Rules.mk`. Sans propriété de transport, les sources
 ILEastic compatibles restent générées, mais aucune cible HTTP n'est créée.
 
-Lorsqu'un bloc `server` est présent, elle ajoute au projet généré :
+La génération de projet écrit toujours un `Rules.mk` à la racine de la destination
+pour que BOB/TOBi parcoure les dossiers des ressources. Lorsqu'un bloc `server` est
+présent, elle ajoute aussi au projet généré :
 
-- `Rules.mk` à la racine, avec les sous-projets BOB ;
 - `{server}/{server}.main.sqlrpgle` ;
 - `{server}/Rules.mk`.
 
@@ -212,6 +214,18 @@ suivantes. Le reste de l'enveloppe demeure sous la responsabilité du générate
 fichier de test déjà présent mais dépourvu de ces marqueurs est considéré comme
 entièrement manuel et n'est jamais écrasé ; cela permet d'adopter le générateur dans
 un projet qui possède déjà ses propres tests RPGUnit.
+
+Le fichier `testing.json` placé dans le même dossier s'applique à toutes les suites
+RPGUnit de la ressource. Il reprend les options `RUCRTRPG` validées sur IBM i et calcule
+la couverture depuis les objets du catalogue : le module de lecture est toujours
+présent et le service program IWS est ajouté lorsque `iwsObject` est déclaré. Aucun nom
+comme `CLIENT` n'est figé dans le template.
+
+Les suites peuvent être compilées et exécutées depuis l'explorateur de tests de
+l'extension IBM i Testing. Pour une exécution automatisée, la CLI `itest` utilise la
+même configuration. Voir la
+[configuration officielle](https://codefori.github.io/docs/developing/testing/configuring/)
+et la [CLI IBM i Testing](https://codefori.github.io/docs/developing/testing/cli/).
 
 ## Module RPG de lecture généré
 

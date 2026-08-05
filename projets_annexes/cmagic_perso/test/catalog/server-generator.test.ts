@@ -221,7 +221,7 @@ describe('Catalogue ILEastic server generator', () => {
         }
     });
 
-    test('keeps project-level server artifacts optional', async () => {
+    test('writes project traversal rules when no application server is needed', async () => {
         const model = await parseCMagicString(`
             entity Service resource "services" table "DEPARTMENT" {
                 id: String(3) column "DEPTNO" key required
@@ -240,9 +240,13 @@ describe('Catalogue ILEastic server generator', () => {
 
             expect(artifacts.catalogs).toHaveLength(1);
             expect(artifacts.servers).toEqual([]);
-            expect(artifacts.projectRules).toBeUndefined();
-            expect(fs.existsSync(path.join(temporaryDirectory, 'Rules.mk'))).toBe(
-                false
+            expect(artifacts.projectRules).toBe(
+                path.join(temporaryDirectory, 'Rules.mk')
+            );
+            expect(
+                fs.readFileSync(artifacts.projectRules as string, 'utf-8')
+            ).toBe(
+                'SUBDIRS = services\n'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
