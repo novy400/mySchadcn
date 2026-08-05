@@ -44,7 +44,10 @@ import {
 import { generateRpgReadModule } from './rpg-read.js';
 import { generateCatalogReadTest } from './read-test.js';
 import { generateCatalogRules } from './rules.js';
-import { generateCatalogTestingConfiguration } from './testing.js';
+import {
+    generateCatalogTestingConfiguration,
+    mergeCatalogTestingConfiguration
+} from './testing.js';
 import { buildCatalogServerSpecs } from './server-compiler.js';
 import type {
     CatalogServerDiagnostic,
@@ -52,6 +55,7 @@ import type {
 } from './server-spec.js';
 import {
     generateCatalogProjectRules,
+    mergeCatalogProjectRules,
     generateCatalogServerMain,
     generateCatalogServerRules
 } from './server.js';
@@ -241,9 +245,15 @@ const writeCatalogArtifacts = (
             artifacts.rpgReadTest,
             generateCatalogReadTest(spec)
         );
+        const generatedTesting = generateCatalogTestingConfiguration(spec);
         writeArtifact(
             artifacts.testing,
-            generateCatalogTestingConfiguration(spec)
+            fs.existsSync(artifacts.testing)
+                ? mergeCatalogTestingConfiguration(
+                      fs.readFileSync(artifacts.testing, 'utf-8'),
+                      generatedTesting
+                  )
+                : generatedTesting
         );
         writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
         writeArtifact(
@@ -346,14 +356,20 @@ export const generateCatalogProjectArtifacts = (
     }
 
     const projectRules = path.join(destination, 'Rules.mk');
+    const generatedProjectRules = generateCatalogProjectRules([
+        ...catalogSpecs.map(spec => spec.resource),
+        ...serverCompilation.specs.map(spec =>
+            catalogServerBaseName(spec.name)
+        )
+    ]);
     writeArtifact(
         projectRules,
-        generateCatalogProjectRules([
-            ...catalogSpecs.map(spec => spec.resource),
-            ...serverCompilation.specs.map(spec =>
-                catalogServerBaseName(spec.name)
-            )
-        ])
+        fs.existsSync(projectRules)
+            ? mergeCatalogProjectRules(
+                  fs.readFileSync(projectRules, 'utf-8'),
+                  generatedProjectRules
+              )
+            : generatedProjectRules
     );
     return { catalogs, servers, projectRules };
 };

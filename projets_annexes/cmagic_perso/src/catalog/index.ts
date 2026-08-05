@@ -45,9 +45,13 @@ export {
 } from './read-test.js';
 export { generateCatalogDdl } from './ddl.js';
 export { generateCatalogRules } from './rules.js';
-export { generateCatalogTestingConfiguration } from './testing.js';
+export {
+    generateCatalogTestingConfiguration,
+    mergeCatalogTestingConfiguration
+} from './testing.js';
 export {
     generateCatalogProjectRules,
+    mergeCatalogProjectRules,
     generateCatalogServerMain,
     generateCatalogServerRules
 } from './server.js';

@@ -65,6 +65,10 @@ présent, elle ajoute aussi au projet généré :
 - `{server}/{server}.main.sqlrpgle` ;
 - `{server}/Rules.mk`.
 
+Si le `Rules.mk` racine existe déjà, son contenu et ses sous-projets sont conservés.
+CMagic ajoute uniquement les dossiers générés qui manquent avec une affectation
+`SUBDIRS += ...`.
+
 Sans `--destination`, la CLI écrit dans `generated-catalog` à côté du fichier source.
 
 ## Syntaxe v0
@@ -220,6 +224,10 @@ RPGUnit de la ressource. Il reprend les options `RUCRTRPG` validées sur IBM i e
 la couverture depuis les objets du catalogue : le module de lecture est toujours
 présent et le service program IWS est ajouté lorsque `iwsObject` est déclaré. Aucun nom
 comme `CLIENT` n'est figé dans le template.
+
+Lors d'une régénération, les options locales déjà présentes (`incDir`, `rucalltst`,
+champs spécifiques au projet, etc.) sont conservées. Les modules de couverture
+existants sont également préservés et complétés par les modules issus du catalogue.
 
 Les suites peuvent être compilées et exécutées depuis l'explorateur de tests de
 l'extension IBM i Testing. Pour une exécution automatisée, la CLI `itest` utilise la

@@ -721,6 +721,72 @@ describe('CMagic Catalogue v0', () => {
         }
     });
 
+    test('preserves local RPGUnit options while adding generated coverage modules', async () => {
+        const model = await parseCMagicString(
+            fs.readFileSync(
+                path.resolve('examples/service-catalogue-iws.cmagic'),
+                'utf-8'
+            )
+        );
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-testing-merge-')
+        );
+        const resourceDirectory = path.join(temporaryDirectory, 'services');
+        const testingPath = path.join(resourceDirectory, 'testing.json');
+
+        try {
+            fs.mkdirSync(resourceDirectory, { recursive: true });
+            fs.writeFileSync(
+                testingPath,
+                JSON.stringify({
+                    rpgunit: {
+                        rucrtrpg: {
+                            dbgView: '*LIST',
+                            incDir: ['custom/includes']
+                        },
+                        rucalltst: {
+                            detail: '*ALL'
+                        }
+                    },
+                    codecov: {
+                        module: ['CUSTOM'],
+                        text: 'project coverage'
+                    },
+                    project: {
+                        owner: 'developer'
+                    }
+                }),
+                'utf-8'
+            );
+
+            generateCatalogArtifacts(model, temporaryDirectory);
+
+            expect(JSON.parse(fs.readFileSync(testingPath, 'utf-8'))).toEqual({
+                rpgunit: {
+                    rucrtrpg: {
+                        tgtCcsid: '*JOB',
+                        dbgView: '*LIST',
+                        rpgPpOpt: '*LVL2',
+                        cOption: ['*EVENTF'],
+                        incDir: ['custom/includes']
+                    },
+                    rucalltst: {
+                        detail: '*ALL'
+                    }
+                },
+                codecov: {
+                    module: ['CUSTOM', 'SERVICE', 'SERVIWS'],
+                    text: 'project coverage'
+                },
+                project: {
+                    owner: 'developer'
+                }
+            });
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
     test('preserves developer-owned RPGUnit cases when both envelopes are regenerated', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(

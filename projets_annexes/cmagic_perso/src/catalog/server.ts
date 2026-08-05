@@ -83,3 +83,35 @@ export const generateCatalogProjectRules = (
         { subdirectories: [...subdirectories] },
         templatesDirectory
     );
+
+const subdirectoriesFromRules = (content: string): string[] =>
+    [...content.matchAll(/^SUBDIRS\s*(?:\+?=)\s*(.*?)\s*$/gm)].flatMap(
+        match => match[1].split(/\s+/).filter(Boolean)
+    );
+
+export const mergeCatalogProjectRules = (
+    existingContent: string,
+    generatedContent: string
+): string => {
+    if (existingContent.trim().length === 0) {
+        return generatedContent;
+    }
+
+    const existingSubdirectories = new Set(
+        subdirectoriesFromRules(existingContent)
+    );
+    const missingSubdirectories = subdirectoriesFromRules(
+        generatedContent
+    ).filter(subdirectory => !existingSubdirectories.has(subdirectory));
+
+    if (missingSubdirectories.length === 0) {
+        return existingContent;
+    }
+
+    const separator = existingContent.endsWith('\n') ? '' : '\n';
+    return (
+        existingContent +
+        separator +
+        `SUBDIRS += ${missingSubdirectories.join(' ')}\n`
+    );
+};

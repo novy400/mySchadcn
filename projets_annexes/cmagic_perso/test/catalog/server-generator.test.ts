@@ -252,4 +252,34 @@ describe('Catalogue ILEastic server generator', () => {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }
     });
+
+    test('preserves existing BOB subprojects when adding catalogue traversal rules', async () => {
+        const model = await parseCMagicString(`
+            entity Service resource "services" table "DEPARTMENT" {
+                id: String(3) column "DEPTNO" key required
+            }
+            operations for Service { GET }
+        `);
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-rules-merge-')
+        );
+        const projectRules = path.join(temporaryDirectory, 'Rules.mk');
+
+        try {
+            fs.writeFileSync(
+                projectRules,
+                'SUBDIRS = runtime shared\nCUSTOM_TARGET:\n',
+                'utf-8'
+            );
+
+            generateCatalogProjectArtifacts(model, temporaryDirectory);
+
+            expect(fs.readFileSync(projectRules, 'utf-8')).toBe(
+                'SUBDIRS = runtime shared\nCUSTOM_TARGET:\n' +
+                    'SUBDIRS += services\n'
+            );
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
 });
