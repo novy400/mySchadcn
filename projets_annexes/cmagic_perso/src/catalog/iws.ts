@@ -26,6 +26,7 @@ type CatalogIwsProceduresModel =
     CatalogReadTemplateModel['procedures'] & {
         getListIws: string;
         getOneIws: string;
+        createIws: string;
         copyItems: string;
     };
 
@@ -41,6 +42,8 @@ export type CatalogIwsTemplateModel = {
     };
     hasList: boolean;
     hasGet: boolean;
+    hasCreate: boolean;
+    hasDetail: boolean;
     interfaces: CatalogIwsInterfacesModel;
     procedures: CatalogIwsProceduresModel;
     itemType: string;
@@ -56,10 +59,16 @@ export const catalogIwsGetListProcedure = (entityName: string): string =>
 export const catalogIwsGetOneProcedure = (entityName: string): string =>
     `${entityName.toLowerCase()}_getone_iws`;
 
+export const catalogIwsCreateProcedure = (entityName: string): string =>
+    `${entityName.toLowerCase()}_create_iws`;
+
 export const buildCatalogIwsTemplateModel = (
     spec: CatalogSpec
 ): CatalogIwsTemplateModel => {
     const readModel = buildCatalogReadTemplateModel(spec);
+    if (readModel.hasCreate && !readModel.hasGet) {
+        throw new Error(`IWS CREATE requires GET capability: ${spec.entity}`);
+    }
     const prefix = readModel.entityName;
 
     return {
@@ -74,6 +83,8 @@ export const buildCatalogIwsTemplateModel = (
         },
         hasList: readModel.hasList,
         hasGet: readModel.hasGet,
+        hasCreate: readModel.hasCreate,
+        hasDetail: readModel.hasDetail,
         interfaces: {
             read: catalogRpgReadInterfaceSourceName(spec.resource),
             iws: catalogIwsInterfaceSourceName(spec.resource)
@@ -82,6 +93,7 @@ export const buildCatalogIwsTemplateModel = (
             ...readModel.procedures,
             getListIws: catalogIwsGetListProcedure(spec.entity),
             getOneIws: catalogIwsGetOneProcedure(spec.entity),
+            createIws: catalogIwsCreateProcedure(spec.entity),
             copyItems: `${prefix}_copyIwsItems`
         },
         itemType: `${prefix}_item_iws_t`,

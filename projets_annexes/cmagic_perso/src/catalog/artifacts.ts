@@ -120,13 +120,20 @@ const writeArtifact = (filePath: string, content: string): void => {
     fs.writeFileSync(filePath, content, 'utf-8');
 };
 
+type MissingManualMarkersPolicy = 'preserve-existing' | 'overwrite-generated';
+
 const writeArtifactPreservingManualCode = (
     filePath: string,
-    generatedContent: string
+    generatedContent: string,
+    missingMarkersPolicy: MissingManualMarkersPolicy = 'preserve-existing'
 ): void => {
     const alreadyExists = fs.existsSync(filePath);
     const manualCode = extractManualCode(filePath);
-    if (alreadyExists && manualCode === null) {
+    if (
+        alreadyExists &&
+        manualCode === null &&
+        missingMarkersPolicy === 'preserve-existing'
+    ) {
         return;
     }
     writeArtifact(
@@ -264,7 +271,11 @@ const writeCatalogArtifacts = (
                   )
                 : generatedTesting
         );
-        writeArtifact(artifacts.rpgRead, generateRpgReadModule(spec));
+        writeArtifactPreservingManualCode(
+            artifacts.rpgRead,
+            generateRpgReadModule(spec),
+            'overwrite-generated'
+        );
         writeArtifact(
             artifacts.ileasticInterface,
             generateCatalogIleasticInterface(spec)

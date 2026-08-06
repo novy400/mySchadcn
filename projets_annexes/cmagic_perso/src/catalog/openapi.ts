@@ -30,11 +30,16 @@ type OpenApiParameter = {
 type OpenApiOperation = {
     operationId: string;
     parameters: OpenApiParameter[];
+    requestBody?: {
+        required: boolean;
+        content: Record<string, { schema: OpenApiSchema }>;
+    };
     responses: Record<string, unknown>;
 };
 
 type OpenApiPath = {
-    get: OpenApiOperation;
+    get?: OpenApiOperation;
+    post?: OpenApiOperation;
 };
 
 export type OpenApiDocument = {
@@ -198,6 +203,36 @@ export const generateOpenApiDocument = (spec: CatalogSpec): OpenApiDocument => {
                     '200': recordResponse(`${spec.entity} trouvé`),
                     '404': {
                         description: `${spec.entity} inconnu`
+                    }
+                }
+            }
+        };
+    }
+
+    if (spec.capabilities.includes('create')) {
+        paths[collectionPath] = {
+            ...paths[collectionPath],
+            post: {
+                operationId: `create${spec.entity}`,
+                parameters: [],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: recordReference
+                        }
+                    }
+                },
+                responses: {
+                    '201': recordResponse(`${spec.entity} cree`),
+                    '400': {
+                        description: `Donnees ${spec.entity} invalides`
+                    },
+                    '409': {
+                        description: `${spec.entity} existe deja`
+                    },
+                    '500': {
+                        description: `Erreur technique pendant la creation de ${spec.entity}`
                     }
                 }
             }

@@ -116,6 +116,7 @@ describe('Catalogue IWS generator', () => {
                 "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
                 "  EXPORT SYMBOL('service_getlist_iws')",
                 "  EXPORT SYMBOL('service_getone_iws')",
+                "  EXPORT SYMBOL('service_create_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -147,9 +148,7 @@ describe('Catalogue IWS generator', () => {
         const service = await compileIwsServiceCatalog();
         const listOnlyService = {
             ...service,
-            capabilities: service.capabilities.filter(
-                capability => capability !== 'get'
-            )
+            capabilities: ['list'] as typeof service.capabilities
         };
 
         expect(generateCatalogIwsInterface(listOnlyService)).not.toContain(
@@ -158,6 +157,12 @@ describe('Catalogue IWS generator', () => {
         expect(generateCatalogIwsWrapper(listOnlyService)).not.toContain(
             'service_getone_iws'
         );
+        expect(generateCatalogIwsInterface(listOnlyService)).not.toContain(
+            'service_create_iws'
+        );
+        expect(generateCatalogIwsWrapper(listOnlyService)).not.toContain(
+            'service_create_iws'
+        );
         expect(generateCatalogIwsBinder(listOnlyService)).toBe(
             [
                 "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
@@ -165,6 +170,68 @@ describe('Catalogue IWS generator', () => {
                 'ENDPGMEXP',
                 ''
             ].join('\n')
+        );
+    });
+
+    test('publishes CREATE with the created item and explicit HTTP outcomes', async () => {
+        const service = await compileIwsServiceCatalog();
+        const interfaceSource = generateCatalogIwsInterface(service);
+        const wrapperSource = generateCatalogIwsWrapper(service);
+
+        expect(interfaceSource).toContain(
+            'dcl-pr service_create_iws extproc(*dclcase);'
+        );
+        expect(interfaceSource).toContain(
+            '  input likeDS(service_detail_iws_t) const;'
+        );
+        expect(interfaceSource).toContain(
+            '  item likeDS(service_detail_iws_t);'
+        );
+
+        const createSource = wrapperSource.slice(
+            wrapperSource.indexOf('dcl-proc service_create_iws export;')
+        );
+        expect(createSource).toContain(
+            'if not service_create(lDetail : lId : lErrors);'
+        );
+        expect(createSource).toContain(
+            "when lErrors.listError(1).nomZone = 'conflict';"
+        );
+        expect(createSource).toContain('httpStatus = HTTPREST_CONFLICT;');
+        expect(createSource).toContain(
+            "when lErrors.listError(1).nomZone = 'sql';"
+        );
+        expect(createSource).toContain('httpStatus = HTTPREST_BADREQUEST;');
+        expect(createSource).toContain(
+            'if not service_get(lId : lCreatedDetail : lErrors);'
+        );
+        expect(createSource).toContain('httpStatus = HTTPREST_CREATED;');
+        expect(createSource).toContain('eval-corr item = lCreatedDetail;');
+        expect(createSource).toContain(
+            "errors(1).nomZone = 'service_create_iws';"
+        );
+
+        expect(generateCatalogIwsBinder(service)).toBe(
+            [
+                "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
+                "  EXPORT SYMBOL('service_getlist_iws')",
+                "  EXPORT SYMBOL('service_getone_iws')",
+                "  EXPORT SYMBOL('service_create_iws')",
+                'ENDPGMEXP',
+                ''
+            ].join('\n')
+        );
+    });
+
+    test('rejects an IWS CREATE model that cannot reread the persisted item', async () => {
+        const service = await compileIwsServiceCatalog();
+        const createWithoutGet = {
+            ...service,
+            capabilities: ['list', 'create'] as typeof service.capabilities
+        };
+
+        expect(() => generateCatalogIwsWrapper(createWithoutGet)).toThrow(
+            'IWS CREATE requires GET capability'
         );
     });
 
@@ -207,7 +274,7 @@ describe('Catalogue IWS generator', () => {
             expect(
                 generateCatalogIwsBinder(service, temporaryDirectory)
             ).toBe(
-                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws\n'
+                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws,service_create_iws\n'
             );
             expect(
                 generateCatalogIwsReadBindingDirectory(

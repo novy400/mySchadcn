@@ -15,8 +15,8 @@ ILEastic et IWS font de même au lieu de relire directement l'AST Langium ou d'a
 du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
-Elle est volontairement limitée à la lecture (`LIST` et `GET`) pour valider la chaîne
-avant d'ajouter les mutations.
+Elle couvre désormais la lecture (`LIST` et `GET`) et une première mutation verticale
+`CREATE` avec IWS. `UPDATE` et `DELETE` restent hors du contrat actuel.
 
 ## Génération
 
@@ -111,7 +111,7 @@ view list for Service {
 }
 
 operations for Service {
-    LIST, GET
+    LIST, GET, CREATE
 }
 ```
 
@@ -129,9 +129,12 @@ Les mots-clés historiques restent acceptés. Pour une entité catalogue, les al
 | `CREATE` | `CREATE` | création |
 | `DELETE` | `DELETE` | suppression |
 
-Les alias de mutation sont reconnus par la grammaire pour préserver la compatibilité,
-mais Catalogue v0 refuse leur compilation tant que les générateurs de mutation ne sont
-pas dans le périmètre.
+`CREATE` est compilé par le service RPG commun et exposé par IWS. Une entité qui choisit
+`ileasticObject` ne peut pas encore déclarer `CREATE`, car le wrapper ILEastic reste en
+lecture seule. Avec `iwsObject`, `CREATE` exige aussi `GET` pour relire la donnée
+persistée avant de produire la réponse `201`. `UPDATE`/`CHANGE` et `DELETE` sont
+reconnus par la grammaire mais refusés par le compilateur jusqu'à leurs tranches
+dédiées.
 
 ## Règles de validation
 
@@ -146,6 +149,8 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - une entité choisit au plus un transport avec `ileasticObject` ou `iwsObject` ;
 - `iwsObject` exige la capacité `LIST` ou son alias `SEARCH` dans cette première
   version ;
+- si `CREATE` est déclaré avec `iwsObject`, la capacité `GET` ou son alias `DISPLAY`
+  est également obligatoire ;
 - un serveur déclare un nom d'objet programme IBM i valide, un port entier compris
   entre 1 et 65 535 et au moins une entité catalogue ;
 - chaque entité publiée par un serveur est unique dans ce serveur et déclare
@@ -171,6 +176,9 @@ Le contrat est aligné sur le DataProvider IBM i de `mySchadcn` :
 - `GET /api/services?page=1&perPage=25&sort=nom&order=ASC&q=paris` renvoie
   `{ "data": [...], "total": n }` ;
 - `GET /api/services/{id}` renvoie `{ "data": {...} }` ;
+- `POST /api/services` reçoit l'entité complète, identifiant naturel compris, et renvoie
+  la donnée créée en `201` ; les erreurs fonctionnelles, conflits et erreurs techniques
+  sont décrits par `400`, `409` et `500` ;
 - le `CatalogSpec` décrit les filtres, tris et champs de recherche publiés dans le
   contrat HTTP ;
 - le runtime RPG v0 applique la liste blanche plus large décrite ci-dessous ;
@@ -186,11 +194,13 @@ catalogue et ses futurs adaptateurs de transport. Il contient :
   capacités déclarées ;
 - les prototypes `{entity}_search` et `{entity}_getSupportedFields` pour `LIST` ;
 - le prototype `{entity}_get` pour `GET` ;
+- l'enum `{entity}_listeAction`, les prototypes `{entity}_isValid` et
+  `{entity}_create` pour `CREATE` ;
 - les includes CMagic et Global nécessaires aux types des paramètres.
 
-Le fichier possède un garde d'inclusion et ne déclare aucune procédure de mutation. Les
-types et noms de procédures sont issus du même modèle de rendu que le module RPG et son
-binder ; le wrapper ILEastic inclut donc ce contrat sans recopier leurs signatures.
+Le fichier possède un garde d'inclusion. Les types et noms de procédures sont issus du
+même modèle de rendu que le module RPG et son binder ; les wrappers incluent donc ce
+contrat sans recopier leurs signatures.
 
 Le générateur conserve ce contrat dans le dossier de la ressource avec les includes
 historiques `cmagic.rpgleinc` et `global.rpgleinc`. Il produit aussi une copie destinée
@@ -237,17 +247,34 @@ même configuration. Voir la
 [configuration officielle](https://codefori.github.io/docs/developing/testing/configuring/)
 et la [CLI IBM i Testing](https://codefori.github.io/docs/developing/testing/cli/).
 
-## Module RPG de lecture généré
+## Module RPG de catalogue généré
 
-Le module RPG généré implémente directement les capacités de lecture déclarées :
+Le module RPG généré implémente directement les capacités déclarées :
 
 - une procédure publique `{entity}_search` si `LIST` est présent ;
 - une procédure publique `{entity}_getSupportedFields` qui décrit la projection à
   CMagic ;
 - une procédure publique `{entity}_get` si `GET` est présent ;
+- une procédure publique `{entity}_isValid` et une procédure publique
+  `{entity}_create` si `CREATE` est présent ;
 - aucune procédure parallèle suffixée `_local` ;
 - des structures RPG dérivées des champs de liste et de détail ;
 - une requête de liste paginée et une requête de comptage préparées dynamiquement.
+
+`{entity}_create` reçoit le détail complet et renvoie l'identifiant naturel. Il construit
+les états `before`/`after`, appelle obligatoirement `{entity}_isValid`, puis seulement
+après validation exécute l'`INSERT`. Les champs textuels facultatifs vides sont liés via
+`NULLIF(..., '')` afin d'écrire `NULL` au lieu d'une chaîne vide. Le `SQLSTATE 23505`
+devient une erreur `CAT1002` portant sur `conflict` ; les autres erreurs SQL portent sur
+`sql`.
+
+`{entity}_isValid` génère les contrôles basiques déductibles du DSL, notamment les
+champs textuels `required` et les domaines booléens/enums, puis appelle
+`{entity}_isValid_business`. Cette dernière
+procédure se trouve entre les marqueurs `CMAGIC:MANUAL_START/END` : le développeur peut
+y ajouter ses règles de gestion, avec déclarations locales si nécessaire. Cette zone
+est conservée lors des régénérations, alors que les contrôles basiques qui l'entourent
+continuent d'être régénérés.
 
 Le squelette du module se trouve dans
 `src/templates/catalog-read.sqlrpgle.hbs` et inclut le fichier
@@ -255,6 +282,10 @@ Le squelette du module se trouve dans
 vers un modèle de rendu typé partagé : noms validés, types RPG, champs de projection et
 métadonnées `CMAGIC_supportedFields`. Le rendu passe par le même moteur Handlebars que
 les générateurs historiques de copybook, service et SQL.
+
+Les noms historiques `catalog-read.*` et `{resource}.read.*` sont conservés pour ne pas
+casser les projets IBM i existants. Malgré ce suffixe, ce module porte désormais le
+service catalogue commun de lecture et de création.
 
 Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
 La procédure `{entity}_search` suit le contrat utilisé par `service_search` dans
@@ -359,11 +390,22 @@ dans `item`, renvoie `HTTPREST_NOTFOUND` lorsque l'erreur porte sur `id` et
 `HTTPREST_SERVERERROR` pour une erreur technique. Une terminaison RPG inattendue est
 convertie en erreur `RNX9001`, comme pour la liste.
 
+Lorsque `CREATE` est déclaré, le service program exporte aussi
+`{entity}_create_iws`. Sa signature PCML reçoit `input` et renvoie `item`,
+`errors_LENGTH`, `errors`, `httpStatus` et `httpHeaders`. Le wrapper :
+
+1. adapte `input` vers le détail RPG commun ;
+2. appelle `{entity}_create`, qui porte toute la validation et l'écriture Db2 ;
+3. relit obligatoirement la donnée par `{entity}_get` ;
+4. renvoie `201` et l'élément créé, `400` pour une validation fonctionnelle, `409`
+   pour un conflit, ou `500` pour une erreur technique et une terminaison inattendue.
+
 Le module contient `pgminfo(*pcml:*module:*dclcase)`. Après compilation, le déploiement
 IWS doit publier le service program désigné par `iwsObject`, sélectionner séparément
-`{entity}_getlist_iws` et `{entity}_getone_iws`, mapper `httpStatus` au code de réponse
-et `httpHeaders` aux en-têtes sortants. Le chemin REST public de chaque procédure est
-choisi lors du déploiement IWS ; il n'est donc pas codé dans le wrapper RPG.
+`{entity}_getlist_iws`, `{entity}_getone_iws` et, si elle est déclarée,
+`{entity}_create_iws`, mapper `httpStatus` au code de réponse et `httpHeaders` aux
+en-têtes sortants. Le chemin REST public de chaque procédure est choisi lors du
+déploiement IWS ; il n'est donc pas codé dans le wrapper RPG.
 
 Le projet IBM i cible doit déjà fournir `ciws.rpgleinc`, `httpRest.rpgleinc` et le
 service program `CIWS`, comme `applicationTemplate` et le projet de référence
@@ -380,9 +422,10 @@ wrapper (`SERVICE` et `SERVIWS`) pour les tests RPGUnit.
 `ctl-opt bnddir` du wrapper. Le graphe généré ne crée donc ni entrée applicative pour
 `CIWS`, ni dépendance directe vers `CIWS.SRVPGM`.
 
-Le contrat IWS de lecture couvre `LIST`/`SEARCH` et `GET`. Le compilateur exige encore
-`LIST` lorsqu'une entité choisit `iwsObject` : une exposition IWS limitée au seul
-`GET` reste hors du contrat actuel.
+Le contrat IWS couvre `LIST`/`SEARCH`, `GET` et `CREATE`. Le compilateur exige `LIST`
+lorsqu'une entité choisit `iwsObject`, puis `GET` si elle déclare `CREATE`. Une
+exposition IWS limitée au seul `GET`, ou un `CREATE` sans `LIST` et `GET`, reste hors du
+contrat actuel.
 
 ## DDL Db2 généré
 
@@ -416,7 +459,8 @@ dans le module RPG :
 
 - `LIST` exporte `{entity}_search` et `{entity}_getSupportedFields` ;
 - `GET` exporte `{entity}_get` ;
-- aucune procédure de mutation n'est ajoutée à Catalogue v0.
+- `CREATE` ajoute `{entity}_create` puis `{entity}_isValid` après les exports de lecture
+  existants.
 
 Le binder initial ne contient pas de niveau `PGMLVL(*PRV)`. Les signatures précédentes
 devront être conservées lors d'une future évolution incompatible du contrat exporté ;
@@ -458,9 +502,9 @@ de résoudre les deux services programs sans modifier `CKOOL`.
 
 Le binder IWS utilise la signature `SERVIWS.0.0.1`. Il conserve
 `service_getlist_iws` comme premier export et ajoute `service_getone_iws` lorsque la
-capacité `GET` est déclarée. L'ajout est placé en fin de liste afin de préserver les
-exports existants. Les règles ILEastic et IWS ne sont jamais produites ensemble pour
-une même entité.
+capacité `GET` est déclarée, puis `service_create_iws` lorsque `CREATE` est déclaré.
+Les ajouts sont placés en fin de liste afin de préserver les exports existants. Les
+règles ILEastic et IWS ne sont jamais produites ensemble pour une même entité.
 
 ## Programme serveur ILEastic généré
 
@@ -499,16 +543,16 @@ historique des dix artefacts par catalogue reste inchangée.
 
 ## Hors périmètre de la tranche
 
-- exposition IWS limitée au seul `GET` et mutations IWS ;
+- exposition IWS limitée au seul `GET` ou au seul `CREATE` ;
 - configuration CORS, journalisation et arrêt contrôlé du serveur ILEastic ;
-- mutations `CREATE`, `UPDATE` et `DELETE` ;
+- mutations `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
   filtre et tri ;
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-Le wrapper IWS enrichi a été compilé, redéployé et accepté sur IBM i le 6 août 2026 avec
-un identifiant existant et des identifiants absents. La prochaine évolution peut donc
-aborder les mutations, en commençant par une verticale `CREATE` avant `UPDATE` et
-`DELETE`.
+Le wrapper IWS de lecture a été compilé, redéployé et accepté sur IBM i le 6 août 2026
+avec un identifiant existant et des identifiants absents. La verticale `CREATE` est
+implémentée et validée localement ; sa compilation, son redéploiement et sa recette IBM i
+restent à exécuter avant d'aborder `UPDATE`, puis `DELETE`.

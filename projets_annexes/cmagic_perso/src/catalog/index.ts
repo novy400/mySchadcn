@@ -15,6 +15,7 @@ export {
 export { generateCatalogIwsTest } from './iws-test.js';
 export {
     buildCatalogIwsTemplateModel,
+    catalogIwsCreateProcedure,
     catalogIwsGetListProcedure,
     catalogIwsGetOneProcedure,
     generateCatalogIwsWrapper

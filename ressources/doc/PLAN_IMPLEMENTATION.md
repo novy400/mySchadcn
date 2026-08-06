@@ -282,9 +282,64 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - ajouter une couverture RPGUnit IBM i dédiée à `service_get` et
   `service_getone_iws` lors d'une prochaine évolution du générateur de tests.
 
+## Tranche 8 — `CREATE` avec validation métier et IWS
+
+### Contrat retenu
+
+- `service_create(pDetail, pId, pErrors)` orchestre la création et n'exécute aucun SQL
+  avant la validation ;
+- `service_isValid(action, before, after, errors)` constitue la frontière de validation
+  de toutes les mutations présentes et futures ;
+- le générateur produit les contrôles basiques déductibles du DSL, puis appelle
+  `service_isValid_business` dans une zone manuelle préservée pour les règles du projet ;
+- l'identifiant naturel `DEPTNO` est fourni par le client ;
+- les champs facultatifs textuels vides sont écrits comme `NULL` ;
+- `service_create_iws` renvoie l'élément créé avec `201`, une validation avec `400`, un
+  conflit Db2 `23505` avec `409`, et une erreur technique avec `500` ;
+- une exposition IWS avec `CREATE` exige aussi `GET`, afin que la réponse `201` restitue
+  systématiquement la donnée réellement persistée ;
+- `UPDATE` et `DELETE` restent refusés par le compilateur ;
+- le transport ILEastic reste en lecture seule et refuse donc une entité déclarant
+  simultanément `ileasticObject` et `CREATE`.
+
+### Réalisé localement
+
+- activation de `CREATE` dans `CatalogSpec` et maintien du refus de `UPDATE`/`DELETE` ;
+- génération des prototypes, procédures RPG, binder et contrôles `required` ;
+- insertion Db2 après validation, gestion du conflit et conversion des chaînes vides
+  facultatives avec `NULLIF` ;
+- préservation à la régénération de la procédure métier
+  `service_isValid_business` ;
+- génération de l'interface PCML, du wrapper et de l'export
+  `service_create_iws` après les exports `LIST` et `GET` ;
+- relecture par `service_get` afin de restituer la donnée réellement persistée ;
+- ajout de `POST` et de la capacité `create` aux contrats OpenAPI et frontend ;
+- passage de l'exemple IWS à `operations { LIST, GET, CREATE }` et régénération des
+  artefacts de référence ;
+- couverture TDD du compilateur, du service RPG, de la zone protégée, des interfaces,
+  des binders, du wrapper IWS et des contrats.
+
+### Validation locale
+
+- suite CMagic : 18 fichiers, 128 tests réussis ;
+- lint CMagic : réussi ;
+- build CMagic : réussi ;
+- génération répétée : vingt et un artefacts strictement identiques.
+
+### Validation IBM i à réaliser
+
+- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
+  les sources générées ;
+- compléter les tests RPGUnit pour `service_isValid`, `service_create` et
+  `service_create_iws` ;
+- redéployer `SERVIWS3` avec `service_create_iws` comme `POST /` ;
+- vérifier une création `201`, sa relecture `200`, le doublon `409`, une validation
+  `400`, puis supprimer uniquement la ligne de recette ;
+- archiver le nouveau Swagger, le PCML, l'export curl et les captures.
+
 ## Suite
 
-Les sept tranches sont terminées. La tranche 7 est validée localement et acceptée sur
-IBM i avec la limite de preuve explicitée ci-dessus. Les mutations IWS, le branchement
-IBM i du DataProvider et l'enrichissement du modèle des commandes relèvent de nouvelles
-tranches à cadrer.
+Les sept premières tranches sont terminées. La tranche 8 est terminée localement et
+attend sa validation IBM i. Après cette validation, l'ordre recommandé reste `UPDATE`,
+puis `DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement
+du modèle des commandes demeure une évolution séparée.

@@ -153,6 +153,49 @@
             }
           }
         }
+      },
+      "post": {
+        "operationId": "createService",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Service"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Service cree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Service"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Donnees Service invalides"
+          },
+          "409": {
+            "description": "Service existe deja"
+          },
+          "500": {
+            "description": "Erreur technique pendant la creation de Service"
+          }
+        }
       }
     },
     "/api/services/{id}": {

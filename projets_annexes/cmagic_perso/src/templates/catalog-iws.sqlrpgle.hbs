@@ -1,5 +1,18 @@
 **free
 {{! IBM Integrated Web Services read adapter generated from CatalogSpec. }}
+{{#*inline "handleUnexpectedIwsError"}}
+    if lAbended;
+      httpStatus = HTTPREST_SERVERERROR;
+      if errors_LENGTH = 0;
+        errors_LENGTH = 1;
+        errors(1).nomZone = '{{procedure}}';
+        errors(1).code = 'RNX9001';
+        errors(1).text =
+          'Unexpected error in {{procedure}}';
+        errors(1).textUser = errors(1).text;
+      endif;
+    endif;
+{{/inline}}
 // Generated from CatalogSpec with catalog-iws.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain
         option(*nodebugio:*srcstmt:*nounref)
@@ -70,17 +83,7 @@ dcl-proc {{procedures.getListIws}} export;
     if lItems <> *null;
       list_dispose(lItems);
     endif;
-    if lAbended;
-      httpStatus = HTTPREST_SERVERERROR;
-      if errors_LENGTH = 0;
-        errors_LENGTH = 1;
-        errors(1).nomZone = '{{procedures.getListIws}}';
-        errors(1).code = 'RNX9001';
-        errors(1).text =
-          'Unexpected error in {{procedures.getListIws}}';
-        errors(1).textUser = errors(1).text;
-      endif;
-    endif;
+{{> handleUnexpectedIwsError procedure=procedures.getListIws}}
 end-proc;
 
 dcl-proc {{procedures.copyItems}};
@@ -106,6 +109,55 @@ dcl-proc {{procedures.copyItems}};
     eval-corr pItems(pItemsLength) = lSource;
     lItemPointer = list_iterate(pList);
   enddo;
+end-proc;
+{{/if}}
+{{#if hasCreate}}
+dcl-proc {{procedures.createIws}} export;
+  dcl-pi *n;
+    input likeDS({{detailType}}) const;
+    item likeDS({{detailType}});
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-s lId {{id.rpgType}} inz;
+  dcl-ds lDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lCreatedDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear item;
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_CREATED;
+  eval-corr lDetail = input;
+
+  if not {{procedures.create}}(lDetail : lId : lErrors);
+    select;
+      when lErrors.listError(1).nomZone = 'conflict';
+        httpStatus = HTTPREST_CONFLICT;
+      when lErrors.listError(1).nomZone = 'sql';
+        httpStatus = HTTPREST_SERVERERROR;
+      other;
+        httpStatus = HTTPREST_BADREQUEST;
+    endsl;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  clear lErrors;
+  if not {{procedures.get}}(lId : lCreatedDetail : lErrors);
+    httpStatus = HTTPREST_SERVERERROR;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+  eval-corr item = lCreatedDetail;
+  httpStatus = HTTPREST_CREATED;
+
+  on-exit lAbended;
+{{> handleUnexpectedIwsError procedure=procedures.createIws}}
 end-proc;
 {{/if}}
 {{#if hasGet}}
@@ -141,16 +193,6 @@ dcl-proc {{procedures.getOneIws}} export;
   eval-corr item = lDetail;
 
   on-exit lAbended;
-    if lAbended;
-      httpStatus = HTTPREST_SERVERERROR;
-      if errors_LENGTH = 0;
-        errors_LENGTH = 1;
-        errors(1).nomZone = '{{procedures.getOneIws}}';
-        errors(1).code = 'RNX9001';
-        errors(1).text =
-          'Unexpected error in {{procedures.getOneIws}}';
-        errors(1).textUser = errors(1).text;
-      endif;
-    endif;
+{{> handleUnexpectedIwsError procedure=procedures.getOneIws}}
 end-proc;
 {{/if}}

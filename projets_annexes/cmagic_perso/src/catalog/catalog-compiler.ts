@@ -356,7 +356,10 @@ const compileEntity = (
 
     const capabilities = getCapabilities(model, entity);
     const unsupportedCapabilities = capabilities.filter(
-        capability => capability !== 'list' && capability !== 'get'
+        capability =>
+            capability !== 'list' &&
+            capability !== 'get' &&
+            capability !== 'create'
     );
     if (unsupportedCapabilities.length > 0) {
         diagnostics.push(
@@ -367,12 +370,37 @@ const compileEntity = (
             )
         );
     }
+    if (
+        ileasticObject !== undefined &&
+        capabilities.includes('create')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_ILEASTIC_CREATE_UNSUPPORTED',
+                entity,
+                `La capacite CREATE de ${entity.name} est actuellement exposee uniquement avec IWS.`
+            )
+        );
+    }
     if (iwsObject !== undefined && !capabilities.includes('list')) {
         diagnostics.push(
             diagnostic(
                 'CATALOG_IWS_LIST_REQUIRED',
                 entity,
                 `L'exposition IWS de ${entity.name} exige la capacité LIST ou SEARCH.`
+            )
+        );
+    }
+    if (
+        iwsObject !== undefined &&
+        capabilities.includes('create') &&
+        !capabilities.includes('get')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_IWS_CREATE_GET_REQUIRED',
+                entity,
+                `L'exposition IWS CREATE de ${entity.name} exige la capacité GET pour relire la donnée persistée.`
             )
         );
     }

@@ -30,6 +30,28 @@ dcl-proc {{procedures.rejectQuery}};
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
+{{#if procedures.hasCreate}}
+dcl-pr {{procedures.isValidBusiness}} ind;
+  pAction like(GLOBAL_codeAction) const;
+  pBeforeDetail likeDS({{entityName}}_detail_t) const;
+  pAfterDetail likeDS({{entityName}}_detail_t) const;
+  pErrors likeDS(GLOBAL_listError);
+end-pr;
+
+dcl-proc {{procedures.rejectMutation}};
+  dcl-pi *n;
+    pErrors likeDS(GLOBAL_listError);
+    pCode varchar(7) const;
+    pField varchar(32) const;
+    pMessage varchar(256) const;
+  end-pi;
+  pErrors.listError(1).code = pCode;
+  pErrors.listError(1).nomZone = pField;
+  pErrors.listError(1).text = pMessage;
+  pErrors.listError(1).textUser = pMessage;
+end-proc;
+{{/if}}
+
 {{#if procedures.hasList}}
 dcl-proc {{procedureSignatures.getSupportedFields.name}} export;
   dcl-pi *n {{procedureSignatures.getSupportedFields.returnType}};
@@ -211,4 +233,129 @@ dcl-proc {{procedureSignatures.get.name}} export;
   endif;
   return *on;
 end-proc;
+{{/if}}
+{{#if procedures.hasCreate}}
+dcl-proc {{procedureSignatures.isValid.name}} export;
+  dcl-pi *n {{procedureSignatures.isValid.returnType}};
+{{#each procedureSignatures.isValid.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+  end-pi;
+  dcl-s lErrorIndex int(10) inz(0);
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pErrors;
+  select;
+    when pAction = {{actionListName}}.creation;
+{{#each detailFields}}
+{{#if requiredCondition}}
+      if {{requiredCondition}};
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1001';
+        pErrors.listError(lErrorIndex).nomZone = '{{name}}';
+        pErrors.listError(lErrorIndex).text = '{{name}} is required';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+{{/if}}
+{{#if domainCondition}}
+      if {{domainCondition}};
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1004';
+        pErrors.listError(lErrorIndex).nomZone = '{{name}}';
+        pErrors.listError(lErrorIndex).text = '{{name}} has an invalid value';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+{{/if}}
+{{/each}}
+    other;
+      {{procedures.rejectMutation}}(
+        pErrors : 'CAT1003' : 'action' : 'Unsupported mutation action');
+      return *off;
+  endsl;
+
+  if lErrorIndex > 0;
+    return *off;
+  endif;
+  if not {{procedures.isValidBusiness}}(
+    pAction : pBeforeDetail : pAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      {{procedures.rejectMutation}}(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while validating {{entityDisplayName}}');
+      return *off;
+    endif;
+end-proc;
+
+dcl-proc {{procedureSignatures.create.name}} export;
+  dcl-pi *n {{procedureSignatures.create.returnType}};
+{{#each procedureSignatures.create.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+  end-pi;
+  dcl-ds lBeforeDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lAfterDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pId;
+  clear pErrors;
+  lAfterDetail = pDetail;
+  if not {{procedures.isValid}}({{actionListName}}.creation
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    INSERT INTO {{table}}
+    ({{#each detailFields}}{{column}}{{#unless @last}}, {{/unless}}{{/each}})
+    VALUES
+    ({{#each detailFields}}{{createValue}}{{#unless @last}}, {{/unless}}{{/each}});
+  select;
+    when sqlState = '23505';
+      {{procedures.rejectMutation}}(
+        pErrors : 'CAT1002' : 'conflict' :
+        '{{entityDisplayName}} already exists');
+      return *off;
+    when sqlState <> SQL_OK;
+      {{procedures.rejectMutation}}(
+        pErrors : sqlState : 'sql' :
+        'Unable to create {{entityDisplayName}}');
+      return *off;
+  endsl;
+
+  pId = pDetail.{{id.rpgName}};
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      {{procedures.rejectMutation}}(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while creating {{entityDisplayName}}');
+      return *off;
+    endif;
+end-proc;
+
+// Ajoutez les regles metier specifiques dans cette procedure preservee.
+// [CMAGIC:MANUAL_START]
+dcl-proc {{procedures.isValidBusiness}};
+  dcl-pi *n ind;
+    pAction like(GLOBAL_codeAction) const;
+    pBeforeDetail likeDS({{entityName}}_detail_t) const;
+    pAfterDetail likeDS({{entityName}}_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  clear pErrors;
+  return *on;
+end-proc;
+// [CMAGIC:MANUAL_END]
 {{/if}}

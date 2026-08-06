@@ -2,6 +2,7 @@ import { renderTemplate } from '../generation/template-renderer.js';
 import type { CatalogSpec } from './catalog-spec.js';
 import { catalogObjectName } from './ibmi-object-name.js';
 import {
+    catalogIwsCreateProcedure,
     catalogIwsGetListProcedure,
     catalogIwsGetOneProcedure
 } from './iws.js';
@@ -33,6 +34,9 @@ const buildTemplateModel = (
             catalogIwsGetListProcedure(spec.entity),
             ...(spec.capabilities.includes('get')
                 ? [catalogIwsGetOneProcedure(spec.entity)]
+                : []),
+            ...(spec.capabilities.includes('create')
+                ? [catalogIwsCreateProcedure(spec.entity)]
                 : [])
         ]
     };

@@ -249,7 +249,7 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
-    test('compiles IWS as an alternative transport for LIST and GET', async () => {
+    test('compiles IWS as an alternative transport for LIST, GET and CREATE', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
                 path.resolve('examples/service-catalogue-iws.cmagic'),
@@ -264,7 +264,7 @@ describe('CMagic Catalogue v0', () => {
             expect.objectContaining({
                 entity: 'Service',
                 iwsObject: 'SERVIWS',
-                capabilities: ['list', 'get']
+                capabilities: ['list', 'get', 'create']
             })
         );
         expect(compilation.specs[0]).not.toHaveProperty('ileasticObject');
@@ -371,6 +371,35 @@ describe('CMagic Catalogue v0', () => {
             'export const servicesResourceContract ='
         );
         expect(resourceContractSource).toContain('as const;');
+    });
+
+    test('publishes CREATE in the OpenAPI and frontend contract', async () => {
+        const model = await parseCMagicString(`
+            entity Service resource "services" table "DEPARTMENT" {
+                id: String(3) column "DEPTNO" key required,
+                nom: String(36) column "DEPTNAME" required
+            }
+            view list for Service { id, nom }
+            operations for Service { LIST, GET, CREATE }
+        `);
+        const [service] = buildCatalogSpecs(model).specs;
+
+        const openApi = generateOpenApiDocument(service);
+        const resourceContract = generateResourceContract(service);
+
+        expect(openApi.paths['/api/services'].post).toEqual(
+            expect.objectContaining({
+                operationId: 'createService',
+                requestBody: expect.objectContaining({ required: true }),
+                responses: expect.objectContaining({
+                    '201': expect.any(Object),
+                    '400': expect.any(Object),
+                    '409': expect.any(Object),
+                    '500': expect.any(Object)
+                })
+            })
+        );
+        expect(resourceContract.capabilities).toEqual(['read', 'create']);
     });
 
     test('writes the thirteen deterministic catalogue artifacts', async () => {
@@ -876,6 +905,45 @@ end-proc;
         }
     });
 
+    test('preserves developer business rules inside the generated validation hook', async () => {
+        const model = await parseCMagicString(`
+            entity Service resource "services" table "DEPARTMENT" {
+                id: String(3) column "DEPTNO" key required,
+                nom: String(36) column "DEPTNAME" required
+            }
+            view list for Service { id, nom }
+            operations for Service { LIST, GET, CREATE }
+        `);
+        const temporaryDirectory = fs.mkdtempSync(
+            path.join(process.env.TEMP ?? process.cwd(), 'cmagic-rules-preserve-')
+        );
+
+        try {
+            const [artifacts] = generateCatalogArtifacts(
+                model,
+                temporaryDirectory
+            );
+            const generated = fs.readFileSync(artifacts.rpgRead, 'utf-8');
+            const manualRule = '\n// Regle metier projet preservee.\n';
+            fs.writeFileSync(
+                artifacts.rpgRead,
+                generated.replace(
+                    /\/\/ \[CMAGIC:MANUAL_START\][\s\S]*\/\/ \[CMAGIC:MANUAL_END\]/,
+                    `// [CMAGIC:MANUAL_START]${manualRule}// [CMAGIC:MANUAL_END]`
+                ),
+                'utf-8'
+            );
+
+            generateCatalogArtifacts(model, temporaryDirectory);
+
+            expect(fs.readFileSync(artifacts.rpgRead, 'utf-8')).toContain(
+                manualRule
+            );
+        } finally {
+            fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+        }
+    });
+
     test('does not overwrite existing RPGUnit files that predate manual markers', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
@@ -952,12 +1020,23 @@ end-proc;
         }
     });
 
-    test('rejects mutations that are outside Catalogue v0', async () => {
+    test('accepts CREATE while keeping later mutations outside the current slice', async () => {
+        const createModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE" {
+                id: Int column "ID" key required
+            }
+            operations for Mutable { CREATE }
+        `);
+        const createCompilation = buildCatalogSpecs(createModel);
+
+        expect(createCompilation.diagnostics).toEqual([]);
+        expect(createCompilation.specs[0]?.capabilities).toEqual(['create']);
+
         const model = await parseCMagicString(`
             entity Mutable resource "mutables" table "MUTABLE" {
                 id: Int column "ID" key required
             }
-            operations for Mutable { CREATE, UPDATE, DELETE }
+            operations for Mutable { UPDATE, DELETE }
         `);
         const compilation = buildCatalogSpecs(model);
 
@@ -965,5 +1044,34 @@ end-proc;
         expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
             'CATALOG_CAPABILITY_UNSUPPORTED'
         ]);
+
+        const ileasticModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE"
+                ileasticObject "MUTREST" {
+                id: Int column "ID" key required
+            }
+            operations for Mutable { CREATE }
+        `);
+
+        expect(
+            buildCatalogSpecs(ileasticModel).diagnostics.map(
+                diagnostic => diagnostic.code
+            )
+        ).toEqual(['CATALOG_ILEASTIC_CREATE_UNSUPPORTED']);
+
+        const iwsWithoutGetModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE"
+                iwsObject "MUTIWS" {
+                id: Int column "ID" key required
+            }
+            view list for Mutable { id }
+            operations for Mutable { LIST, CREATE }
+        `);
+
+        expect(
+            buildCatalogSpecs(iwsWithoutGetModel).diagnostics.map(
+                diagnostic => diagnostic.code
+            )
+        ).toEqual(['CATALOG_IWS_CREATE_GET_REQUIRED']);
     });
 });

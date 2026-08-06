@@ -1,6 +1,6 @@
 import type { CatalogSpec } from './catalog-spec.js';
 
-export type GeneratedResourceCapability = 'read';
+export type GeneratedResourceCapability = 'read' | 'create';
 
 export type GeneratedResourceContract = {
     kind: 'entity';
@@ -23,7 +23,12 @@ export const generateResourceContract = (
         kind: 'entity',
         identifier: spec.identifier,
         fields: spec.fields.map(field => field.name),
-        capabilities: hasReadCapability(spec) ? ['read'] : []
+        capabilities: [
+            ...(hasReadCapability(spec) ? (['read'] as const) : []),
+            ...(spec.capabilities.includes('create')
+                ? (['create'] as const)
+                : [])
+        ]
     };
 
     if (spec.list) {

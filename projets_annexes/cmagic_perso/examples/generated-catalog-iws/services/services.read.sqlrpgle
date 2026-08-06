@@ -23,6 +23,26 @@ dcl-proc service_reject_query;
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
+dcl-pr service_isValid_business ind;
+  pAction like(GLOBAL_codeAction) const;
+  pBeforeDetail likeDS(service_detail_t) const;
+  pAfterDetail likeDS(service_detail_t) const;
+  pErrors likeDS(GLOBAL_listError);
+end-pr;
+
+dcl-proc service_reject_mutation;
+  dcl-pi *n;
+    pErrors likeDS(GLOBAL_listError);
+    pCode varchar(7) const;
+    pField varchar(32) const;
+    pMessage varchar(256) const;
+  end-pi;
+  pErrors.listError(1).code = pCode;
+  pErrors.listError(1).nomZone = pField;
+  pErrors.listError(1).text = pMessage;
+  pErrors.listError(1).textUser = pMessage;
+end-proc;
+
 dcl-proc service_getSupportedFields export;
   dcl-pi *n ind;
     pSupportedFields likeDS(CMAGIC_supportedFields);
@@ -245,3 +265,121 @@ dcl-proc service_get export;
   endif;
   return *on;
 end-proc;
+dcl-proc service_isValid export;
+  dcl-pi *n ind;
+    pAction like(GLOBAL_codeAction) const;
+    pBeforeDetail likeDS(service_detail_t) const;
+    pAfterDetail likeDS(service_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-s lErrorIndex int(10) inz(0);
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pErrors;
+  select;
+    when pAction = service_listeAction.creation;
+      if %trim(pAfterDetail.id) = *blanks;
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1001';
+        pErrors.listError(lErrorIndex).nomZone = 'id';
+        pErrors.listError(lErrorIndex).text = 'id is required';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+      if %trim(pAfterDetail.nom) = *blanks;
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1001';
+        pErrors.listError(lErrorIndex).nomZone = 'nom';
+        pErrors.listError(lErrorIndex).text = 'nom is required';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+    other;
+      service_reject_mutation(
+        pErrors : 'CAT1003' : 'action' : 'Unsupported mutation action');
+      return *off;
+  endsl;
+
+  if lErrorIndex > 0;
+    return *off;
+  endif;
+  if not service_isValid_business(
+    pAction : pBeforeDetail : pAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      service_reject_mutation(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while validating Service');
+      return *off;
+    endif;
+end-proc;
+
+dcl-proc service_create export;
+  dcl-pi *n ind;
+    pDetail likeDS(service_detail_t) const;
+    pId varchar(3);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-ds lBeforeDetail likeDS(service_detail_t) inz;
+  dcl-ds lAfterDetail likeDS(service_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pId;
+  clear pErrors;
+  lAfterDetail = pDetail;
+  if not service_isValid(service_listeAction.creation
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    INSERT INTO DEPARTMENT
+    (DEPTNO, DEPTNAME, MGRNO, ADMRDEPT, LOCATION)
+    VALUES
+    (:pDetail.id, :pDetail.nom, NULLIF(:pDetail.idManageur, ''), NULLIF(:pDetail.idServiceAdmin, ''), NULLIF(:pDetail.site, ''));
+  select;
+    when sqlState = '23505';
+      service_reject_mutation(
+        pErrors : 'CAT1002' : 'conflict' :
+        'Service already exists');
+      return *off;
+    when sqlState <> SQL_OK;
+      service_reject_mutation(
+        pErrors : sqlState : 'sql' :
+        'Unable to create Service');
+      return *off;
+  endsl;
+
+  pId = pDetail.id;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      service_reject_mutation(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while creating Service');
+      return *off;
+    endif;
+end-proc;
+
+// Ajoutez les regles metier specifiques dans cette procedure preservee.
+// [CMAGIC:MANUAL_START]
+dcl-proc service_isValid_business;
+  dcl-pi *n ind;
+    pAction like(GLOBAL_codeAction) const;
+    pBeforeDetail likeDS(service_detail_t) const;
+    pAfterDetail likeDS(service_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  clear pErrors;
+  return *on;
+end-proc;
+// [CMAGIC:MANUAL_END]

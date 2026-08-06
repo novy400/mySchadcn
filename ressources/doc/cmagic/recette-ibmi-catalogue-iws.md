@@ -8,7 +8,9 @@ Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
 **6 août 2026** avec le `GET` par identifiant et le retour d'expérience sur les binding
 directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
 `6d7a41e`. Le contrat `GET` est déployé et sa validation IBM i est acceptée avec la
-limite de preuve explicitée dans le compte rendu.
+limite de preuve explicitée dans le compte rendu. La tranche `CREATE` est désormais
+implémentée et validée localement ; les étapes ci-dessous préparent sa première
+validation IBM i.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -22,24 +24,29 @@ La recette doit établir que :
 1. les sources IWS générées se compilent sans modification manuelle ;
 2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR`, `SERVIWS.SRVPGM` et `SERVIWS.BNDDIR` sont
    créés ;
-3. `SERVIWS` exporte `service_getlist_iws` puis `service_getone_iws` ;
+3. `SERVIWS` exporte `service_getlist_iws`, `service_getone_iws`, puis
+   `service_create_iws` ;
 4. le serveur IWS transmet `QUERY_STRING` au wrapper RPG ;
 5. les recherches, filtres, tris et paginations utilisent le même
    `service_search` que le transport ILEastic ;
 6. `httpStatus` pilote réellement le statut HTTP ;
 7. `httpHeaders` produit notamment `X-Total-Count` ;
 8. les erreurs de requête ne provoquent pas d'arrêt du service IWS ;
-9. `GET /SERVIWS3/{id}` renvoie un détail en `200` ou une erreur en `404`.
+9. `GET /SERVIWS3/{id}` renvoie un détail en `200` ou une erreur en `404` ;
+10. `POST /SERVIWS3/` crée une entité validée en `201`, rejette les données invalides
+    en `400`, les doublons en `409` et les erreurs techniques en `500`.
 
-Cette version est volontairement limitée à la lecture :
+Cette version couvre la lecture et la création :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
 - `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
   `/ZZZ` répond `404` et `/XXX` renvoie une erreur portant sur `id` ;
-- aucune mutation n'est générée ;
+- `CREATE` est généré et validé localement, mais pas encore accepté sur IBM i ;
+- `UPDATE` et `DELETE` ne sont pas générés ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
 - la réponse IWS de détail est `{ item, errors }` ;
+- la réponse IWS de création est également `{ item, errors }` ;
 - `Access-Control-Expose-Headers` est produit, mais cela ne configure pas à lui seul
   une politique CORS complète.
 
@@ -61,7 +68,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
 | Nom public du service | `SERVICES` | `SERVIWS3` |
 | Racine de contexte | `/web/services` | `/web/services` |
-| Commit testé | commit de la tranche | `6d7a41e` pour `LIST` ; sources `GET` de `468ed1d` avec correction manuelle des binding directories, validation acceptée le 6 août 2026 |
+| Commit testé | commit de la tranche | à relever après le commit local de la tranche 8 ; base de lecture acceptée : `396d102` |
 | Version IBM i | `7.4`, `7.5` ou `7.6` | |
 | Version BOB/TOBi | sortie de `makei --version` | |
 
@@ -92,7 +99,7 @@ git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
 
 Résultat attendu :
 
-- `120` tests CMagic réussis ;
+- suite CMagic entièrement réussie (compteur exact relevé lors de la porte 1) ;
 - build réussi ;
 - aucune différence après régénération ;
 - présence des fichiers suivants :
@@ -350,10 +357,10 @@ Attendu :
 
 - `SERVICE.BNDDIR` contient uniquement `SERVICE` ;
 - `SERVIWS.BNDDIR` contient `SERVICE` et `SERVIWS` ;
-- `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields` et
-  `service_get` ;
+- `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields`,
+  `service_get`, `service_create` et `service_isValid` ;
 - `SERVIWS.SRVPGM` exporte `service_getlist_iws` puis
-  `service_getone_iws`.
+  `service_getone_iws`, puis `service_create_iws`.
 
 Si le build échoue, conserver le premier message complet et le log. Ne pas corriger
 directement les sources générées : la correction devra être faite dans CMagic puis
@@ -378,7 +385,8 @@ Dans IBM Web Administration for i :
    demandé grâce à `pgminfo(*pcml:*module:*dclcase)` ;
 7. nommer la ressource `SERVIWS3` dans l'environnement de recette ;
 8. ne pas définir de chemin supplémentaire au niveau de la ressource ;
-9. sélectionner les procédures `service_getlist_iws` et `service_getone_iws`.
+9. sélectionner les procédures `service_getlist_iws`, `service_getone_iws` et
+   `service_create_iws`.
 
 ### 7.1 Usage des paramètres
 
@@ -400,6 +408,17 @@ Pour `service_getone_iws`, configurer :
 | --- | --- | --- |
 | `id` | Input | injecté depuis la variable `{id}` du chemin |
 | `item` | Output | corps JSON de détail |
+| `errors_LENGTH` | Output | longueur du tableau `errors` |
+| `errors` | Output | corps JSON |
+| `httpStatus` | Output | **HTTP response/status code** |
+| `httpHeaders` | Output | **HTTP response headers** |
+
+Pour `service_create_iws`, configurer :
+
+| Paramètre | Usage | Traitement IWS |
+| --- | --- | --- |
+| `input` | Input | corps JSON de l'entité à créer |
+| `item` | Output | corps JSON de l'entité persistée puis relue |
 | `errors_LENGTH` | Output | longueur du tableau `errors` |
 | `errors` | Output | corps JSON |
 | `httpStatus` | Output | **HTTP response/status code** |
@@ -436,6 +455,19 @@ Pour `service_getone_iws`, choisir :
 | Type de contenu produit | `JSON` |
 | Paramètres d'entrée | non enveloppés |
 | Injection de `id` | variable de chemin `id` |
+| Paramètre du statut HTTP | `httpStatus` |
+| Paramètre des en-têtes HTTP | `httpHeaders` |
+| Paramètres de sortie | enveloppés |
+
+Pour `service_create_iws`, choisir :
+
+| Propriété | Valeur |
+| --- | --- |
+| Méthode HTTP | `POST` |
+| URI path template de la méthode | `*NONE` ou vide |
+| Type de contenu entrant | `JSON` |
+| Type de contenu produit | `JSON` |
+| Paramètre `input` | corps de requête, non enveloppé |
 | Paramètre du statut HTTP | `httpStatus` |
 | Paramètre des en-têtes HTTP | `httpHeaders` |
 | Paramètres de sortie | enveloppés |
@@ -496,8 +528,8 @@ curl -i http://cmspw7t:10074/web/services/SERVIWS3/ZZZ
 
 Le premier appel doit répondre `200` avec `item.id` égal à `A00`. Le second doit
 répondre `404` avec une erreur portant sur `id`. Conserver le Swagger et le PCML
-régénérés : le Swagger attendu doit alors décrire `/` et `/{id}`, et le PCML les deux
-procédures publiques.
+régénérés : le Swagger attendu doit alors décrire `GET /`, `POST /` et `GET /{id}`, et
+le PCML les trois procédures publiques.
 
 ## 8. Porte 6 — Sauvegarder le contrat exposé par IWS
 
@@ -525,22 +557,24 @@ les propriétés du serveur.
 Ne pas la confondre avec `services.openapi.json` généré par CMagic. Ce dernier décrit
 encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la description
 à contrôler ici est celle que le serveur IWS déduit réellement du PCML des procédures
-`service_getlist_iws` et `service_getone_iws`.
+`service_getlist_iws`, `service_getone_iws` et `service_create_iws`.
 
 Vérifier au minimum :
 
 - URL de base : `/web/services/SERVIWS3` ;
-- méthode `GET` ;
-- opérations `service_getlist_iws` sur `/` et `service_getone_iws` sur `/{id}` ;
+- méthodes `GET` et `POST` ;
+- opérations `service_getlist_iws` en `GET /`, `service_create_iws` en `POST /` et
+  `service_getone_iws` en `GET /{id}` ;
 - schémas nominaux contenant respectivement `items`, `totalCount`, `errors` et
   `item`, `errors` ;
 - absence de `items_LENGTH`, `errors_LENGTH`, `httpStatus` et `httpHeaders` dans le
   corps public.
 
-Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) confirment les deux
-procédures. Le Swagger ne décrit pas les filtres transmis par `QUERY_STRING`, les
-statuts dynamiques `400`/`404` ou les en-têtes sortants ; les relevés HTTP complètent
-donc la preuve descriptive.
+Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) décrivent encore le
+dernier déploiement validé en lecture. Ils devront être remplacés après le déploiement
+de `CREATE`. Le Swagger ne décrit pas les filtres transmis par `QUERY_STRING` ni tous
+les statuts dynamiques et en-têtes sortants ; les relevés HTTP complètent donc la preuve
+descriptive.
 
 Si les champs techniques apparaissent dans le corps, ne pas poursuivre comme si le
 contrat était conforme : reprendre le mapping des paramètres ou l'option de détection
@@ -710,7 +744,57 @@ curl -sS \
 
 Attendu : `404`, `item` vide et au moins une erreur portant sur `id`.
 
-### 9.10 Vérifications rapides avec `jq`
+### 9.10 `CREATE` nominal, conflit et validation
+
+Réserver un identifiant de trois caractères uniquement pour cette recette, par exemple
+`ZC1`. Vérifier d'abord que `GET /ZC1` répond `404`. S'il existe déjà, choisir un autre
+identifiant et le remplacer dans toutes les commandes ; ne jamais supprimer une ligne
+préexistante.
+
+Créer `validation-cmagic-iws-20260730/create-zc1.payload.json` :
+
+```json
+{
+  "id": "ZC1",
+  "nom": "CMAGIC CREATE TEST",
+  "idManageur": "",
+  "idServiceAdmin": "A00",
+  "site": "RECETTE"
+}
+```
+
+Exécuter la création :
+
+```bash
+curl -sS -X POST \
+  -H "Content-Type: application/json" \
+  --data-binary @validation-cmagic-iws-20260730/create-zc1.payload.json \
+  -D validation-cmagic-iws-20260730/create-zc1.headers \
+  -o validation-cmagic-iws-20260730/create-zc1.json \
+  -w "%{http_code}\n" \
+  "${cmagic_iws_url}/"
+```
+
+Attendu : `201`, `item.id = "ZC1"`, `item.nom = "CMAGIC CREATE TEST"` et aucune
+erreur. Rejouer ensuite `GET /ZC1` : il doit répondre `200` avec les mêmes valeurs.
+
+Rejouer exactement le même `POST` et sauvegarder sa réponse sous
+`create-zc1-conflict.*`. Attendu : `409` avec une erreur `CAT1002` portant sur
+`conflict`.
+
+Créer enfin un payload avec `"id": ""`, rejouer le `POST` et sauvegarder sa réponse
+sous `create-invalid.*`. Attendu : `400` avec une erreur `CAT1001` portant sur `id`.
+
+Après conservation de toutes les preuves, supprimer uniquement la ligne créée par cette
+recette, puis vérifier que `GET /ZC1` répond de nouveau `404` :
+
+```cl
+RUNSQL SQL('DELETE FROM DB2SAMPLE.DEPARTMENT WHERE DEPTNO = ''ZC1''') COMMIT(*NONE)
+```
+
+Si un autre identifiant a été retenu, adapter strictement la clause `WHERE`.
+
+### 9.11 Vérifications rapides avec `jq`
 
 Si `jq` est disponible :
 
@@ -729,6 +813,12 @@ jq -e '.item.id == "A00" and (.errors | length) == 0' \
   validation-cmagic-iws-20260730/get-a00.json
 jq -e '(.errors | length) > 0 and .errors[0].nomZone == "id"' \
   validation-cmagic-iws-20260730/get-zzz.json
+jq -e '.item.id == "ZC1" and (.errors | length) == 0' \
+  validation-cmagic-iws-20260730/create-zc1.json
+jq -e '.errors[0].code == "CAT1002" and .errors[0].nomZone == "conflict"' \
+  validation-cmagic-iws-20260730/create-zc1-conflict.json
+jq -e '.errors[0].code == "CAT1001" and .errors[0].nomZone == "id"' \
+  validation-cmagic-iws-20260730/create-invalid.json
 ```
 
 ## 10. Porte 8 — Contrôler le job IWS et conserver les preuves
@@ -746,7 +836,7 @@ Conserver au minimum :
 - `build.log` ;
 - la description Swagger/OpenAPI IWS ;
 - les captures du wizard et du service actif ;
-- les en-têtes et corps des neuf requêtes ;
+- les en-têtes et corps de toutes les requêtes de lecture et de création ;
 - les versions IBM i, IWS et BOB/TOBi ;
 - la liste et les dates des six objets générés ;
 - la sortie de `DSPBNDDIRE` et des deux `DSPSRVPGM` ;
@@ -773,6 +863,9 @@ l'analyse des résultats.
 | `httpHeaders` apparaît dans le JSON | désigner `httpHeaders` comme tableau d'en-têtes |
 | `X-Total-Count` absent | mapping des en-têtes, sortie RPG et capture des en-têtes avec `curl -D` |
 | Tableau vide alors que Db2 contient des lignes | profil IWS, `DB2SAMPLE` dans la liste et SQLSTATE dans le joblog |
+| `POST` répond `200` au lieu de `201` | mapping de `httpStatus` et sélection de `service_create_iws` |
+| Le corps de `POST` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
+| Une création avec champs facultatifs vides échoue sur une contrainte | vérifier la source régénérée avec `NULLIF`, la valeur de `idServiceAdmin` et le joblog SQL |
 | Appel navigateur bloqué | CORS incomplet ; conserver les tests `curl` pour cette v0 |
 
 ## 12. Comparaison à remplir avec la recette ILEastic
@@ -791,6 +884,7 @@ l'analyse des résultats.
 | `X-Total-Count` | | | |
 | CORS | | | |
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
+| `CREATE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `201/400/409` à exécuter | valider avant `UPDATE` |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -798,7 +892,7 @@ l'analyse des résultats.
 
 | Porte | Résultat | Preuve ou première erreur |
 | --- | --- | --- |
-| 1. Artefacts figés | OK | 120 tests, build et génération déterministe validés localement |
+| 1. Artefacts figés | OK local tranche 8 | 128 tests, lint, build et 21 artefacts déterministes validés localement |
 | 2. Sources transférées | OK | projet de validation `cMagicIws` |
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
 | 4. Six objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |

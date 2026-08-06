@@ -115,6 +115,88 @@ describe('Catalogue RPG read generator', () => {
         expect(listOnly).not.toMatch(/\n\n$/);
     });
 
+    test('validates CREATE before inserting the natural identifier', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateRpgReadModule({
+            ...service,
+            capabilities: [...service.capabilities, 'create']
+        });
+
+        expect(source).toContain('dcl-proc service_create export;');
+        expect(source).toContain('dcl-proc service_isValid export;');
+        expect(source).toContain('dcl-pr service_isValid_business ind;');
+        expect(source).toContain(
+            'service_isValid(service_listeAction.creation'
+        );
+        expect(source).toContain("pErrors.listError(lErrorIndex).nomZone = 'id';");
+        expect(source).toContain("pErrors.listError(lErrorIndex).nomZone = 'nom';");
+        expect(source).toContain('if not service_isValid_business(');
+        expect(source).toContain('// [CMAGIC:MANUAL_START]');
+        expect(source).toContain('// [CMAGIC:MANUAL_END]');
+        expect(source).toContain('INSERT INTO DEPARTMENT');
+        expect(source).toContain('(DEPTNO, DEPTNAME, MGRNO, ADMRDEPT, LOCATION)');
+        expect(source).toContain(
+            "(:pDetail.id, :pDetail.nom, NULLIF(:pDetail.idManageur, ''), NULLIF(:pDetail.idServiceAdmin, ''), NULLIF(:pDetail.site, ''))"
+        );
+        expect(source).toContain("when sqlState = '23505';");
+        expect(source).toContain("pErrors : 'CAT1002' : 'conflict'");
+
+        expect(source.indexOf('service_isValid(service_listeAction.creation')).toBeLessThan(
+            source.indexOf('INSERT INTO DEPARTMENT')
+        );
+        expect(source.indexOf('dcl-pr service_isValid_business ind;')).toBeLessThan(
+            source.indexOf('if not service_isValid_business(')
+        );
+    });
+
+    test('generates basic Boolean and enum domain validation', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateRpgReadModule({
+            ...service,
+            capabilities: ['create'],
+            list: undefined,
+            fields: [
+                ...service.fields,
+                {
+                    name: 'actif',
+                    column: 'ACTIVE',
+                    type: { kind: 'boolean' },
+                    key: false,
+                    required: true,
+                    unique: false,
+                    searchable: false,
+                    sortable: false,
+                    filterOperators: []
+                },
+                {
+                    name: 'statut',
+                    column: 'STATUS',
+                    type: {
+                        kind: 'enum',
+                        name: 'ServiceStatus',
+                        values: ['OPEN', 'CLOSED']
+                    },
+                    key: false,
+                    required: false,
+                    unique: false,
+                    searchable: false,
+                    sortable: false,
+                    filterOperators: []
+                }
+            ]
+        });
+
+        expect(source).toContain(
+            "pAfterDetail.actif <> 'Y' and pAfterDetail.actif <> 'N'"
+        );
+        expect(source).toContain(
+            "pAfterDetail.statut <> 'OPEN' and pAfterDetail.statut <> 'CLOSED'"
+        );
+        expect(source).toContain(".code = 'CAT1004';");
+        expect(source).toContain(".nomZone = 'actif';");
+        expect(source).toContain(".nomZone = 'statut';");
+    });
+
     test('renders the artifact through a replaceable Handlebars template', async () => {
         const temporaryDirectory = fs.mkdtempSync(
             path.join(process.env.TEMP ?? process.cwd(), 'cmagic-template-')

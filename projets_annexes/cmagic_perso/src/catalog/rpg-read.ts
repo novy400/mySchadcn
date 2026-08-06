@@ -29,6 +29,9 @@ type FieldTemplateModel = FieldTypeTemplateModel & {
     rpgName: string;
     column: string;
     required: boolean;
+    requiredCondition?: string;
+    domainCondition?: string;
+    createValue: string;
 };
 
 type ProcedureParameterTemplateModel = {
@@ -47,6 +50,8 @@ type ReadProcedureSignaturesTemplateModel = {
     getSupportedFields: ProcedureSignatureTemplateModel;
     search: ProcedureSignatureTemplateModel;
     get: ProcedureSignatureTemplateModel;
+    create: ProcedureSignatureTemplateModel;
+    isValid: ProcedureSignatureTemplateModel;
 };
 
 export type CatalogReadTemplateModel = {
@@ -61,6 +66,9 @@ export type CatalogReadTemplateModel = {
     table: string;
     hasList: boolean;
     hasGet: boolean;
+    hasCreate: boolean;
+    hasDetail: boolean;
+    actionListName: string;
     procedures: CatalogReadProcedures;
     procedureSignatures: ReadProcedureSignaturesTemplateModel;
     itemFields: FieldTemplateModel[];
@@ -124,13 +132,51 @@ const fieldTypeModel = (type: CatalogFieldType): FieldTypeTemplateModel => {
     }
 };
 
-const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => ({
-    ...fieldTypeModel(field.type),
-    name: field.name,
-    rpgName: field.name,
-    column: field.column,
-    required: field.required
-});
+const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => {
+    const hostValue = `:pDetail.${field.name}`;
+    const allowedValues =
+        field.type.kind === 'boolean'
+            ? ['Y', 'N']
+            : field.type.kind === 'enum'
+              ? field.type.values
+              : [];
+    const domainCondition =
+        allowedValues.length === 0
+            ? undefined
+            : `%trim(pAfterDetail.${field.name}) <> *blanks and ` +
+              allowedValues
+                  .map(
+                      value =>
+                          `pAfterDetail.${field.name} <> '${value}'`
+                  )
+                  .join(' and ');
+    const createValue =
+        field.required || ['integer', 'decimal'].includes(field.type.kind)
+            ? hostValue
+            : field.type.kind === 'date'
+              ? `NULLIF(${hostValue}, DATE('0001-01-01'))`
+              : `NULLIF(${hostValue}, '')`;
+
+    return {
+        ...fieldTypeModel(field.type),
+        name: field.name,
+        rpgName: field.name,
+        column: field.column,
+        required: field.required,
+        createValue,
+        ...(domainCondition === undefined ? {} : { domainCondition }),
+        ...(field.required &&
+        ['string', 'enum', 'boolean'].includes(field.type.kind)
+            ? {
+                  requiredCondition: `%trim(pAfterDetail.${field.name}) = *blanks`
+              }
+            : field.required && field.type.kind === 'date'
+              ? {
+                    requiredCondition: `pAfterDetail.${field.name} = d'0001-01-01'`
+                }
+              : {})
+    };
+};
 
 const requireField = <Field>(
     fieldsByName: Map<string, Field>,
@@ -202,6 +248,25 @@ const buildProcedureSignatures = (
             parameter('pDetail', `likeDS(${entityName}_detail_t)`),
             parameter('pErrors', 'likeDS(GLOBAL_listError)')
         ]
+    },
+    create: {
+        name: procedures.create,
+        returnType: 'ind',
+        parameters: [
+            parameter('pDetail', `likeDS(${entityName}_detail_t)`, true),
+            parameter('pId', id.rpgType),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    },
+    isValid: {
+        name: procedures.isValid,
+        returnType: 'ind',
+        parameters: [
+            parameter('pAction', 'like(GLOBAL_codeAction)', true),
+            parameter('pBeforeDetail', `likeDS(${entityName}_detail_t)`, true),
+            parameter('pAfterDetail', `likeDS(${entityName}_detail_t)`, true),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
     }
 });
 
@@ -238,6 +303,9 @@ export const buildCatalogReadTemplateModel = (
         table: spec.table,
         hasList: procedures.hasList,
         hasGet: procedures.hasGet,
+        hasCreate: procedures.hasCreate,
+        hasDetail: procedures.hasGet || procedures.hasCreate,
+        actionListName: `${entityName}_listeAction`,
         procedures,
         procedureSignatures: buildProcedureSignatures(
             procedures,

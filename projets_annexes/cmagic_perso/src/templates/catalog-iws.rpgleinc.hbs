@@ -25,15 +25,27 @@ dcl-pr {{procedures.getListIws}} extproc(*dclcase);
   httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
 end-pr;
 {{/if}}
-{{#if hasGet}}
+{{#if hasDetail}}
 dcl-ds {{detailType}} qualified template;
 {{#each detailFields}}
   {{name}} {{rpgType}};
 {{/each}}
 end-ds;
+{{/if}}
 
+{{#if hasGet}}
 dcl-pr {{procedures.getOneIws}} extproc(*dclcase);
   id {{id.rpgType}} const;
+  item likeDS({{detailType}});
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+{{/if}}
+{{#if hasCreate}}
+dcl-pr {{procedures.createIws}} extproc(*dclcase);
+  input likeDS({{detailType}}) const;
   item likeDS({{detailType}});
   errors_LENGTH int(10);
   errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
