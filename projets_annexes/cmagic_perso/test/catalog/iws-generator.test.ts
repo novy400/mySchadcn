@@ -40,6 +40,9 @@ describe('Catalogue IWS generator', () => {
         expect(source).toContain(
             'dcl-pr service_update_iws extproc(*dclcase);'
         );
+        expect(source).toContain(
+            'dcl-pr service_delete_iws extproc(*dclcase);'
+        );
         expect(source).toContain('  id varchar(3) const;');
         expect(source).toContain(
             'item likeDS(service_detail_iws_t);'
@@ -121,6 +124,7 @@ describe('Catalogue IWS generator', () => {
                 "  EXPORT SYMBOL('service_getone_iws')",
                 "  EXPORT SYMBOL('service_create_iws')",
                 "  EXPORT SYMBOL('service_update_iws')",
+                "  EXPORT SYMBOL('service_delete_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -228,6 +232,7 @@ describe('Catalogue IWS generator', () => {
                 "  EXPORT SYMBOL('service_getone_iws')",
                 "  EXPORT SYMBOL('service_create_iws')",
                 "  EXPORT SYMBOL('service_update_iws')",
+                "  EXPORT SYMBOL('service_delete_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -287,6 +292,7 @@ describe('Catalogue IWS generator', () => {
                 "  EXPORT SYMBOL('service_getone_iws')",
                 "  EXPORT SYMBOL('service_create_iws')",
                 "  EXPORT SYMBOL('service_update_iws')",
+                "  EXPORT SYMBOL('service_delete_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -302,6 +308,51 @@ describe('Catalogue IWS generator', () => {
 
         expect(() => generateCatalogIwsWrapper(updateWithoutGet)).toThrow(
             'IWS UPDATE requires GET capability'
+        );
+    });
+
+    test('publishes DELETE with validation and HTTP outcomes', async () => {
+        const service = await compileIwsServiceCatalog();
+        const interfaceSource = generateCatalogIwsInterface(service);
+        const wrapperSource = generateCatalogIwsWrapper(service);
+
+        expect(interfaceSource).toContain(
+            'dcl-pr service_delete_iws extproc(*dclcase);'
+        );
+        const deleteInterface = interfaceSource.slice(
+            interfaceSource.indexOf('dcl-pr service_delete_iws extproc(*dclcase);')
+        );
+        expect(deleteInterface).toContain('  id varchar(3) const;');
+        expect(deleteInterface.split('end-pr;')[0]).not.toContain('item likeDS');
+
+        const deleteSource = wrapperSource.slice(
+            wrapperSource.indexOf('dcl-proc service_delete_iws export;')
+        );
+        expect(deleteSource).toContain(
+            'if not service_delete(id : lErrors);'
+        );
+        expect(deleteSource).toContain(
+            "when lErrors.listError(1).code = 'CAT0001'"
+        );
+        expect(deleteSource).toContain('httpStatus = HTTPREST_NOTFOUND;');
+        expect(deleteSource).toContain('httpStatus = HTTPREST_CONFLICT;');
+        expect(deleteSource).toContain('httpStatus = HTTPREST_BADREQUEST;');
+        expect(deleteSource).toContain('httpStatus = HTTPREST_SERVERERROR;');
+        expect(deleteSource).toContain('httpStatus = HTTPREST_NOCONTENT;');
+        expect(deleteSource).toContain(
+            "errors(1).nomZone = 'service_delete_iws';"
+        );
+    });
+
+    test('rejects an IWS DELETE model that cannot load the previous state', async () => {
+        const service = await compileIwsServiceCatalog();
+        const deleteWithoutGet = {
+            ...service,
+            capabilities: ['list', 'delete'] as typeof service.capabilities
+        };
+
+        expect(() => generateCatalogIwsWrapper(deleteWithoutGet)).toThrow(
+            'IWS DELETE requires GET capability'
         );
     });
 
@@ -356,7 +407,7 @@ describe('Catalogue IWS generator', () => {
             expect(
                 generateCatalogIwsBinder(service, temporaryDirectory)
             ).toBe(
-                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws,service_create_iws,service_update_iws\n'
+                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws,service_create_iws,service_update_iws,service_delete_iws\n'
             );
             expect(
                 generateCatalogIwsReadBindingDirectory(

@@ -14,5 +14,6 @@ operations for Service {
     LIST,
     GET,
     CREATE,
-    UPDATE
+    UPDATE,
+    DELETE
 }

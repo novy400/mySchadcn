@@ -291,6 +291,37 @@
             "description": "Erreur technique pendant la modification de Service"
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteService",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 3
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Service supprime"
+          },
+          "400": {
+            "description": "Suppression de Service refusee"
+          },
+          "404": {
+            "description": "Service inconnu"
+          },
+          "409": {
+            "description": "Service est encore reference"
+          },
+          "500": {
+            "description": "Erreur technique pendant la suppression de Service"
+          }
+        }
       }
     }
   },

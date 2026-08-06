@@ -222,6 +222,53 @@ dcl-proc service_update_iws export;
       endif;
     endif;
 end-proc;
+dcl-proc service_delete_iws export;
+  dcl-pi *n;
+    id varchar(3) const;
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_NOCONTENT;
+
+  if not service_delete(id : lErrors);
+    select;
+      when lErrors.listError(1).code = 'CAT0001'
+        and lErrors.listError(1).nomZone = 'id';
+        httpStatus = HTTPREST_NOTFOUND;
+      when lErrors.listError(1).nomZone = 'conflict';
+        httpStatus = HTTPREST_CONFLICT;
+      when lErrors.listError(1).nomZone = 'sql';
+        httpStatus = HTTPREST_SERVERERROR;
+      other;
+        httpStatus = HTTPREST_BADREQUEST;
+    endsl;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  httpStatus = HTTPREST_NOCONTENT;
+
+  on-exit lAbended;
+    if lAbended;
+      httpStatus = HTTPREST_SERVERERROR;
+      if errors_LENGTH = 0;
+        errors_LENGTH = 1;
+        errors(1).nomZone = 'service_delete_iws';
+        errors(1).code = 'RNX9001';
+        errors(1).text =
+          'Unexpected error in service_delete_iws';
+        errors(1).textUser = errors(1).text;
+      endif;
+    endif;
+end-proc;
 dcl-proc service_getone_iws export;
   dcl-pi *n;
     id varchar(3) const;

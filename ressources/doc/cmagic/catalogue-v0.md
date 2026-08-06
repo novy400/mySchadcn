@@ -15,8 +15,8 @@ ILEastic et IWS font de même au lieu de relire directement l'AST Langium ou d'a
 du code ligne par ligne en TypeScript.
 
 La ressource pilote est `Service`, adossée à la table Db2 existante `DEPARTMENT`.
-Elle couvre désormais la lecture (`LIST` et `GET`) et les mutations verticales `CREATE`
-et `UPDATE` avec IWS. `DELETE` reste hors du contrat actuel.
+Elle couvre désormais la lecture (`LIST` et `GET`) et les mutations verticales `CREATE`,
+`UPDATE` et `DELETE` avec IWS.
 
 ## Génération
 
@@ -117,7 +117,7 @@ view list for Service {
 }
 
 operations for Service {
-    LIST, GET, CREATE, UPDATE
+    LIST, GET, CREATE, UPDATE, DELETE
 }
 ```
 
@@ -135,13 +135,12 @@ Les mots-clés historiques restent acceptés. Pour une entité catalogue, les al
 | `CREATE` | `CREATE` | création |
 | `DELETE` | `DELETE` | suppression |
 
-`CREATE` et `UPDATE` sont compilés par le service RPG commun et exposés par IWS. Une
-entité qui choisit `ileasticObject` ne peut pas encore déclarer ces mutations, car le
-wrapper ILEastic reste en lecture seule. Avec `iwsObject`, `CREATE` exige `GET` pour
-relire la donnée persistée avant de produire la réponse `201`. `UPDATE`/`CHANGE` exige
-toujours `GET` afin de charger l'état précédent et vérifier l'existence avant toute
-validation ou écriture. `DELETE` reste reconnu par la grammaire mais refusé par le
-compilateur jusqu'à sa tranche dédiée.
+`CREATE`, `UPDATE` et `DELETE` sont compilés par le service RPG commun et exposés par
+IWS. Une entité qui choisit `ileasticObject` ne peut pas encore déclarer ces mutations,
+car le wrapper ILEastic reste en lecture seule. Avec `iwsObject`, `CREATE` exige `GET`
+pour relire la donnée persistée avant de produire la réponse `201`. `UPDATE`/`CHANGE`
+et `DELETE` exigent toujours `GET` afin de charger l'état précédent et vérifier
+l'existence avant toute validation ou écriture.
 
 ## Règles de validation
 
@@ -159,6 +158,7 @@ Une entité est considérée comme une entité catalogue dès qu'elle déclare `
 - si `CREATE` est déclaré avec `iwsObject`, la capacité `GET` ou son alias `DISPLAY`
   est également obligatoire ;
 - `UPDATE` ou `CHANGE` exige `GET`/`DISPLAY` et au moins un champ non-clé ;
+- `DELETE` exige `GET`/`DISPLAY` pour charger l'état précédent et vérifier l'existence ;
 - un serveur déclare un nom d'objet programme IBM i valide, un port entier compris
   entre 1 et 65 535 et au moins une entité catalogue ;
 - chaque entité publiée par un serveur est unique dans ce serveur et déclare
@@ -305,7 +305,7 @@ les générateurs historiques de copybook, service et SQL.
 
 Les noms historiques `catalog-read.*` et `{resource}.read.*` sont conservés pour ne pas
 casser les projets IBM i existants. Malgré ce suffixe, ce module porte désormais le
-service catalogue commun de lecture, création et modification.
+service catalogue commun de lecture, création, modification et suppression.
 
 Les noms de table et de colonnes proviennent exclusivement du `CatalogSpec` validé.
 La procédure `{entity}_search` suit le contrat utilisé par `service_search` dans
@@ -430,10 +430,20 @@ renvoie `item`, `errors_LENGTH`, `errors`, `httpStatus` et `httpHeaders`. Le wra
 4. renvoie `200`, `400` pour une validation, `404` pour une entité absente, `409` pour
    un conflit, ou `500` pour une erreur SQL/RPG.
 
+Lorsque `DELETE` est déclaré, le service program exporte aussi
+`{entity}_delete_iws`. Sa signature PCML reçoit uniquement l'identifiant `id` avec les
+sorties `errors_LENGTH`, `errors`, `httpStatus` et `httpHeaders`. Le wrapper :
+
+1. appelle `{entity}_delete`, qui charge l'état précédent par `{entity}_get` ;
+2. appelle `{entity}_isValid(suppression, before, after, errors)` avant le SQL ;
+3. supprime uniquement la ligne portant l'identifiant demandé ;
+4. renvoie `204`, `400` pour un refus métier, `404` pour une entité absente, `409` pour
+   une contrainte référentielle, ou `500` pour une erreur SQL/RPG.
+
 Le module contient `pgminfo(*pcml:*module:*dclcase)`. Après compilation, le déploiement
 IWS doit publier le service program désigné par `iwsObject`, sélectionner séparément
 `{entity}_getlist_iws`, `{entity}_getone_iws` et les mutations déclarées
-`{entity}_create_iws`/`{entity}_update_iws`, mapper `httpStatus` au code de réponse et
+`{entity}_create_iws`/`{entity}_update_iws`/`{entity}_delete_iws`, mapper `httpStatus` au code de réponse et
 `httpHeaders` aux en-têtes sortants. Le chemin REST public de chaque procédure est
 choisi lors du déploiement IWS ; il n'est donc pas codé dans le wrapper RPG.
 
@@ -452,9 +462,9 @@ wrapper (`SERVICE` et `SERVIWS`) pour les tests RPGUnit.
 `ctl-opt bnddir` du wrapper. Le graphe généré ne crée donc ni entrée applicative pour
 `CIWS`, ni dépendance directe vers `CIWS.SRVPGM`.
 
-Le contrat IWS couvre `LIST`/`SEARCH`, `GET`, `CREATE` et `UPDATE`/`CHANGE`. Le
+Le contrat IWS couvre `LIST`/`SEARCH`, `GET`, `CREATE`, `UPDATE`/`CHANGE` et `DELETE`. Le
 compilateur exige `LIST` lorsqu'une entité choisit `iwsObject`, puis `GET` pour toute
-modification et pour une création IWS. Une exposition IWS limitée au seul `GET`, ou une
+modification, suppression et pour une création IWS. Une exposition IWS limitée au seul `GET`, ou une
 mutation sans les capacités requises, reste hors du contrat actuel.
 
 ## DDL Db2 généré
@@ -493,6 +503,8 @@ dans le module RPG :
   existants ;
 - `UPDATE` ajoute `{entity}_update` après les exports déjà publiés. Sans `CREATE`, il
   exporte `{entity}_update` puis `{entity}_isValid`.
+- `DELETE` ajoute `{entity}_delete` après les mutations déjà publiées. Lorsqu'il est la
+  seule mutation, il exporte `{entity}_delete` puis `{entity}_isValid`.
 
 Le binder initial ne contient pas de niveau `PGMLVL(*PRV)`. Les signatures précédentes
 devront être conservées lors d'une future évolution incompatible du contrat exporté ;
@@ -535,7 +547,8 @@ de résoudre les deux services programs sans modifier `CKOOL`.
 Le binder IWS utilise la signature `SERVIWS.0.0.1`. Il conserve
 `service_getlist_iws` comme premier export et ajoute `service_getone_iws` lorsque la
 capacité `GET` est déclarée, `service_create_iws` lorsque `CREATE` est déclaré, puis
-`service_update_iws` lorsque `UPDATE` est déclaré. Les ajouts sont placés en fin de
+`service_update_iws` lorsque `UPDATE` est déclaré, puis `service_delete_iws` lorsque
+`DELETE` est déclaré. Les ajouts sont placés en fin de
 liste afin de préserver les exports existants. Les règles ILEastic et IWS ne sont
 jamais produites ensemble pour une même entité.
 
@@ -576,9 +589,8 @@ historique des dix artefacts par catalogue reste inchangée.
 
 ## Hors périmètre de la tranche
 
-- exposition IWS limitée au seul `GET`, `CREATE` ou `UPDATE` ;
+- exposition IWS limitée au seul `GET`, `CREATE`, `UPDATE` ou `DELETE` ;
 - configuration CORS, journalisation et arrêt contrôlé du serveur ILEastic ;
-- mutation `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
   filtre et tri ;
@@ -590,6 +602,7 @@ historique des dix artefacts par catalogue reste inchangée.
 Le wrapper IWS couvrant `LIST`, `GET` et `CREATE` a été compilé, redéployé et accepté sur
 IBM i le 6 août 2026. La recette a confirmé la création `201`, la relecture `200`, le
 doublon `409/CAT1002`, la validation `400/CAT1001` et le nettoyage des données de test.
-La verticale `UPDATE` est maintenant implémentée, testée localement et synchronisée vers
-`cMagicIws`. Sa compilation, son redéploiement et sa recette IBM i restent à exécuter
-avant d'aborder `DELETE`.
+Les verticales `UPDATE` et `DELETE` sont maintenant implémentées, testées localement et
+synchronisées vers `cMagicIws`. `UPDATE` est accepté sur IBM i ; la compilation, le
+redéploiement et la recette IBM i de `DELETE` restent à exécuter avant le branchement
+progressif du DataProvider.

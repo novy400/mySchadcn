@@ -240,6 +240,7 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
 
   clear pErrors;
   select;
+{{#if procedures.hasCreateOrUpdate}}
 {{#if procedures.hasCreate}}
 {{#if procedures.hasUpdate}}
     when pAction = {{actionListName}}.creation
@@ -248,7 +249,9 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
     when pAction = {{actionListName}}.creation;
 {{/if}}
 {{else}}
+{{#if procedures.hasUpdate}}
     when pAction = {{actionListName}}.modification;
+{{/if}}
 {{/if}}
 {{#each detailFields}}
 {{#if requiredCondition}}
@@ -283,6 +286,11 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
         pErrors.listError(lErrorIndex).textUser =
           pErrors.listError(lErrorIndex).text;
       endif;
+{{/if}}
+{{/if}}
+{{#if procedures.hasDelete}}
+    when pAction = {{actionListName}}.suppression;
+      clear lErrors;
 {{/if}}
     other;
       {{procedures.rejectMutation}}(
@@ -412,6 +420,57 @@ dcl-proc {{procedureSignatures.update.name}} export;
       {{procedures.rejectMutation}}(
         pErrors : 'RNX9001' : 'sql' :
         'Unexpected error while updating {{entityDisplayName}}');
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+{{#if procedures.hasDelete}}
+dcl-proc {{procedureSignatures.delete.name}} export;
+  dcl-pi *n {{procedureSignatures.delete.returnType}};
+{{#each procedureSignatures.delete.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+  end-pi;
+  dcl-ds lBeforeDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lAfterDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pErrors;
+  if not {{procedures.get}}(pId : lBeforeDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  clear lErrors;
+  if not {{procedures.isValid}}({{actionListName}}.suppression
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    DELETE FROM {{table}}
+    WHERE {{id.column}} = :pId;
+  select;
+    when sqlState = '23504';
+      {{procedures.rejectMutation}}(
+        pErrors : 'CAT1002' : 'conflict' :
+        '{{entityDisplayName}} is referenced and cannot be deleted');
+      return *off;
+    when sqlState <> SQL_OK;
+      {{procedures.rejectMutation}}(
+        pErrors : sqlState : 'sql' :
+        'Unable to delete {{entityDisplayName}}');
+      return *off;
+  endsl;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      {{procedures.rejectMutation}}(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while deleting {{entityDisplayName}}');
       return *off;
     endif;
 end-proc;

@@ -52,6 +52,7 @@ type ReadProcedureSignaturesTemplateModel = {
     get: ProcedureSignatureTemplateModel;
     create: ProcedureSignatureTemplateModel;
     update: ProcedureSignatureTemplateModel;
+    delete: ProcedureSignatureTemplateModel;
     isValid: ProcedureSignatureTemplateModel;
 };
 
@@ -69,6 +70,7 @@ export type CatalogReadTemplateModel = {
     hasGet: boolean;
     hasCreate: boolean;
     hasUpdate: boolean;
+    hasDelete: boolean;
     hasMutation: boolean;
     hasDetail: boolean;
     actionListName: string;
@@ -271,6 +273,14 @@ const buildProcedureSignatures = (
             parameter('pErrors', 'likeDS(GLOBAL_listError)')
         ]
     },
+    delete: {
+        name: procedures.delete,
+        returnType: 'ind',
+        parameters: [
+            parameter('pId', id.rpgType, true),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    },
     isValid: {
         name: procedures.isValid,
         returnType: 'ind',
@@ -325,6 +335,7 @@ export const buildCatalogReadTemplateModel = (
         hasGet: procedures.hasGet,
         hasCreate: procedures.hasCreate,
         hasUpdate: procedures.hasUpdate,
+        hasDelete: procedures.hasDelete,
         hasMutation: procedures.hasMutation,
         hasDetail: procedures.hasGet || procedures.hasMutation,
         actionListName: `${entityName}_listeAction`,

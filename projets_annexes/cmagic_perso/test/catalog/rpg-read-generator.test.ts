@@ -206,6 +206,35 @@ describe('Catalogue RPG read generator', () => {
         ).toThrow('Catalog UPDATE capability requires a non-key field');
     });
 
+    test('loads and validates DELETE before removing the entity', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateRpgReadModule({
+            ...service,
+            capabilities: [...service.capabilities, 'delete']
+        });
+
+        expect(source).toContain('dcl-proc service_delete export;');
+        expect(source).toContain(
+            'if not service_get(pId : lBeforeDetail : lErrors);'
+        );
+        expect(source).toContain(
+            'service_isValid(service_listeAction.suppression'
+        );
+        expect(source).toContain('DELETE FROM DEPARTMENT');
+        expect(source).toContain('WHERE DEPTNO = :pId');
+        expect(source).toContain("when sqlState = '23504';");
+        expect(source).toContain("pErrors : 'CAT1002' : 'conflict'");
+
+        expect(
+            source.indexOf('service_get(pId : lBeforeDetail : lErrors)')
+        ).toBeLessThan(
+            source.indexOf('service_isValid(service_listeAction.suppression')
+        );
+        expect(
+            source.indexOf('service_isValid(service_listeAction.suppression')
+        ).toBeLessThan(source.indexOf('DELETE FROM DEPARTMENT'));
+    });
+
     test('generates basic Boolean and enum domain validation', async () => {
         const service = await compileServiceCatalog();
         const source = generateRpgReadModule({

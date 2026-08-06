@@ -21,6 +21,7 @@ documentaire, par tranches petites et vérifiables.
 | 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
 | 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
 | 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
+| 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | À valider sur IBM i |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -410,8 +411,68 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - le propriétaire du projet accepte cette limite de preuve et déclare la tranche 9
   **GO** le 6 août 2026.
 
+## Tranche 10 — `DELETE` avec validation préalable et IWS
+
+### Contrat retenu
+
+- `DELETE` exige `GET` pour charger l'état `before` et confirmer l'existence de
+  l'entité avant toute validation ou suppression ;
+- `service_delete(pId, pErrors)` appelle
+  `service_isValid(suppression, before, after, errors)` avant tout SQL ;
+- l'état `after` est vide et le hook métier protégé peut refuser la suppression avec
+  une erreur fonctionnelle ;
+- une contrainte référentielle Db2 (`SQLSTATE 23504`) devient
+  `409/CAT1002/conflict` ;
+- `service_delete_iws` renvoie `204`, `400`, `404`, `409` ou `500` sans structure
+  `item` dans sa signature ;
+- OpenAPI publie `DELETE /api/{resource}/{id}` et le contrat frontend ajoute la
+  capacité `delete` ;
+- ILEastic reste en lecture seule.
+
+### Réalisé localement
+
+- activation de `DELETE` dans le compilateur avec diagnostics lorsque `GET` manque ou
+  que la mutation est demandée avec ILEastic ;
+- génération de l'action `suppression`, des prototypes, de `service_delete`, de
+  `service_delete_iws` et de leurs exports en fin des binders existants ;
+- lecture préalable, validation par `service_isValid`, suppression Db2 et adaptation
+  des erreurs fonctionnelles, référentielles et techniques ;
+- ajout du `DELETE`, des réponses HTTP et de la capacité `delete` aux contrats
+  générés ;
+- passage de l'exemple IWS à
+  `operations { LIST, GET, CREATE, UPDATE, DELETE }` ;
+- régénération des vingt et un artefacts et synchronisation des onze fichiers affectés
+  vers `cMagicIws` ;
+- cycle TDD observé : 25 échecs initiaux sur les seams manquants, puis 62 tests ciblés
+  réussis.
+
+### Validation locale
+
+- suite CMagic : 18 fichiers, 141 tests réussis ;
+- lint CMagic : réussi ;
+- build CMagic : réussi ;
+- génération répétée : vingt et un artefacts strictement identiques ;
+- comparaison des onze artefacts synchronisés avec `cMagicIws` : identiques ;
+- `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build
+  réussi ;
+- revue Standards : aucune violation d'`AGENTS.md` ; le nom ambigu `hasWrite` a été
+  corrigé en `hasCreateOrUpdate`. Deux refactorings internes mineurs restent hors de
+  cette tranche ciblée (politique des mutations et mapping d'erreurs IWS) ;
+- revue Spec : aucun constat.
+
+### Validation IBM i à réaliser
+
+- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
+  les sources générées ;
+- redéployer `SERVIWS3` avec `service_delete_iws` comme `DELETE /{id}` ;
+- créer une ligne dédiée, vérifier `DELETE → 204`, puis `GET → 404` ;
+- vérifier `DELETE` sur un identifiant absent en `404/CAT0001/id` et, si le schéma de
+  recette le permet, une contrainte référentielle en `409/CAT1002/conflict` ;
+- archiver le nouveau Swagger, le PCML, l'export curl et les captures avant nettoyage.
+
 ## Suite
 
-Les neuf premières tranches sont terminées. La prochaine verticale recommandée est
-`DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement du
-modèle des commandes demeure une évolution séparée.
+Les neuf premières tranches sont terminées. La tranche 10 est implémentée localement et
+attend sa validation IBM i. La prochaine verticale recommandée est le branchement
+progressif du DataProvider IBM i. L'enrichissement du modèle des commandes demeure une
+évolution séparée.

@@ -360,7 +360,8 @@ const compileEntity = (
             capability !== 'list' &&
             capability !== 'get' &&
             capability !== 'create' &&
-            capability !== 'update'
+            capability !== 'update' &&
+            capability !== 'delete'
     );
     if (unsupportedCapabilities.length > 0) {
         diagnostics.push(
@@ -416,6 +417,30 @@ const compileEntity = (
                 'CATALOG_UPDATE_FIELD_REQUIRED',
                 entity,
                 `La capacite UPDATE de ${entity.name} exige au moins un champ non cle a modifier.`
+            )
+        );
+    }
+    if (
+        ileasticObject !== undefined &&
+        capabilities.includes('delete')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_ILEASTIC_DELETE_UNSUPPORTED',
+                entity,
+                `La capacite DELETE de ${entity.name} est actuellement exposee uniquement avec IWS.`
+            )
+        );
+    }
+    if (
+        capabilities.includes('delete') &&
+        !capabilities.includes('get')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_DELETE_GET_REQUIRED',
+                entity,
+                `La capacite DELETE de ${entity.name} exige GET pour charger l'etat precedent et verifier son existence.`
             )
         );
     }

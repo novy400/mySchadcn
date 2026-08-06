@@ -3,6 +3,7 @@ import type { CatalogSpec } from './catalog-spec.js';
 import { catalogObjectName } from './ibmi-object-name.js';
 import {
     catalogIwsCreateProcedure,
+    catalogIwsDeleteProcedure,
     catalogIwsGetListProcedure,
     catalogIwsGetOneProcedure,
     catalogIwsUpdateProcedure
@@ -41,6 +42,9 @@ const buildTemplateModel = (
                 : []),
             ...(spec.capabilities.includes('update')
                 ? [catalogIwsUpdateProcedure(spec.entity)]
+                : []),
+            ...(spec.capabilities.includes('delete')
+                ? [catalogIwsDeleteProcedure(spec.entity)]
                 : [])
         ]
     };

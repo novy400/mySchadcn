@@ -212,6 +212,45 @@ dcl-proc {{procedures.updateIws}} export;
 {{> handleUnexpectedIwsError procedure=procedures.updateIws}}
 end-proc;
 {{/if}}
+{{#if hasDelete}}
+dcl-proc {{procedures.deleteIws}} export;
+  dcl-pi *n;
+    id {{id.rpgType}} const;
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_NOCONTENT;
+
+  if not {{procedures.delete}}(id : lErrors);
+    select;
+      when lErrors.listError(1).code = 'CAT0001'
+        and lErrors.listError(1).nomZone = 'id';
+        httpStatus = HTTPREST_NOTFOUND;
+      when lErrors.listError(1).nomZone = 'conflict';
+        httpStatus = HTTPREST_CONFLICT;
+      when lErrors.listError(1).nomZone = 'sql';
+        httpStatus = HTTPREST_SERVERERROR;
+      other;
+        httpStatus = HTTPREST_BADREQUEST;
+    endsl;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  httpStatus = HTTPREST_NOCONTENT;
+
+  on-exit lAbended;
+{{> handleUnexpectedIwsError procedure=procedures.deleteIws}}
+end-proc;
+{{/if}}
 {{#if hasGet}}
 dcl-proc {{procedures.getOneIws}} export;
   dcl-pi *n;

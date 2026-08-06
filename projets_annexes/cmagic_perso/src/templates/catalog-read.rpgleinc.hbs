@@ -49,6 +49,9 @@ dcl-enum {{actionListName}} qualified;
 {{#if procedures.hasUpdate}}
   modification 'update';
 {{/if}}
+{{#if procedures.hasDelete}}
+  suppression 'delete';
+{{/if}}
 end-enum;
 
 dcl-pr {{procedureSignatures.isValid.name}} {{procedureSignatures.isValid.returnType}} extproc(*dclcase);
@@ -67,6 +70,13 @@ end-pr;
 {{#if procedures.hasUpdate}}
 dcl-pr {{procedureSignatures.update.name}} {{procedureSignatures.update.returnType}} extproc(*dclcase);
 {{#each procedureSignatures.update.parameters}}
+  {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+end-pr;
+{{/if}}
+{{#if procedures.hasDelete}}
+dcl-pr {{procedureSignatures.delete.name}} {{procedureSignatures.delete.returnType}} extproc(*dclcase);
+{{#each procedureSignatures.delete.parameters}}
   {{name}} {{type}}{{#if isConst}} const{{/if}};
 {{/each}}
 end-pr;

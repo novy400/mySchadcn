@@ -299,6 +299,8 @@ dcl-proc service_isValid export;
         pErrors.listError(lErrorIndex).textUser =
           pErrors.listError(lErrorIndex).text;
       endif;
+    when pAction = service_listeAction.suppression;
+      clear lErrors;
     other;
       service_reject_mutation(
         pErrors : 'CAT1003' : 'action' : 'Unsupported mutation action');
@@ -424,6 +426,54 @@ dcl-proc service_update export;
       service_reject_mutation(
         pErrors : 'RNX9001' : 'sql' :
         'Unexpected error while updating Service');
+      return *off;
+    endif;
+end-proc;
+dcl-proc service_delete export;
+  dcl-pi *n ind;
+    pId varchar(3) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-ds lBeforeDetail likeDS(service_detail_t) inz;
+  dcl-ds lAfterDetail likeDS(service_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
+
+  clear pErrors;
+  if not service_get(pId : lBeforeDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  clear lErrors;
+  if not service_isValid(service_listeAction.suppression
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    DELETE FROM DEPARTMENT
+    WHERE DEPTNO = :pId;
+  select;
+    when sqlState = '23504';
+      service_reject_mutation(
+        pErrors : 'CAT1002' : 'conflict' :
+        'Service is referenced and cannot be deleted');
+      return *off;
+    when sqlState <> SQL_OK;
+      service_reject_mutation(
+        pErrors : sqlState : 'sql' :
+        'Unable to delete Service');
+      return *off;
+  endsl;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      service_reject_mutation(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while deleting Service');
       return *off;
     endif;
 end-proc;

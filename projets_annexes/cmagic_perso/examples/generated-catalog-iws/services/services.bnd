@@ -5,4 +5,5 @@ STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('SERVICE.0.0.1')
   EXPORT SYMBOL('service_create')
   EXPORT SYMBOL('service_isValid')
   EXPORT SYMBOL('service_update')
+  EXPORT SYMBOL('service_delete')
 ENDPGMEXP

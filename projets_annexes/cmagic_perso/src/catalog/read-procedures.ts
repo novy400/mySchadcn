@@ -5,6 +5,8 @@ export type CatalogReadProcedures = {
     hasGet: boolean;
     hasCreate: boolean;
     hasUpdate: boolean;
+    hasDelete: boolean;
+    hasCreateOrUpdate: boolean;
     hasMutation: boolean;
     rejectQuery: string;
     rejectMutation: string;
@@ -13,6 +15,7 @@ export type CatalogReadProcedures = {
     get: string;
     create: string;
     update: string;
+    delete: string;
     isValid: string;
     isValidBusiness: string;
     exports: string[];
@@ -26,12 +29,15 @@ export const catalogReadProcedures = (
     const hasGet = spec.capabilities.includes('get');
     const hasCreate = spec.capabilities.includes('create');
     const hasUpdate = spec.capabilities.includes('update');
-    const hasMutation = hasCreate || hasUpdate;
+    const hasDelete = spec.capabilities.includes('delete');
+    const hasCreateOrUpdate = hasCreate || hasUpdate;
+    const hasMutation = hasCreateOrUpdate || hasDelete;
     const search = `${prefix}_search`;
     const getSupportedFields = `${prefix}_getSupportedFields`;
     const get = `${prefix}_get`;
     const create = `${prefix}_create`;
     const update = `${prefix}_update`;
+    const deleteProcedure = `${prefix}_delete`;
     const isValid = `${prefix}_isValid`;
 
     return {
@@ -39,6 +45,8 @@ export const catalogReadProcedures = (
         hasGet,
         hasCreate,
         hasUpdate,
+        hasDelete,
+        hasCreateOrUpdate,
         hasMutation,
         rejectQuery: `${prefix}_reject_query`,
         rejectMutation: `${prefix}_reject_mutation`,
@@ -47,16 +55,28 @@ export const catalogReadProcedures = (
         get,
         create,
         update,
+        delete: deleteProcedure,
         isValid,
         isValidBusiness: `${prefix}_isValid_business`,
         exports: [
             ...(hasList ? [search, getSupportedFields] : []),
             ...(hasGet ? [get] : []),
             ...(hasCreate
-                ? [create, isValid, ...(hasUpdate ? [update] : [])]
+                ? [
+                      create,
+                      isValid,
+                      ...(hasUpdate ? [update] : []),
+                      ...(hasDelete ? [deleteProcedure] : [])
+                  ]
                 : hasUpdate
-                  ? [update, isValid]
-                  : [])
+                  ? [
+                        update,
+                        isValid,
+                        ...(hasDelete ? [deleteProcedure] : [])
+                    ]
+                  : hasDelete
+                    ? [deleteProcedure, isValid]
+                    : [])
         ]
     };
 };

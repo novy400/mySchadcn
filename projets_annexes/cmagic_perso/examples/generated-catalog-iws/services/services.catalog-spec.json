@@ -9,7 +9,8 @@
     "list",
     "get",
     "create",
-    "update"
+    "update",
+    "delete"
   ],
   "fields": [
     {

@@ -64,3 +64,12 @@ dcl-pr {{procedures.updateIws}} extproc(*dclcase);
   httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
 end-pr;
 {{/if}}
+{{#if hasDelete}}
+dcl-pr {{procedures.deleteIws}} extproc(*dclcase);
+  id {{id.rpgType}} const;
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+{{/if}}

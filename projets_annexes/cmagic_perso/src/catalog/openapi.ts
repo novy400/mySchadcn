@@ -41,6 +41,7 @@ type OpenApiPath = {
     get?: OpenApiOperation;
     post?: OpenApiOperation;
     put?: OpenApiOperation;
+    delete?: OpenApiOperation;
 };
 
 export type OpenApiDocument = {
@@ -267,6 +268,33 @@ export const generateOpenApiDocument = (spec: CatalogSpec): OpenApiDocument => {
                     },
                     '500': {
                         description: `Erreur technique pendant la modification de ${spec.entity}`
+                    }
+                }
+            }
+        };
+    }
+
+    if (spec.capabilities.includes('delete')) {
+        paths[itemPath] = {
+            ...paths[itemPath],
+            delete: {
+                operationId: `delete${spec.entity}`,
+                parameters: [identifierParameter],
+                responses: {
+                    '204': {
+                        description: `${spec.entity} supprime`
+                    },
+                    '400': {
+                        description: `Suppression de ${spec.entity} refusee`
+                    },
+                    '404': {
+                        description: `${spec.entity} inconnu`
+                    },
+                    '409': {
+                        description: `${spec.entity} est encore reference`
+                    },
+                    '500': {
+                        description: `Erreur technique pendant la suppression de ${spec.entity}`
                     }
                 }
             }

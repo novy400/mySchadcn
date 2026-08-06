@@ -10,7 +10,8 @@ directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
 `6d7a41e`. Les contrats `GET` et `CREATE` sont déployés et acceptés sur IBM i avec les
 limites de preuve explicitées dans le compte rendu. La tranche `UPDATE` est désormais
 implémentée, déployée et acceptée sur IBM i ; les étapes ci-dessous conservent son
-protocole de validation reproductible.
+protocole de validation reproductible. La tranche `DELETE` est implémentée localement
+et les ajouts dédiés préparent sa validation IBM i.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -25,7 +26,7 @@ La recette doit établir que :
 2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR`, `SERVIWS.SRVPGM` et `SERVIWS.BNDDIR` sont
    créés ;
 3. `SERVIWS` exporte `service_getlist_iws`, `service_getone_iws`,
-   `service_create_iws`, puis `service_update_iws` ;
+   `service_create_iws`, `service_update_iws`, puis `service_delete_iws` ;
 4. le serveur IWS transmet `QUERY_STRING` au wrapper RPG ;
 5. les recherches, filtres, tris et paginations utilisent le même
    `service_search` que le transport ILEastic ;
@@ -37,9 +38,12 @@ La recette doit établir que :
     en `400`, les doublons en `409` et les erreurs techniques en `500` ;
 11. `PUT /SERVIWS3/{id}` modifie une entité existante en `200`, renvoie `404` si elle
     n'existe pas, `400` si la validation échoue, `409` en cas de conflit et `500` pour
-    une erreur technique.
+    une erreur technique ;
+12. `DELETE /SERVIWS3/{id}` supprime une entité validée en `204`, renvoie `404` si elle
+    n'existe pas, `400` si une règle métier refuse la suppression, `409` en cas de
+    contrainte référentielle et `500` pour une erreur technique.
 
-Cette version couvre la lecture, la création et la modification :
+Cette version couvre la lecture, la création, la modification et prépare la suppression :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
 - `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
@@ -47,7 +51,7 @@ Cette version couvre la lecture, la création et la modification :
 - `CREATE` est généré, déployé et accepté sur IBM i ;
 - `UPDATE` est généré, déployé et accepté sur IBM i pour le scénario nominal
   `GET → PUT → GET` en `200` ;
-- `DELETE` n'est pas généré ;
+- `DELETE` est généré et validé localement, mais pas encore accepté sur IBM i ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
 - la réponse IWS de détail est `{ item, errors }` ;
@@ -363,9 +367,11 @@ Attendu :
 - `SERVICE.BNDDIR` contient uniquement `SERVICE` ;
 - `SERVIWS.BNDDIR` contient `SERVICE` et `SERVIWS` ;
 - `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields`,
-  `service_get`, `service_create`, `service_isValid` et `service_update` ;
+  `service_get`, `service_create`, `service_isValid`, `service_update` et
+  `service_delete` ;
 - `SERVIWS.SRVPGM` exporte `service_getlist_iws` puis
-  `service_getone_iws`, `service_create_iws`, puis `service_update_iws`.
+  `service_getone_iws`, `service_create_iws`, `service_update_iws`, puis
+  `service_delete_iws`.
 
 Si le build échoue, conserver le premier message complet et le log. Ne pas corriger
 directement les sources générées : la correction devra être faite dans CMagic puis
@@ -391,7 +397,7 @@ Dans IBM Web Administration for i :
 7. nommer la ressource `SERVIWS3` dans l'environnement de recette ;
 8. ne pas définir de chemin supplémentaire au niveau de la ressource ;
 9. sélectionner les procédures `service_getlist_iws`, `service_getone_iws`,
-   `service_create_iws` et `service_update_iws`.
+   `service_create_iws`, `service_update_iws` et `service_delete_iws`.
 
 ### 7.1 Usage des paramètres
 
@@ -438,6 +444,16 @@ Pour `service_update_iws`, configurer :
 | `item` | Output | corps JSON de l'entité persistée puis relue |
 | `errors_LENGTH` | Output | longueur du tableau `errors` |
 | `errors` | Output | corps JSON |
+| `httpStatus` | Output | **HTTP response/status code** |
+| `httpHeaders` | Output | **HTTP response headers** |
+
+Pour `service_delete_iws`, configurer :
+
+| Paramètre | Usage | Traitement IWS |
+| --- | --- | --- |
+| `id` | Input | injecté depuis la variable `{id}` du chemin |
+| `errors_LENGTH` | Output | longueur du tableau `errors` |
+| `errors` | Output | corps JSON d'erreur, vide au succès |
 | `httpStatus` | Output | **HTTP response/status code** |
 | `httpHeaders` | Output | **HTTP response headers** |
 
@@ -499,6 +515,19 @@ Pour `service_update_iws`, choisir :
 | Type de contenu produit | `JSON` |
 | Paramètre `id` | variable de chemin `id` |
 | Paramètre `input` | corps de requête, non enveloppé |
+| Paramètre du statut HTTP | `httpStatus` |
+| Paramètre des en-têtes HTTP | `httpHeaders` |
+| Paramètres de sortie | enveloppés |
+
+Pour `service_delete_iws`, choisir :
+
+| Propriété | Valeur |
+| --- | --- |
+| Méthode HTTP | `DELETE` |
+| URI path template de la méthode | `/{id}` |
+| Type de contenu entrant | `*ALL` |
+| Type de contenu produit | `JSON` |
+| Paramètre `id` | variable de chemin `id` |
 | Paramètre du statut HTTP | `httpStatus` |
 | Paramètre des en-têtes HTTP | `httpHeaders` |
 | Paramètres de sortie | enveloppés |
@@ -588,23 +617,24 @@ les propriétés du serveur.
 Ne pas la confondre avec `services.openapi.json` généré par CMagic. Ce dernier décrit
 encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la description
 à contrôler ici est celle que le serveur IWS déduit réellement du PCML des procédures
-`service_getlist_iws`, `service_getone_iws`, `service_create_iws` et
-`service_update_iws`.
+`service_getlist_iws`, `service_getone_iws`, `service_create_iws`,
+`service_update_iws` et `service_delete_iws`.
 
 Vérifier au minimum :
 
 - URL de base : `/web/services/SERVIWS3` ;
-- méthodes `GET`, `POST` et `PUT` ;
+- méthodes `GET`, `POST`, `PUT` et `DELETE` après le déploiement de la tranche 10 ;
 - opérations `service_getlist_iws` en `GET /`, `service_create_iws` en `POST /` et
-  `service_getone_iws` en `GET /{id}`, puis `service_update_iws` en `PUT /{id}` ;
+  `service_getone_iws` en `GET /{id}`, `service_update_iws` en `PUT /{id}`, puis
+  `service_delete_iws` en `DELETE /{id}` ;
 - schémas nominaux contenant respectivement `items`, `totalCount`, `errors` et
   `item`, `errors` ;
 - absence de `items_LENGTH`, `errors_LENGTH`, `httpStatus` et `httpHeaders` dans le
   corps public.
 
 Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) décrivent le dernier
-déploiement validé couvrant `LIST`, `GET` et `CREATE`. Ils devront être remplacés après
-le déploiement d'`UPDATE`. Le Swagger ne décrit pas les filtres transmis par
+déploiement validé couvrant `LIST`, `GET`, `CREATE` et `UPDATE`. Ils devront être
+remplacés après le déploiement de `DELETE`. Le Swagger ne décrit pas les filtres transmis par
 `QUERY_STRING` ni tous les statuts dynamiques et en-têtes sortants ; les relevés HTTP
 complètent donc la preuve descriptive.
 
@@ -867,7 +897,34 @@ Vérifier ensuite séparément :
 Après conservation des preuves, supprimer uniquement `ZU1`, puis confirmer
 `GET /ZU1 → 404`.
 
-### 9.12 Vérifications rapides avec `jq`
+### 9.12 `DELETE` nominal, absence et conflit
+
+Réserver un identifiant distinct, par exemple `ZD1`, vérifier qu'il est absent puis le
+créer avec `POST /`. Exécuter ensuite :
+
+```bash
+curl -sS -X DELETE \
+  -D validation-cmagic-iws-20260730/delete-zd1.headers \
+  -o validation-cmagic-iws-20260730/delete-zd1.json \
+  -w "%{http_code}\n" \
+  "${cmagic_iws_url}/ZD1"
+```
+
+Attendu : `204`. Le corps peut être vide conformément à HTTP. `GET /ZD1` doit ensuite
+répondre `404/CAT0001/id`.
+
+Vérifier séparément :
+
+- un second `DELETE /ZD1` : `404/CAT0001/id` ;
+- si le hook métier protégé refuse une suppression : `400` avec l'erreur fournie par
+  `service_isValid` ;
+- si une ligne de test est encore référencée par une clé étrangère :
+  `409/CAT1002/conflict`.
+
+Ne jamais tester la suppression sur une donnée métier existante. Utiliser uniquement
+un identifiant créé pour cette recette et conserver les preuves avant tout nettoyage.
+
+### 9.13 Vérifications rapides avec `jq`
 
 Si `jq` est disponible :
 
@@ -913,7 +970,8 @@ Conserver au minimum :
 - `build.log` ;
 - la description Swagger/OpenAPI IWS ;
 - les captures du wizard et du service actif ;
-- les en-têtes et corps de toutes les requêtes de lecture, création et modification ;
+- les en-têtes et corps de toutes les requêtes de lecture, création, modification et
+  suppression ;
 - les versions IBM i, IWS et BOB/TOBi ;
 - la liste et les dates des six objets générés ;
 - la sortie de `DSPBNDDIRE` et des deux `DSPSRVPGM` ;
@@ -945,6 +1003,9 @@ l'analyse des résultats.
 | Une création avec champs facultatifs vides échoue sur une contrainte | vérifier la source régénérée avec `NULLIF`, la valeur de `idServiceAdmin` et le joblog SQL |
 | `PUT` répond `404` pour un identifiant modifié | vérifier le couple `CAT0001/id` : `CAT1005/id` doit rester une validation `400` |
 | Le corps de `PUT` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
+| `DELETE` répond `200` au lieu de `204` | mapping de `httpStatus` et sélection de `service_delete_iws` |
+| `DELETE` d'un identifiant absent répond `400` | vérifier le couple `CAT0001/id`, qui doit produire `404` |
+| Une contrainte référentielle répond `500` | vérifier le SQLSTATE `23504`, qui doit devenir `409/CAT1002/conflict` |
 | Appel navigateur bloqué | CORS incomplet ; conserver les tests `curl` pour cette v0 |
 
 ## 12. Comparaison à remplir avec la recette ILEastic
@@ -965,6 +1026,7 @@ l'analyse des résultats.
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
 | `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO |
 | `UPDATE` | non exposé dans cette tranche ILEastic | accepté : `GET → PUT → GET` en `200`, valeur modifiée persistée ; cas négatifs non archivés | GO avec limite de preuve acceptée |
+| `DELETE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `204/400/404/409` à exécuter | valider avant le DataProvider IBM i |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 

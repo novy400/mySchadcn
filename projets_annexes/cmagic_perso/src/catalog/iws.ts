@@ -28,6 +28,7 @@ type CatalogIwsProceduresModel =
         getOneIws: string;
         createIws: string;
         updateIws: string;
+        deleteIws: string;
         copyItems: string;
     };
 
@@ -45,6 +46,7 @@ export type CatalogIwsTemplateModel = {
     hasGet: boolean;
     hasCreate: boolean;
     hasUpdate: boolean;
+    hasDelete: boolean;
     hasDetail: boolean;
     interfaces: CatalogIwsInterfacesModel;
     procedures: CatalogIwsProceduresModel;
@@ -67,6 +69,9 @@ export const catalogIwsCreateProcedure = (entityName: string): string =>
 export const catalogIwsUpdateProcedure = (entityName: string): string =>
     `${entityName.toLowerCase()}_update_iws`;
 
+export const catalogIwsDeleteProcedure = (entityName: string): string =>
+    `${entityName.toLowerCase()}_delete_iws`;
+
 export const buildCatalogIwsTemplateModel = (
     spec: CatalogSpec
 ): CatalogIwsTemplateModel => {
@@ -76,6 +81,9 @@ export const buildCatalogIwsTemplateModel = (
     }
     if (readModel.hasUpdate && !readModel.hasGet) {
         throw new Error(`IWS UPDATE requires GET capability: ${spec.entity}`);
+    }
+    if (readModel.hasDelete && !readModel.hasGet) {
+        throw new Error(`IWS DELETE requires GET capability: ${spec.entity}`);
     }
     const prefix = readModel.entityName;
 
@@ -93,6 +101,7 @@ export const buildCatalogIwsTemplateModel = (
         hasGet: readModel.hasGet,
         hasCreate: readModel.hasCreate,
         hasUpdate: readModel.hasUpdate,
+        hasDelete: readModel.hasDelete,
         hasDetail: readModel.hasDetail,
         interfaces: {
             read: catalogRpgReadInterfaceSourceName(spec.resource),
@@ -104,6 +113,7 @@ export const buildCatalogIwsTemplateModel = (
             getOneIws: catalogIwsGetOneProcedure(spec.entity),
             createIws: catalogIwsCreateProcedure(spec.entity),
             updateIws: catalogIwsUpdateProcedure(spec.entity),
+            deleteIws: catalogIwsDeleteProcedure(spec.entity),
             copyItems: `${prefix}_copyIwsItems`
         },
         itemType: `${prefix}_item_iws_t`,

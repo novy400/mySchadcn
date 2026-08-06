@@ -1,6 +1,10 @@
 import type { CatalogSpec } from './catalog-spec.js';
 
-export type GeneratedResourceCapability = 'read' | 'create' | 'update';
+export type GeneratedResourceCapability =
+    | 'read'
+    | 'create'
+    | 'update'
+    | 'delete';
 
 export type GeneratedResourceContract = {
     kind: 'entity';
@@ -30,6 +34,9 @@ export const generateResourceContract = (
                 : []),
             ...(spec.capabilities.includes('update')
                 ? (['update'] as const)
+                : []),
+            ...(spec.capabilities.includes('delete')
+                ? (['delete'] as const)
                 : [])
         ]
     };
