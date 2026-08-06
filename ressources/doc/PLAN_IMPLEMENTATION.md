@@ -20,7 +20,7 @@ documentaire, par tranches petites et vérifiables.
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
 | 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
 | 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
-| 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | À valider sur IBM i |
+| 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -396,20 +396,22 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   simplifiée en partageant une seule expression d'écriture SQL ;
 - revue Spec : aucun constat.
 
-### Validation IBM i à réaliser
+### Validation IBM i
 
-- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
-  les sources générées ;
-- redéployer `SERVIWS3` avec `service_update_iws` comme `PUT /{id}` ;
-- vérifier une modification nominale `200` puis sa relecture, une entité absente `404`,
-  un identifiant modifié `400/CAT1005` et une donnée obligatoire absente
-  `400/CAT1001` ;
-- supprimer uniquement la ligne créée pour la recette et archiver Swagger, PCML,
-  export curl et captures.
+- `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` ont été reconstruits sans
+  modification manuelle des sources générées ;
+- les deux suites RPGUnit compilent et exécutent 10 cas et 38 assertions sans échec ;
+- le Swagger et le PCML archivés exposent `service_update_iws` comme `PUT /{id}` ;
+- la séquence nominale confirmée pendant la recette est `GET /ZC5 → 200`,
+  `PUT /ZC5 → 200`, puis `GET /ZC5 → 200` avec le nom modifié persisté ;
+- le dernier export du notebook a été produit après `clrlib TESTBIN` et conserve donc
+  des réponses techniques `500` attendues après nettoyage ; il n'est pas utilisé comme
+  preuve nominale de l'UPDATE ;
+- le propriétaire du projet accepte cette limite de preuve et déclare la tranche 9
+  **GO** le 6 août 2026.
 
 ## Suite
 
-Les huit premières tranches sont terminées. La tranche 9 est implémentée localement et
-attend sa validation IBM i. Après cette validation, la prochaine verticale recommandée
-est `DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement
-du modèle des commandes demeure une évolution séparée.
+Les neuf premières tranches sont terminées. La prochaine verticale recommandée est
+`DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement du
+modèle des commandes demeure une évolution séparée.

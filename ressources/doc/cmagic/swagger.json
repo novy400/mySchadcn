@@ -103,6 +103,21 @@
         }
       }
     },
+    "service_update_iwsResult": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/service_detail_iws_t"
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/errorItem"
+          }
+        }
+      }
+    },
     "service_create_iwsResult": {
       "type": "object",
       "properties": {
@@ -169,6 +184,46 @@
             "description": "Successful operation",
             "schema": {
               "$ref": "#/definitions/service_getone_iwsResult"
+            }
+          },
+          "500": {
+            "description": "Unexpected exception"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SERVIWS3 APIs"
+        ],
+        "operationId": "service_update_iws",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "maxLength": 3
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/service_detail_iws_t"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/service_update_iwsResult"
             }
           },
           "500": {

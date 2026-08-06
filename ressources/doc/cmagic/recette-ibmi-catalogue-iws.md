@@ -9,8 +9,8 @@ Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
 directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
 `6d7a41e`. Les contrats `GET` et `CREATE` sont déployés et acceptés sur IBM i avec les
 limites de preuve explicitées dans le compte rendu. La tranche `UPDATE` est désormais
-implémentée et validée localement ; les étapes ci-dessous préparent sa première
-validation IBM i.
+implémentée, déployée et acceptée sur IBM i ; les étapes ci-dessous conservent son
+protocole de validation reproductible.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -45,7 +45,8 @@ Cette version couvre la lecture, la création et la modification :
 - `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
   `/ZZZ` répond `404` et `/XXX` renvoie une erreur portant sur `id` ;
 - `CREATE` est généré, déployé et accepté sur IBM i ;
-- `UPDATE` est généré et validé localement, mais pas encore accepté sur IBM i ;
+- `UPDATE` est généré, déployé et accepté sur IBM i pour le scénario nominal
+  `GET → PUT → GET` en `200` ;
 - `DELETE` n'est pas généré ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
@@ -963,7 +964,7 @@ l'analyse des résultats.
 | CORS | | | |
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
 | `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO |
-| `UPDATE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `200/400/404` à exécuter | valider avant `DELETE` |
+| `UPDATE` | non exposé dans cette tranche ILEastic | accepté : `GET → PUT → GET` en `200`, valeur modifiée persistée ; cas négatifs non archivés | GO avec limite de preuve acceptée |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -975,10 +976,10 @@ l'analyse des résultats.
 | 2. Sources transférées | OK | projet de validation `cMagicIws` |
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
 | 4. Objets compilés | OK | `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` reconstruits ; 2 fichiers RPGUnit, 10 cas et 38 assertions réussis |
-| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active avec `service_create_iws` publié en `POST /` |
-| 6. Contrat IWS sauvegardé | OK accepté | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel |
-| 7. Requêtes HTTP exécutées | OK | [export curl](./testCurl.html) : `ZC4` absent, création `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001`, création `ZC5` puis nettoyage |
-| 8. Preuves conservées | OK | export curl, Swagger, PCML et [capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786012662639.png) archivés |
+| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active avec `service_create_iws` en `POST /` et `service_update_iws` en `PUT /{id}` pendant la recette |
+| 6. Contrat IWS sauvegardé | OK accepté | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés avec quatre procédures publiques ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel de CREATE |
+| 7. Requêtes HTTP exécutées | OK avec limite acceptée | le nominal UPDATE partagé pendant la session confirme `GET /ZC5 → 200`, `PUT /ZC5 → 200`, puis la relecture modifiée en `200` ; le dernier [export curl](./testCurl.html), réalisé après `clrlib TESTBIN`, ne conserve que l'état technique post-nettoyage |
+| 8. Preuves conservées | OK | export curl, Swagger, PCML et [capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786023073339.png) archivés |
 
 Conclusion de la session : **GO pour la tranche 8**. Le service IWS répond avec les
 helpers CIWS génériques, la validation de longueur est centralisée dans
@@ -1095,6 +1096,19 @@ publiques. Leur réponse
 de succès statique reste annoncée à `200`, limite du contrat exporté par IWS 2.6, mais le
 mapping dynamique de `httpStatus` renvoie bien le `201` observé. La tranche 8 est
 **GO**.
+## Compte rendu de la session de tests UPDATE du 6 août 2026
+
+La compilation de `SERVICE` et `SERVIWS` réussit sans modification manuelle. Les deux
+suites RPGUnit exécutent 10 cas et 38 assertions sans échec.
+
+![Compilation et suites RPGUnit après déploiement UPDATE](./image/recette-ibmi-catalogue-iws/1786023073339.png)
+
+Le scénario nominal observé pendant la session confirme successivement l'état initial
+de `ZC5`, sa modification par `PUT /ZC5` en `200`, puis la persistance du nouveau nom
+par `GET /ZC5` en `200`. Le notebook a ensuite été exporté après `clrlib TESTBIN` : les
+réponses `500` qu'il contient correspondent à l'absence attendue du service program
+après nettoyage et ne remettent pas en cause le nominal observé. Cette limite de preuve
+est explicitement acceptée par le propriétaire du projet ; la tranche 9 est **GO**.
 
 
 ### Suivi non bloquant
