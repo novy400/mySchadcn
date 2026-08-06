@@ -29,69 +29,262 @@
                     <table style="margin-left: auto; margin-right: auto; width: 60%;">
                       <tbody style="width: 100%;">
                         <tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><h2 id="testdeserviwsbasique">test de serviws basique</h2></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3" | python3 -m json.tool</pre><br /><pre>
+{
+    "items": [
+        {
+            "id": "A00",
+            "nom": "SPIFFY COMPUTER SERVICE DIV.",
+            "idManageur": "000010",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "B01",
+            "nom": "PLANNING TEST",
+            "idManageur": "000020",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "C01",
+            "nom": "INFORMATION CENTER",
+            "idManageur": "000030",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "D01",
+            "nom": "DEVELOPMENT CENTER",
+            "idManageur": "",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "D11",
+            "nom": "MANUFACTURING SYSTEMS",
+            "idManageur": "000060",
+            "idServiceAdmin": "D01",
+            "site": ""
+        },
+        {
+            "id": "D21",
+            "nom": "ADMINISTRATION SYSTEMS",
+            "idManageur": "000070",
+            "idServiceAdmin": "D01",
+            "site": ""
+        },
+        {
+            "id": "E01",
+            "nom": "SUPPORT SERVICES",
+            "idManageur": "000050",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "E11",
+            "nom": "OPERATIONS",
+            "idManageur": "000090",
+            "idServiceAdmin": "E01",
+            "site": ""
+        },
+        {
+            "id": "E21",
+            "nom": "SOFTWARE SUPPORT",
+            "idManageur": "000100",
+            "idServiceAdmin": "E01",
+            "site": ""
+        },
+        {
+            "id": "F22",
+            "nom": "BRANCH OFFICE F2",
+            "idManageur": "",
+            "idServiceAdmin": "E01",
+            "site": ""
+        }
+    ],
+    "totalCount": 18,
+    "errors": []
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    99  100    99    0     0   8953      0 --:--:-- --:--:-- --:--:--  9900
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   975  100   975    0     0  24787      0 --:--:-- --:--:-- --:--:-- 25657
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><h2 id="pagination">pagination</h2></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?page=1&perPage=3" | python3 -m json.tool</pre><br /><pre>
+{
+    "items": [
+        {
+            "id": "A00",
+            "nom": "SPIFFY COMPUTER SERVICE DIV.",
+            "idManageur": "000010",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "B01",
+            "nom": "PLANNING TEST",
+            "idManageur": "000020",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "C01",
+            "nom": "INFORMATION CENTER",
+            "idManageur": "000030",
+            "idServiceAdmin": "A00",
+            "site": ""
+        }
+    ],
+    "totalCount": 18,
+    "errors": []
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    99  100    99    0     0   9337      0 --:--:-- --:--:-- --:--:--  9900
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   329  100   329    0     0   5401      0 --:--:-- --:--:-- --:--:--  5483
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
   deptno, deptname,mgrno, admrdept, location from db2sample.department limit 3 offset 0</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">A00</td><td style="text-align: left;">SPIFFY COMPUTER SERVICE DIV.</td><td style="text-align: left;">000010</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">B01</td><td style="text-align: left;">PLANNING TEST</td><td style="text-align: left;">000020</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">C01</td><td style="text-align: left;">INFORMATION CENTER</td><td style="text-align: left;">000030</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?idServiceAdmin=A00&page=1&perPage=6" | python3 -m json.tool</pre><br /><pre>
+{
+    "items": [
+        {
+            "id": "A00",
+            "nom": "SPIFFY COMPUTER SERVICE DIV.",
+            "idManageur": "000010",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "B01",
+            "nom": "PLANNING TEST",
+            "idManageur": "000020",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "C01",
+            "nom": "INFORMATION CENTER",
+            "idManageur": "000030",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "D01",
+            "nom": "DEVELOPMENT CENTER",
+            "idManageur": "",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "E01",
+            "nom": "SUPPORT SERVICES",
+            "idManageur": "000050",
+            "idServiceAdmin": "A00",
+            "site": ""
+        },
+        {
+            "id": "ZC1",
+            "nom": "CMAGIC CREATE TEST",
+            "idManageur": "",
+            "idServiceAdmin": "A00",
+            "site": "RECETTE"
+        }
+    ],
+    "totalCount": 9,
+    "errors": []
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    99  100    99    0     0   8275      0 --:--:-- --:--:-- --:--:--  9000
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   606  100   606    0     0   6933      0 --:--:-- --:--:-- --:--:--  7046
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
-  deptno, deptname,mgrno, admrdept, location from db2sample.department where admrdept ='A00' limit 6 offset 0</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">A00</td><td style="text-align: left;">SPIFFY COMPUTER SERVICE DIV.</td><td style="text-align: left;">000010</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">B01</td><td style="text-align: left;">PLANNING TEST</td><td style="text-align: left;">000020</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">C01</td><td style="text-align: left;">INFORMATION CENTER</td><td style="text-align: left;">000030</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">D01</td><td style="text-align: left;">DEVELOPMENT CENTER</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">E01</td><td style="text-align: left;">SUPPORT SERVICES</td><td style="text-align: left;">000050</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3/A00" | python3 -m json.tool</pre><br /><pre>
+  deptno, deptname,mgrno, admrdept, location from db2sample.department where admrdept ='A00' limit 6 offset 0</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">A00</td><td style="text-align: left;">SPIFFY COMPUTER SERVICE DIV.</td><td style="text-align: left;">000010</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">B01</td><td style="text-align: left;">PLANNING TEST</td><td style="text-align: left;">000020</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">C01</td><td style="text-align: left;">INFORMATION CENTER</td><td style="text-align: left;">000030</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">D01</td><td style="text-align: left;">DEVELOPMENT CENTER</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">E01</td><td style="text-align: left;">SUPPORT SERVICES</td><td style="text-align: left;">000050</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">ZC2</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3/A00" | python3 -m json.tool</pre><br /><pre>
+{
+    "item": {
+        "id": "A00",
+        "nom": "SPIFFY COMPUTER SERVICE DIV.",
+        "idManageur": "000010",
+        "idServiceAdmin": "A00",
+        "site": ""
+    },
+    "errors": []
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    98  100    98    0     0   8012      0 --:--:-- --:--:-- --:--:--  8909
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   125  100   125    0     0  12430      0 --:--:-- --:--:-- --:--:-- 13888
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl  "http://cmspw7t:10074/web/services/SERVIWS3/XXX" | python3 -m json.tool</pre><br /><pre>
+{
+    "item": {
+        "id": "",
+        "nom": "",
+        "idManageur": "",
+        "idServiceAdmin": "",
+        "site": ""
+    },
+    "errors": [
+        {
+            "nomZone": "id",
+            "code": "CAT0001",
+            "valeur": "",
+            "text": "Service not found",
+            "textUser": "Service not found"
+        }
+    ]
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    98  100    98    0     0   8760      0 --:--:-- --:--:-- --:--:--  9800
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188  100   188    0     0  18917      0 --:--:-- --:--:-- --:--:-- 20888
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -D get-zzz.headers -o get-zzz.json -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZZZ</pre><br /><pre>
-HTTP 500
+HTTP 404
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -D get-a00.headers -o get-a00.json -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/A00</pre><br /><pre>
-HTTP 500
+HTTP 200
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json"  -d '{ "id": "ZC2", "nom": "CMAGIC CREATE TEST", "idManageur": "", "idServiceAdmin": "A00","site": "RECETTE"}' http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
-  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno ='ZC1'</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC3","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno ='ZC2'</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">ZC2</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC3","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}HTTP 409
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC1","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}HTTP 409
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC4</pre><br /><pre>
-ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+{"item":{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}HTTP 200
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
-HTTP 500
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}
+HTTP 409
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC4</pre><br /><pre>
-ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+{"item":{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}HTTP 200
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
-HTTP 500
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}
+HTTP 409
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" 'http://cmspw7t:10074/web/services/SERVIWS3/'</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
-HTTP 500
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"id","code":"CAT1001","valeur":"","text":"id is required","textUser":"id is required"}]}
+HTTP 400
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC5","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" 'http://cmspw7t:10074/web/services/SERVIWS3/'</pre><br /><pre>
-ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
-HTTP 500
+{"item":{"id":"ZC5","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}
+HTTP 201
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
-  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno like 'ZC%' </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>delete  from db2sample.department where deptno like 'ZC%' </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?id_LIKE=ZC&page=1&perPage=6" | python3 -m json.tool</pre><br /><pre>
+  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno like 'ZC%' </pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">ZC2</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC3</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC1</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC4</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC5</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>delete  from db2sample.department where deptno like 'ZC%' </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?id_LIKE=ZC&page=1&perPage=6" | python3 -m json.tool</pre><br /><pre>
+{
+    "items": [],
+    "totalCount": 0,
+    "errors": []
+}
+</pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    99  100    99    0     0   5775      0 --:--:-- --:--:-- --:--:--  6187
-Expecting value: line 1 column 1 (char 0)
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    39  100    39    0     0    486      0 --:--:-- --:--:-- --:--:--   493
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>clrlib TESTBIN</pre><br /><pre>
-CPC3305: 0 fichier(s) supprimé(s). 0 fichiers non supprimé(s).
+CPC3305: 1 fichier(s) supprimé(s). 0 fichiers non supprimé(s).
 CPC2198: Bibliothèque en cours modifiée en RISKBIN.
 CPC2101: Liste des bibliothèques modifiée.
+CPC2191: Objet SERVIWS de TESTBIN type *BNDDIR supprimé.
+CPC2191: Objet SERVICE de TESTBIN type *BNDDIR supprimé.
+CPC2191: Objet EVFEVENT de TESTBIN type *FILE supprimé.
+CPC2191: Objet SERVIWS de TESTBIN type *MODULE supprimé.
+CPC2191: Objet SERVICE de TESTBIN type *MODULE supprimé.
+CPC2191: Objet TSERVIWS de TESTBIN type *SRVPGM supprimé.
+CPC2191: Objet TSERVICE de TESTBIN type *SRVPGM supprimé.
+CPC2191: Objet SERVIWS de TESTBIN type *SRVPGM supprimé.
+CPC2191: Objet SERVICE de TESTBIN type *SRVPGM supprimé.
 CPC2199: Bibliothèque TESTBIN mise à blanc.
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC5","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" 'http://cmspw7t:10074/web/services/SERVIWS3/'</pre><br /><pre>
 ERROR [SERVIWS3][service_create_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
@@ -102,6 +295,12 @@ ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Obje
 ERROR [SERVIWS3][service_update_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.
 HTTP 500
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -D get-a00.headers  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC5</pre><br /><pre>
+ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC5</pre><br /><pre>
+ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X DELETE -D get-a00.headers  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC5</pre><br /><pre>
+ERROR [SERVIWS3][service_delete_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC5</pre><br /><pre>
 ERROR [SERVIWS3][service_getone_iws]: /QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM: Object does not exist.HTTP 500
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr>
                       </tbody>

@@ -10,8 +10,9 @@ directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
 `6d7a41e`. Les contrats `GET` et `CREATE` sont déployés et acceptés sur IBM i avec les
 limites de preuve explicitées dans le compte rendu. La tranche `UPDATE` est désormais
 implémentée, déployée et acceptée sur IBM i ; les étapes ci-dessous conservent son
-protocole de validation reproductible. La tranche `DELETE` est implémentée localement
-et les ajouts dédiés préparent sa validation IBM i.
+protocole de validation reproductible. La tranche `DELETE` est désormais implémentée,
+déployée, testée et acceptée sur IBM i avec la limite de preuve explicitée dans le compte
+rendu.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -43,7 +44,7 @@ La recette doit établir que :
     n'existe pas, `400` si une règle métier refuse la suppression, `409` en cas de
     contrainte référentielle et `500` pour une erreur technique.
 
-Cette version couvre la lecture, la création, la modification et prépare la suppression :
+Cette version couvre la lecture, la création, la modification et la suppression :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
 - `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
@@ -51,7 +52,8 @@ Cette version couvre la lecture, la création, la modification et prépare la su
 - `CREATE` est généré, déployé et accepté sur IBM i ;
 - `UPDATE` est généré, déployé et accepté sur IBM i pour le scénario nominal
   `GET → PUT → GET` en `200` ;
-- `DELETE` est généré et validé localement, mais pas encore accepté sur IBM i ;
+- `DELETE` est généré, déployé et accepté sur IBM i sur confirmation du propriétaire du
+  projet, avec un export curl mélangeant des sorties de plusieurs moments de la séance ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
 - la réponse IWS de détail est `{ item, errors }` ;
@@ -1026,7 +1028,7 @@ l'analyse des résultats.
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
 | `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO |
 | `UPDATE` | non exposé dans cette tranche ILEastic | accepté : `GET → PUT → GET` en `200`, valeur modifiée persistée ; cas négatifs non archivés | GO avec limite de preuve acceptée |
-| `DELETE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `204/400/404/409` à exécuter | valider avant le DataProvider IBM i |
+| `DELETE` | non exposé dans cette tranche ILEastic | déployé et testé sur IBM i ; l'export HTML ne porte pas seul la preuve autonome du `204` | GO avec limite de preuve acceptée |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -1040,7 +1042,7 @@ l'analyse des résultats.
 | 4. Objets compilés | OK | `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` reconstruits ; 2 fichiers RPGUnit, 10 cas et 38 assertions réussis |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active avec `service_create_iws` en `POST /` et `service_update_iws` en `PUT /{id}` pendant la recette |
 | 6. Contrat IWS sauvegardé | OK accepté | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés avec quatre procédures publiques ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel de CREATE |
-| 7. Requêtes HTTP exécutées | OK avec limite acceptée | le nominal UPDATE partagé pendant la session confirme `GET /ZC5 → 200`, `PUT /ZC5 → 200`, puis la relecture modifiée en `200` ; le dernier [export curl](./testCurl.html), réalisé après `clrlib TESTBIN`, ne conserve que l'état technique post-nettoyage |
+| 7. Requêtes HTTP exécutées | OK avec limite acceptée | le nominal UPDATE partagé pendant la session confirme `GET /ZC5 → 200`, `PUT /ZC5 → 200`, puis la relecture modifiée en `200` ; le dernier [export curl](./testCurl.html) mélange des cellules rejouées après reconstruction et d'anciennes sorties techniques `500` |
 | 8. Preuves conservées | OK | export curl, Swagger, PCML et [capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786023073339.png) archivés |
 
 Conclusion de la session : **GO pour la tranche 8**. Le service IWS répond avec les
@@ -1171,6 +1173,20 @@ par `GET /ZC5` en `200`. Le notebook a ensuite été exporté après `clrlib TES
 réponses `500` qu'il contient correspondent à l'absence attendue du service program
 après nettoyage et ne remettent pas en cause le nominal observé. Cette limite de preuve
 est explicitement acceptée par le propriétaire du projet ; la tranche 9 est **GO**.
+
+## Compte rendu de la session de tests DELETE du 6 août 2026
+
+Le propriétaire du projet confirme que `clrlib TESTBIN` a été exécuté au début de la
+séance, puis que les objets ont été reconstruits avant les appels curl de validation.
+L'ordre visuel des cellules dans le notebook exporté ne correspond donc pas à leur ordre
+d'exécution.
+
+Le [relevé curl](./testCurl.html) conserve bien plusieurs réponses nominales après
+reconstruction, mais la cellule `DELETE /ZC5` affiche encore une ancienne réponse
+`500` liée à l'absence de `TESTBIN/SERVIWS.SRVPGM`. Elle ne fournit pas à elle seule une
+preuve autonome du statut `204`. Les tests réalisés après rebuild sont néanmoins confirmés
+et acceptés par le propriétaire du projet : cette limite documentaire est explicite et la
+tranche 10 est **GO**.
 
 
 ### Suivi non bloquant

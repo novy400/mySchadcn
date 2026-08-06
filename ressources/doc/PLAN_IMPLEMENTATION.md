@@ -21,7 +21,7 @@ documentaire, par tranches petites et vérifiables.
 | 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
 | 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
 | 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
-| 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | À valider sur IBM i |
+| 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -460,19 +460,22 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   cette tranche ciblée (politique des mutations et mapping d'erreurs IWS) ;
 - revue Spec : aucun constat.
 
-### Validation IBM i à réaliser
+### Validation IBM i du 6 août 2026
 
-- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
-  les sources générées ;
-- redéployer `SERVIWS3` avec `service_delete_iws` comme `DELETE /{id}` ;
-- créer une ligne dédiée, vérifier `DELETE → 204`, puis `GET → 404` ;
-- vérifier `DELETE` sur un identifiant absent en `404/CAT0001/id` et, si le schéma de
-  recette le permet, une contrainte référentielle en `409/CAT1002/conflict` ;
-- archiver le nouveau Swagger, le PCML, l'export curl et les captures avant nettoyage.
+- le propriétaire du projet confirme que `clrlib TESTBIN` a été exécuté au début de la
+  séance, avant la reconstruction des objets et les appels curl de validation ;
+- `SERVICE`, les binding directories, `SERVIWS` et le service `SERVIWS3` ont ensuite été
+  reconstruits et la verticale `DELETE` a été testée puis acceptée sur IBM i ;
+- l'ordre des cellules dans [l'export curl](./cmagic/testCurl.html) ne représente pas leur
+  ordre d'exécution. L'export mélange des réponses nominales obtenues après reconstruction
+  et d'anciennes sorties `500` de cellules non rejouées après l'absence de
+  `TESTBIN/SERVIWS.SRVPGM` ;
+- l'export ne constitue donc pas, à lui seul, une preuve autonome du scénario
+  `DELETE → 204`, puis `GET → 404`. Cette limite documentaire est connue et acceptée par
+  le propriétaire du projet, qui déclare la tranche 10 **GO**.
 
 ## Suite
 
-Les neuf premières tranches sont terminées. La tranche 10 est implémentée localement et
-attend sa validation IBM i. La prochaine verticale recommandée est le branchement
+Les dix tranches sont terminées. La prochaine verticale recommandée est le branchement
 progressif du DataProvider IBM i. L'enrichissement du modèle des commandes demeure une
 évolution séparée.
