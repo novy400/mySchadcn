@@ -18,7 +18,7 @@ documentaire, par tranches petites et vérifiables.
 | 4 | Ajouter authentification et autorisations | Terminé |
 | 5 | Traiter la synchronisation des projections après mutation | Terminé |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
-| 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Validation IBM i partielle |
+| 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -264,19 +264,27 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - [Swagger IWS 2.6](./cmagic/swagger.json) et [PCML](./cmagic/SERVIWS3.pcml) actualisés
   avec les deux procédures ;
 - [export curl](./cmagic/testCurl.html) archivé : le corps nominal de `GET /A00`
-  contient `item.id = A00` et aucune erreur.
+  contient `item.id = A00` et aucune erreur, `/XXX` produit `CAT0001` sur `id`, et les
+  statuts capturés séparément sont `200` pour `/A00` et `404` pour `/ZZZ` ;
+- [capture HTTP finale](./cmagic/image/recette-ibmi-catalogue-iws/http-get-200-404-success.png)
+  archivée avec ces trois observations.
 
-### Validation IBM i restante
+### Décision de validation
 
-- capturer le statut explicite de `GET /A00` ;
-- exécuter et archiver un identifiant absent, par exemple `GET /ZZZ`, avec le statut
-  `404` et l'erreur portant sur `id` ;
-- ajouter la couverture RPGUnit de `service_get` et `service_getone_iws` en suivi.
+- le 6 août 2026, le propriétaire du projet accepte la validation fonctionnelle sur la
+  base des observations archivées : `/A00 → 200`, `/ZZZ → 404` et
+  `/XXX → CAT0001/id` ;
+- le statut et le corps d'erreur proviennent de deux identifiants absents distincts ;
+  cette limite de preuve est connue et acceptée pour clôturer la tranche.
+
+### Suivi non bloquant
+
+- ajouter une couverture RPGUnit IBM i dédiée à `service_get` et
+  `service_getone_iws` lors d'une prochaine évolution du générateur de tests.
 
 ## Suite
 
-Les six tranches du plan initial sont terminées. La tranche 7 est implémentée, validée
-localement et partiellement validée sur IBM i ; sa clôture dépend de la preuve HTTP du
-cas absent en `404` décrite dans la recette. Les
-mutations IWS, le branchement IBM i du DataProvider et l'enrichissement du modèle des
-commandes relèvent de tranches ultérieures.
+Les sept tranches sont terminées. La tranche 7 est validée localement et acceptée sur
+IBM i avec la limite de preuve explicitée ci-dessus. Les mutations IWS, le branchement
+IBM i du DataProvider et l'enrichissement du modèle des commandes relèvent de nouvelles
+tranches à cadrer.

@@ -144,6 +144,11 @@ deux artefacts effectivement issus du déploiement ont maintenant été archivé
 Les structures `service_item_iws_t`, `errorItem` et
 `service_getlist_iwsResult` concordent avec les sources générées et les corps HTTP
 observés. Le Swagger déduit du PCML ne déclare ni les paramètres de `QUERY_STRING` ni
-les statuts dynamiques `400`/`404` ; ces comportements doivent être prouvés par les
-appels HTTP. Le relevé du 5 août couvre `LIST`. L'export du 6 août couvre le corps
-nominal de `GET /A00`, mais pas encore le statut explicite ni le cas absent `/ZZZ`.
+les statuts dynamiques `400`/`404` ; ces comportements sont donc prouvés par les appels
+HTTP. Le relevé du 5 août couvre `LIST`. L'[export du 6 août](./testCurl.html) couvre le
+corps nominal de `GET /A00`, l'erreur `CAT0001` sur `id` pour `/XXX` et les statuts
+`GET /A00 → 200` et `GET /ZZZ → 404`. La
+[capture HTTP finale](./image/recette-ibmi-catalogue-iws/http-get-200-404-success.png)
+archive visuellement les mêmes observations. Le corps et le statut d'un même appel
+absent n'ont pas été réunis dans une seule sortie ; cette limite est documentée et la
+validation fonctionnelle a été explicitement acceptée le 6 août 2026.

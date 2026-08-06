@@ -508,6 +508,7 @@ historique des dix artefacts par catalogue reste inchangée.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine validation doit compiler et redéployer le wrapper IWS enrichi sur IBM i,
-puis vérifier `service_getone_iws` avec un identifiant existant et un identifiant
-absent avant d'aborder les mutations.
+Le wrapper IWS enrichi a été compilé, redéployé et accepté sur IBM i le 6 août 2026 avec
+un identifiant existant et des identifiants absents. La prochaine évolution peut donc
+aborder les mutations, en commençant par une verticale `CREATE` avant `UPDATE` et
+`DELETE`.

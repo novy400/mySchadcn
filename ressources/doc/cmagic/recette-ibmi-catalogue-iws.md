@@ -7,8 +7,8 @@ Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
 **5 août 2026** après la validation fonctionnelle du service IWS, puis étendue le
 **6 août 2026** avec le `GET` par identifiant et le retour d'expérience sur les binding
 directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
-`6d7a41e`. Le `GET` nominal est maintenant déployé ; la preuve HTTP du cas absent en
-`404` reste à archiver.
+`6d7a41e`. Le contrat `GET` est déployé et sa validation IBM i est acceptée avec la
+limite de preuve explicitée dans le compte rendu.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -34,8 +34,8 @@ La recette doit établir que :
 Cette version est volontairement limitée à la lecture :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
-- `GET` par identifiant est généré et déployé sur IBM i ; le cas nominal `A00` est
-  observé, mais le statut `404` d'un identifiant absent reste à capturer ;
+- `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
+  `/ZZZ` répond `404` et `/XXX` renvoie une erreur portant sur `id` ;
 - aucune mutation n'est générée ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
@@ -61,7 +61,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
 | Nom public du service | `SERVICES` | `SERVIWS3` |
 | Racine de contexte | `/web/services` | `/web/services` |
-| Commit testé | commit de la tranche | `6d7a41e` sur IBM i pour `LIST` ; tranche 7 locale pour `GET` |
+| Commit testé | commit de la tranche | `6d7a41e` pour `LIST` ; sources `GET` de `468ed1d` avec correction manuelle des binding directories, validation acceptée le 6 août 2026 |
 | Version IBM i | `7.4`, `7.5` ou `7.6` | |
 | Version BOB/TOBi | sortie de `makei --version` | |
 
@@ -746,7 +746,7 @@ Conserver au minimum :
 - `build.log` ;
 - la description Swagger/OpenAPI IWS ;
 - les captures du wizard et du service actif ;
-- les en-têtes et corps des huit requêtes ;
+- les en-têtes et corps des neuf requêtes ;
 - les versions IBM i, IWS et BOB/TOBi ;
 - la liste et les dates des six objets générés ;
 - la sortie de `DSPBNDDIRE` et des deux `DSPSRVPGM` ;
@@ -790,7 +790,7 @@ l'analyse des résultats.
 | Corps des réponses `4xx` | | potentiellement vide par IWS | |
 | `X-Total-Count` | | | |
 | CORS | | | |
-| `GET` par identifiant | disponible si déclaré | déployé ; `A00` observé, preuve `404` restante | capturer `A00` et `ZZZ` avec leurs statuts |
+| `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -804,8 +804,8 @@ l'analyse des résultats.
 | 4. Six objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
 | 6. Contrat IWS sauvegardé | OK | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; `/openapi/` non applicable |
-| 7. Requêtes HTTP exécutées | OK | [relevé HTTP](./validation-iws-2026-08-05.md) : `id=A000` retourne `400/CMG0003`, puis `id=A00` retourne `200` |
-| 8. Preuves conservées | OK | capture nominale, [relevé HTTP](./validation-iws-2026-08-05.md), Swagger et PCML archivés |
+| 7. Requêtes HTTP exécutées | OK accepté | [relevé HTTP](./validation-iws-2026-08-05.md) pour `LIST` ; [capture](./image/recette-ibmi-catalogue-iws/http-get-200-404-success.png) avec corps et statuts issus de requêtes absentes distinctes |
+| 8. Preuves conservées | OK | captures, [export curl](./testCurl.html), relevé HTTP, Swagger et PCML archivés |
 
 Conclusion de la session : **GO**. Le service
 IWS répond avec les helpers CIWS génériques, la validation de longueur est centralisée
@@ -881,19 +881,27 @@ régénération ne nécessite plus ces modifications manuelles.
 ![Suite IWS : 4 tests et 24 assertions réussis](./image/recette-ibmi-catalogue-iws/rpgunit-iws-success.png)
 
 Le [relevé curl exporté](./testCurl.html) confirme les appels de liste, pagination,
-filtre et le corps nominal de `GET /A00` avec `item.id = A00` et `errors` vide. Le
-[Swagger](./swagger.json) décrit désormais `/` et `/{id}`, et le
-[PCML](./SERVIWS3.pcml) contient les deux procédures publiques.
+filtre, le corps nominal de `GET /A00`, le corps d'erreur `CAT0001` d'un identifiant
+absent et les statuts `200`/`404`. Le [Swagger](./swagger.json) décrit désormais `/` et
+`/{id}`, et le [PCML](./SERVIWS3.pcml) contient les deux procédures publiques.
 
-La tranche reste ouverte sur une preuve précise : l'export actuel ne contient ni le
-statut HTTP explicite de `GET /A00`, ni l'appel `GET /ZZZ`. Ces deux statuts doivent
-être archivés avant de conclure au respect complet du contrat `200`/`404`.
+La capture finale confirme les statuts attendus :
 
-### À faire
+![GET par identifiant : succès 200 et absence 404](./image/recette-ibmi-catalogue-iws/http-get-200-404-success.png)
+
+- `GET /A00` répond `HTTP 200` ;
+- `GET /ZZZ` répond `HTTP 404` ;
+- le corps observé pour un identifiant absent (`GET /XXX`) contient une erreur
+  `CAT0001`, `nomZone = id` et le message `Service not found`.
+
+Ces observations confirment séparément les deux comportements. Le statut et le corps ne
+proviennent pas du même identifiant absent, mais cette limite est explicitement acceptée
+par le propriétaire du projet le 6 août 2026. La tranche 7 est **GO**.
+
+### Suivi non bloquant
 
 - [ ] ajouter des tests RPGUnit pour `service_get` ;
 - [ ] ajouter des tests RPGUnit pour `service_getone_iws` ;
-- [ ] archiver les statuts HTTP de `GET /A00` et `GET /ZZZ`.
 
 ### Couverture RPGUnit `LIST` déjà acquise
 

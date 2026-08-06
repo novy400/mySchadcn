@@ -15,7 +15,9 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
 - [Relevé HTTP IWS du 5 août 2026](./validation-iws-2026-08-05.md),
   [export curl du 6 août](./testCurl.html), [Swagger IWS 2.6](./swagger.json) et
   [PCML SERVIWS3](./SERVIWS3.pcml) : preuves des contrats `LIST` et `GET` déployés sur
-  IBM i. Le cas absent `GET /ZZZ → 404` reste à archiver.
+  IBM i. La [capture HTTP](./image/recette-ibmi-catalogue-iws/http-get-200-404-success.png)
+  montre `/A00 → 200`, `/ZZZ → 404` et le corps `CAT0001/id` de `/XXX`. La validation
+  est acceptée avec cette distinction explicite entre les deux appels absents.
 
 ## Matériaux de travail
 
