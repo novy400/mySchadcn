@@ -249,7 +249,7 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
-    test('compiles IWS as an alternative transport for LIST', async () => {
+    test('compiles IWS as an alternative transport for LIST and GET', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
                 path.resolve('examples/service-catalogue-iws.cmagic'),
@@ -264,7 +264,7 @@ describe('CMagic Catalogue v0', () => {
             expect.objectContaining({
                 entity: 'Service',
                 iwsObject: 'SERVIWS',
-                capabilities: ['list']
+                capabilities: ['list', 'get']
             })
         );
         expect(compilation.specs[0]).not.toHaveProperty('ileasticObject');
@@ -586,12 +586,21 @@ describe('CMagic Catalogue v0', () => {
             expect(fs.readFileSync(artifacts.iws as string, 'utf-8')).toContain(
                 'dcl-proc service_getlist_iws export;'
             );
+            expect(fs.readFileSync(artifacts.iws as string, 'utf-8')).toContain(
+                'dcl-proc service_getone_iws export;'
+            );
             expect(
                 fs.readFileSync(artifacts.iwsInterface as string, 'utf-8')
             ).toContain('dcl-pr service_getlist_iws extproc(*dclcase);');
             expect(
+                fs.readFileSync(artifacts.iwsInterface as string, 'utf-8')
+            ).toContain('dcl-pr service_getone_iws extproc(*dclcase);');
+            expect(
                 fs.readFileSync(artifacts.iwsBinder as string, 'utf-8')
             ).toContain("EXPORT SYMBOL('service_getlist_iws')");
+            expect(
+                fs.readFileSync(artifacts.iwsBinder as string, 'utf-8')
+            ).toContain("EXPORT SYMBOL('service_getone_iws')");
             expect(
                 fs.readFileSync(
                     artifacts.iwsBindingDirectory as string,

@@ -1,0 +1,118 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SERVIWS3 APIs",
+    "description": "APIs available for SERVIWS3",
+    "version": "1.0.0"
+  },
+  "basePath": "/web/services/SERVIWS3",
+  "tags": [
+    {
+      "name": "SERVIWS3 APIs",
+      "description": "APIs available for SERVIWS3"
+    }
+  ],
+  "definitions": {
+    "service_item_iws_t": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "nom": {
+          "type": "string",
+          "maxLength": 36
+        },
+        "idManageur": {
+          "type": "string",
+          "maxLength": 6
+        },
+        "idServiceAdmin": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "site": {
+          "type": "string",
+          "maxLength": 16
+        }
+      }
+    },
+    "errorItem": {
+      "type": "object",
+      "properties": {
+        "nomZone": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "code": {
+          "type": "string",
+          "maxLength": 7
+        },
+        "valeur": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "textUser": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "service_getlist_iwsResult": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/definitions/service_item_iws_t"
+          }
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/errorItem"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "SERVIWS3 APIs"
+        ],
+        "operationId": "service_getlist_iws",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/service_getlist_iwsResult"
+            }
+          },
+          "500": {
+            "description": "Unexpected exception"
+          }
+        }
+      }
+    }
+  }
+}

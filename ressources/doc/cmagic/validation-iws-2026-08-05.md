@@ -20,7 +20,7 @@ Ce relevé conserve les résultats observés directement sur le service de test 
 | Filtre exact | `?id=A00` | 200 | un élément `A00`, `totalCount: 1` |
 | Tri inconnu | `?sort=inconnu&order=ASC` | 400 | erreur `CMG0001` sur `inconnu` |
 | Identifiant trop long | `?id=A000` | 400 | erreur `CMG0003` sur `id`, valeur `A000` |
-| GET par identifiant non publié | `/SERVIWS3/A00` | 404 | conforme à la limite LIST/SEARCH de la v0 |
+| GET par identifiant non publié | `/SERVIWS3/A00` | 404 | état observé avant la tranche `GET` du 6 août |
 
 ## En-têtes nominaux
 
@@ -124,13 +124,22 @@ métadonnée `maxLength = 3`. La correction a été compilée et testée sur IBM
 `CMAGIC`, `SERVICE` et `SERVIWS`. Les suites RPGUnit ont été confirmées vertes et le
 contrôle HTTP final valide le comportement de bout en bout.
 
-## Swagger IWS 2.6 restant à archiver
+## Swagger IWS 2.6 et PCML archivés le 6 août 2026
 
 Les URL `/openapi`, `/openapi/`, `/openapi/ui` et `/openapi/ui/` du serveur de test ont
 répondu `404`. Ce comportement est normal sur la version IWS 2.6 confirmée : les URL
 OpenAPI publiques sont une fonction IWS 3.0.
 
-Le fichier `services.openapi.json` de CMagic n'est pas le document produit par IWS. Le
-Swagger du service `SERVIWS3` reste donc à télécharger depuis Web Administration et à
-archiver sous `validation-cmagic-iws-20260730/swagger-iws-2.6.json` pour fermer la
-dernière réserve documentaire.
+Le fichier `services.openapi.json` de CMagic n'est pas le document produit par IWS. Les
+deux artefacts effectivement issus du déploiement ont maintenant été archivés :
+
+- [swagger.json](./swagger.json), Swagger 2.0 intitulé `SERVIWS3 APIs`, avec la base
+  `/web/services/SERVIWS3` et l'opération `service_getlist_iws` ;
+- [SERVIWS3.pcml](./SERVIWS3.pcml), PCML 7.0 de la procédure
+  `service_getlist_iws` portée par `/QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM`.
+
+Les structures `service_item_iws_t`, `errorItem` et
+`service_getlist_iwsResult` concordent avec les sources générées et le corps HTTP
+observé. Le Swagger déduit du PCML ne déclare ni les paramètres de `QUERY_STRING` ni
+le statut `400` dynamique ; ces comportements restent prouvés par les appels HTTP de
+ce relevé. La dernière réserve documentaire de la session est fermée.

@@ -13,6 +13,7 @@ export { generateCatalogIwsTest } from './iws-test.js';
 export {
     buildCatalogIwsTemplateModel,
     catalogIwsGetListProcedure,
+    catalogIwsGetOneProcedure,
     generateCatalogIwsWrapper
 } from './iws.js';
 export {

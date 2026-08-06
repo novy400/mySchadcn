@@ -1,3 +1,4 @@
 STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')
   EXPORT SYMBOL('service_getlist_iws')
+  EXPORT SYMBOL('service_getone_iws')
 ENDPGMEXP

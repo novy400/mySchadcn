@@ -3,37 +3,41 @@
 Cette procédure permet de compiler, déployer et tester sur IBM i le catalogue
 `Service` généré par CMagic pour **IBM Integrated Web Services (IWS)**.
 
-Elle a été préparée pour la séance du **30 juillet 2026**, puis mise à jour le
-**5 août 2026** après la validation fonctionnelle du service IWS. La correction
-du wrapper IWS validée sur IBM i est incluse dans `6d7a41e`. Le générateur courant
-(`3508c42`) ajoute aussi les enveloppes et la configuration RPGUnit/BOB, validées
-localement.
+Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
+**5 août 2026** après la validation fonctionnelle du service IWS, puis étendue le
+**6 août 2026** avec le `GET` par identifiant. La correction du wrapper `LIST`
+validée sur IBM i est incluse dans `6d7a41e`. La tranche `GET` est validée localement
+et reste à redéployer sur IBM i avec cette recette.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
 [recette ILEastic](./recette-ibmi-catalogue.md) : les deux transports doivent être
 évalués séparément avant de décider des suites.
 
-## 1. Objectif et limites de cette première recette
+## 1. Objectif et limites de cette recette
 
 La recette doit établir que :
 
 1. les sources IWS générées se compilent sans modification manuelle ;
 2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR` et `SERVIWS.SRVPGM` sont créés ;
-3. `SERVIWS` exporte uniquement `service_getlist_iws` ;
+3. `SERVIWS` exporte `service_getlist_iws` puis `service_getone_iws` ;
 4. le serveur IWS transmet `QUERY_STRING` au wrapper RPG ;
 5. les recherches, filtres, tris et paginations utilisent le même
    `service_search` que le transport ILEastic ;
 6. `httpStatus` pilote réellement le statut HTTP ;
 7. `httpHeaders` produit notamment `X-Total-Count` ;
-8. les erreurs de requête ne provoquent pas d'arrêt du service IWS.
+8. les erreurs de requête ne provoquent pas d'arrêt du service IWS ;
+9. `GET /SERVIWS3/{id}` renvoie un détail en `200` ou une erreur en `404`.
 
-Cette version est volontairement limitée à `LIST`/`SEARCH` :
+Cette version est volontairement limitée à la lecture :
 
-- `GET /services/{id}` n'est pas encore publié par le wrapper IWS ;
+- `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
+- `GET` par identifiant est généré et testé localement, mais son redéploiement IBM i
+  reste à effectuer ;
 - aucune mutation n'est générée ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
+- la réponse IWS de détail est `{ item, errors }` ;
 - `Access-Control-Expose-Headers` est produit, mais cela ne configure pas à lui seul
   une politique CORS complète.
 
@@ -55,7 +59,7 @@ Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 | Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
 | Nom public du service | `SERVICES` | `SERVIWS3` |
 | Racine de contexte | `/web/services` | `/web/services` |
-| Commit testé | `3508c42` | `6d7a41e` sur IBM i ; `3508c42` localement |
+| Commit testé | commit de la tranche | `6d7a41e` sur IBM i pour `LIST` ; tranche 7 locale pour `GET` |
 | Version IBM i | `7.4`, `7.5` ou `7.6` | |
 | Version BOB/TOBi | sortie de `makei --version` | |
 
@@ -335,9 +339,10 @@ DSPSRVPGM SRVPGM(CMAGICTST/SERVIWS) DETAIL(*PROCEXP)
 Attendu :
 
 - `SERVICE.BNDDIR` contient `SERVICE` et `CIWS` ;
-- `SERVICE.SRVPGM` exporte `service_search` et
-  `service_getSupportedFields` ;
-- `SERVIWS.SRVPGM` exporte `service_getlist_iws`.
+- `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields` et
+  `service_get` ;
+- `SERVIWS.SRVPGM` exporte `service_getlist_iws` puis
+  `service_getone_iws`.
 
 Si le build échoue, conserver le premier message complet et le log. Ne pas corriger
 directement les sources générées : la correction devra être faite dans CMagic puis
@@ -360,19 +365,30 @@ Dans IBM Web Administration for i :
    - type : `*SRVPGM` ;
 6. utiliser le PCML stocké dans l'objet ; aucun fichier PCML IFS séparé ne devrait être
    demandé grâce à `pgminfo(*pcml:*module:*dclcase)` ;
-7. nommer la ressource `SERVICES` ;
+7. nommer la ressource `SERVIWS3` dans l'environnement de recette ;
 8. ne pas définir de chemin supplémentaire au niveau de la ressource ;
-9. sélectionner uniquement la procédure `service_getlist_iws`.
+9. sélectionner les procédures `service_getlist_iws` et `service_getone_iws`.
 
 ### 7.1 Usage des paramètres
 
-Configurer tous les paramètres comme sorties :
+Pour `service_getlist_iws`, configurer tous les paramètres comme sorties :
 
 | Paramètre | Usage | Traitement IWS |
 | --- | --- | --- |
 | `items_LENGTH` | Output | longueur du tableau `items` |
 | `items` | Output | corps JSON |
 | `totalCount` | Output | corps JSON |
+| `errors_LENGTH` | Output | longueur du tableau `errors` |
+| `errors` | Output | corps JSON |
+| `httpStatus` | Output | **HTTP response/status code** |
+| `httpHeaders` | Output | **HTTP response headers** |
+
+Pour `service_getone_iws`, configurer :
+
+| Paramètre | Usage | Traitement IWS |
+| --- | --- | --- |
+| `id` | Input | injecté depuis la variable `{id}` du chemin |
+| `item` | Output | corps JSON de détail |
 | `errors_LENGTH` | Output | longueur du tableau `errors` |
 | `errors` | Output | corps JSON |
 | `httpStatus` | Output | **HTTP response/status code** |
@@ -398,6 +414,25 @@ Pour `service_getlist_iws`, choisir :
 
 Il n'y a aucun paramètre d'entrée HTTP direct : les critères sont lus dans
 `QUERY_STRING` par `CIWS_initRestRequest`.
+
+Pour `service_getone_iws`, choisir :
+
+| Propriété | Valeur |
+| --- | --- |
+| Méthode HTTP | `GET` |
+| URI path template de la méthode | `/{id}` |
+| Type de contenu entrant | `*ALL` |
+| Type de contenu produit | `JSON` |
+| Paramètres d'entrée | non enveloppés |
+| Injection de `id` | variable de chemin `id` |
+| Paramètre du statut HTTP | `httpStatus` |
+| Paramètre des en-têtes HTTP | `httpHeaders` |
+| Paramètres de sortie | enveloppés |
+
+IWS permet d'exposer plusieurs procédures d'un même service program comme méthodes de
+la même ressource. Le chemin `/{id}` fait de `service_getone_iws` une sous-ressource,
+sans créer un second service REST. Voir le
+[guide IBM sur les resource methods](https://developer.ibm.com/tutorials/i-rest-web-services-server1/).
 
 ### 7.3 Profil, bibliothèques et métadonnées
 
@@ -441,6 +476,18 @@ Avant de terminer, relire le résumé du wizard et prendre une capture des ongle
 
 Valider le déploiement et attendre que le service apparaisse actif.
 
+Après redéploiement, vérifier au minimum :
+
+```bash
+curl -i http://cmspw7t:10074/web/services/SERVIWS3/A00
+curl -i http://cmspw7t:10074/web/services/SERVIWS3/ZZZ
+```
+
+Le premier appel doit répondre `200` avec `item.id` égal à `A00`. Le second doit
+répondre `404` avec une erreur portant sur `id`. Conserver le Swagger et le PCML
+régénérés : le Swagger attendu doit alors décrire `/` et `/{id}`, et le PCML les deux
+procédures publiques.
+
 ## 8. Porte 6 — Sauvegarder le contrat exposé par IWS
 
 Le serveur de recette utilise **IWS 2.6**. Cette version n'expose pas les URL publiques
@@ -449,11 +496,15 @@ normale et ne constitue pas un échec de la recette.
 
 Pour IWS 2.6, ouvrir `Manage > Application Servers`, sélectionner le serveur du port
 `10074`, puis le service REST `SERVIWS3`. Depuis l'action de consultation ou de
-téléchargement de sa définition, enregistrer le document Swagger généré sous :
+téléchargement de sa définition, enregistrer le document Swagger généré. La preuve de
+la session du 5 août est archivée sous :
 
 ```text
-validation-cmagic-iws-20260730/swagger-iws-2.6.json
+ressources/doc/cmagic/swagger.json
 ```
+
+Le PCML extrait du même déploiement est conservé sous
+`ressources/doc/cmagic/SERVIWS3.pcml`.
 
 Pour une future recette IWS 3.0, la spécification agrégée sera disponible par défaut à
 `http://<hote>:<port>/openapi/` et l'interface à
@@ -467,12 +518,16 @@ encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la descr
 
 Vérifier au minimum :
 
-- URL de base : `/web/services/SERVICES` ;
+- URL de base : `/web/services/SERVIWS3` ;
 - méthode `GET` ;
 - opération `service_getlist_iws` ;
 - schéma nominal contenant `items`, `totalCount` et `errors` ;
 - absence de `items_LENGTH`, `errors_LENGTH`, `httpStatus` et `httpHeaders` dans le
   corps public.
+
+Le [Swagger archivé](./swagger.json) confirme ces éléments pour le contrat `LIST`. Il
+ne décrit pas les filtres transmis par `QUERY_STRING` ni le statut `400` dynamique ;
+le [relevé HTTP](./validation-iws-2026-08-05.md) complète donc la preuve descriptive.
 
 Si les champs techniques apparaissent dans le corps, ne pas poursuivre comme si le
 contrat était conforme : reprendre le mapping des paramètres ou l'option de détection
@@ -618,19 +673,31 @@ curl -sS \
 Attendu : `400`, erreur `CMG0003` sur `id`, puis une nouvelle requête nominale doit
 encore répondre `200`.
 
-### 9.8 Route `GET` par identifiant non publiée
+### 9.8 `GET` d'un identifiant existant
 
 ```bash
 curl -sS \
-  -o validation-cmagic-iws-20260730/get-not-published.json \
+  -D validation-cmagic-iws-20260730/get-a00.headers \
+  -o validation-cmagic-iws-20260730/get-a00.json \
   -w "%{http_code}\n" \
   "${cmagic_iws_url}/A00"
 ```
 
-Attendu : route non trouvée ou méthode non mappée par IWS. Ce résultat n'est pas un
-échec de la v0 : seul `LIST/SEARCH` est généré pour IWS.
+Attendu : `200`, `item.id` égal à `A00` et `errors` vide.
 
-### 9.9 Vérifications rapides avec `jq`
+### 9.9 `GET` d'un identifiant absent
+
+```bash
+curl -sS \
+  -D validation-cmagic-iws-20260730/get-zzz.headers \
+  -o validation-cmagic-iws-20260730/get-zzz.json \
+  -w "%{http_code}\n" \
+  "${cmagic_iws_url}/ZZZ"
+```
+
+Attendu : `404`, `item` vide et au moins une erreur portant sur `id`.
+
+### 9.10 Vérifications rapides avec `jq`
 
 Si `jq` est disponible :
 
@@ -645,6 +712,10 @@ jq -e '(.items | length) <= 3' \
   validation-cmagic-iws-20260730/page.json
 jq -e 'all(.items[]; .id == "A00")' \
   validation-cmagic-iws-20260730/filter-a00.json
+jq -e '.item.id == "A00" and (.errors | length) == 0' \
+  validation-cmagic-iws-20260730/get-a00.json
+jq -e '(.errors | length) > 0 and .errors[0].nomZone == "id"' \
+  validation-cmagic-iws-20260730/get-zzz.json
 ```
 
 ## 10. Porte 8 — Contrôler le job IWS et conserver les preuves
@@ -706,7 +777,7 @@ l'analyse des résultats.
 | Corps des réponses `4xx` | | potentiellement vide par IWS | |
 | `X-Total-Count` | | | |
 | CORS | | | |
-| `GET` par identifiant | disponible si déclaré | non généré en IWS v0 | |
+| `GET` par identifiant | disponible si déclaré | généré localement ; validation IBM i à faire | redéployer `service_getone_iws` |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -719,15 +790,15 @@ l'analyse des résultats.
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
 | 4. Cinq objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
-| 6. Contrat IWS sauvegardé | Partiel | IWS 2.6 confirmé et `/openapi/` non applicable ; archiver `swagger-iws-2.6.json` depuis Web Administration |
+| 6. Contrat IWS sauvegardé | OK | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; `/openapi/` non applicable |
 | 7. Requêtes HTTP exécutées | OK | [relevé HTTP](./validation-iws-2026-08-05.md) : `id=A000` retourne `400/CMG0003`, puis `id=A00` retourne `200` |
-| 8. Preuves conservées | Partiel | capture nominale et relevé HTTP archivés ; export OpenAPI IWS encore absent |
+| 8. Preuves conservées | OK | capture nominale, [relevé HTTP](./validation-iws-2026-08-05.md), Swagger et PCML archivés |
 
-Conclusion de la session : **GO fonctionnel avec réserve documentaire**. Le service
+Conclusion de la session : **GO**. Le service
 IWS répond avec les helpers CIWS génériques, la validation de longueur est centralisée
 dans `cmagic_sanitizeContext` et la reprise après erreur est confirmée. Les en-têtes
-HTTP sont archivés ; seul le Swagger IWS 2.6 issu de Web Administration reste à
-récupérer. L'absence de `/openapi/` est normale pour cette version.
+HTTP, le Swagger IWS 2.6 et le PCML sont archivés. L'absence de `/openapi/` est normale
+pour cette version.
 
 Conclusion :
 

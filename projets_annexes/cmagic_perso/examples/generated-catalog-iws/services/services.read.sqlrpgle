@@ -213,3 +213,35 @@ dcl-proc service_search export;
       return *off;
     endif;
 end-proc;
+
+dcl-proc service_get export;
+  dcl-pi *n ind;
+    pId varchar(3) const;
+    pDetail likeDS(service_detail_t);
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  clear pDetail;
+  clear pErrors;
+  exec sql
+    select
+      DEPTNO,
+      DEPTNAME,
+      COALESCE(MGRNO, ''),
+      COALESCE(ADMRDEPT, ''),
+      COALESCE(LOCATION, '')
+    into :pDetail
+    FROM DEPARTMENT
+    WHERE DEPTNO = :pId
+    fetch first 1 row only;
+  if sqlState = SQL_NOT_FOUND;
+    service_reject_query(
+      pErrors : 'id' : 'Service not found');
+    return *off;
+  endif;
+  if sqlState <> SQL_OK;
+    service_reject_query(
+      pErrors : 'sql' : 'Unable to read Service');
+    return *off;
+  endif;
+  return *on;
+end-proc;

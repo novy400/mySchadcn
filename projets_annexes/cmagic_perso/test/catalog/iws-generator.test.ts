@@ -10,7 +10,7 @@ import {
 import { compileIwsServiceCatalog } from './test-utils.js';
 
 describe('Catalogue IWS generator', () => {
-    test('generates the PCML-visible LIST interface', async () => {
+    test('generates the PCML-visible LIST and GET interfaces', async () => {
         const source = generateCatalogIwsInterface(
             await compileIwsServiceCatalog()
         );
@@ -29,6 +29,16 @@ describe('Catalogue IWS generator', () => {
         );
         expect(source).toContain(
             'httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);'
+        );
+        expect(source).toContain(
+            'dcl-ds service_detail_iws_t qualified template;'
+        );
+        expect(source).toContain(
+            'dcl-pr service_getone_iws extproc(*dclcase);'
+        );
+        expect(source).toContain('  id varchar(3) const;');
+        expect(source).toContain(
+            'item likeDS(service_detail_iws_t);'
         );
     });
 
@@ -67,7 +77,32 @@ describe('Catalogue IWS generator', () => {
         expect(source).toContain(
             'httpStatus = HTTPREST_SERVERERROR;'
         );
-        expect(source).not.toContain('service_getone_iws');
+        expect(source).toContain('dcl-proc service_getone_iws export;');
+        const getOneSource = source.slice(
+            source.indexOf('dcl-proc service_getone_iws export;')
+        );
+        expect(getOneSource).toContain(
+            'if not service_get(id : lDetail : lErrors);'
+        );
+        expect(getOneSource).toContain(
+            "if lErrors.listError(1).nomZone = 'id';"
+        );
+        expect(getOneSource).toContain('httpStatus = HTTPREST_NOTFOUND;');
+        expect(getOneSource).toContain(
+            [
+                '    else;',
+                '      httpStatus = HTTPREST_SERVERERROR;',
+                '    endif;'
+            ].join('\n')
+        );
+        expect(getOneSource).toContain('eval-corr item = lDetail;');
+        expect(getOneSource).toContain(
+            "errors(1).nomZone = 'service_getone_iws';"
+        );
+        expect(getOneSource).toContain("errors(1).code = 'RNX9001';");
+        expect(getOneSource).toContain(
+            "'Unexpected error in service_getone_iws';"
+        );
     });
 
     test('generates the IWS service program binder', async () => {
@@ -79,6 +114,7 @@ describe('Catalogue IWS generator', () => {
             [
                 "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
                 "  EXPORT SYMBOL('service_getlist_iws')",
+                "  EXPORT SYMBOL('service_getone_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -100,6 +136,31 @@ describe('Catalogue IWS generator', () => {
         expect(source).not.toContain('SERVIWS');
     });
 
+    test('keeps the published LIST-only interface unchanged without GET', async () => {
+        const service = await compileIwsServiceCatalog();
+        const listOnlyService = {
+            ...service,
+            capabilities: service.capabilities.filter(
+                capability => capability !== 'get'
+            )
+        };
+
+        expect(generateCatalogIwsInterface(listOnlyService)).not.toContain(
+            'service_getone_iws'
+        );
+        expect(generateCatalogIwsWrapper(listOnlyService)).not.toContain(
+            'service_getone_iws'
+        );
+        expect(generateCatalogIwsBinder(listOnlyService)).toBe(
+            [
+                "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
+                "  EXPORT SYMBOL('service_getlist_iws')",
+                'ENDPGMEXP',
+                ''
+            ].join('\n')
+        );
+    });
+
     test('renders all IWS files through replaceable templates', async () => {
         const temporaryDirectory = fs.mkdtempSync(
             path.join(process.env.TEMP ?? process.cwd(), 'cmagic-iws-')
@@ -108,7 +169,7 @@ describe('Catalogue IWS generator', () => {
         try {
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog-iws.rpgleinc.hbs'),
-                '{{itemType}}|{{procedures.getListIws}}\n',
+                '{{itemType}}|{{detailType}}|{{procedures.getListIws}}|{{procedures.getOneIws}}\n',
                 'utf-8'
             );
             fs.writeFileSync(
@@ -118,7 +179,7 @@ describe('Catalogue IWS generator', () => {
             );
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog-iws.bnd.hbs'),
-                '{{signature}}|{{export}}\n',
+                '{{signature}}|{{#each exports}}{{this}}{{#unless @last}},{{/unless}}{{/each}}\n',
                 'utf-8'
             );
             fs.writeFileSync(
@@ -130,13 +191,17 @@ describe('Catalogue IWS generator', () => {
 
             expect(
                 generateCatalogIwsInterface(service, temporaryDirectory)
-            ).toBe('service_item_iws_t|service_getlist_iws\n');
+            ).toBe(
+                'service_item_iws_t|service_detail_iws_t|service_getlist_iws|service_getone_iws\n'
+            );
             expect(
                 generateCatalogIwsWrapper(service, temporaryDirectory)
             ).toBe('services.read.rpgleinc|service_search\n');
             expect(
                 generateCatalogIwsBinder(service, temporaryDirectory)
-            ).toBe('SERVIWS.0.0.1|service_getlist_iws\n');
+            ).toBe(
+                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws\n'
+            );
             expect(
                 generateCatalogIwsBindingDirectory(
                     service,

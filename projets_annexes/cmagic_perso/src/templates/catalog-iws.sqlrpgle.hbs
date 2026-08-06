@@ -1,5 +1,5 @@
 **free
-{{! IBM Integrated Web Services LIST adapter generated from CatalogSpec. }}
+{{! IBM Integrated Web Services read adapter generated from CatalogSpec. }}
 // Generated from CatalogSpec with catalog-iws.sqlrpgle.hbs. Do not edit.
 ctl-opt nomain
         option(*nodebugio:*srcstmt:*nounref)
@@ -106,5 +106,51 @@ dcl-proc {{procedures.copyItems}};
     eval-corr pItems(pItemsLength) = lSource;
     lItemPointer = list_iterate(pList);
   enddo;
+end-proc;
+{{/if}}
+{{#if hasGet}}
+dcl-proc {{procedures.getOneIws}} export;
+  dcl-pi *n;
+    id {{id.rpgType}} const;
+    item likeDS({{detailType}});
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear item;
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_OK;
+
+  if not {{procedures.get}}(id : lDetail : lErrors);
+    if lErrors.listError(1).nomZone = 'id';
+      httpStatus = HTTPREST_NOTFOUND;
+    else;
+      httpStatus = HTTPREST_SERVERERROR;
+    endif;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  eval-corr item = lDetail;
+
+  on-exit lAbended;
+    if lAbended;
+      httpStatus = HTTPREST_SERVERERROR;
+      if errors_LENGTH = 0;
+        errors_LENGTH = 1;
+        errors(1).nomZone = '{{procedures.getOneIws}}';
+        errors(1).code = 'RNX9001';
+        errors(1).text =
+          'Unexpected error in {{procedures.getOneIws}}';
+        errors(1).textUser = errors(1).text;
+      endif;
+    endif;
 end-proc;
 {{/if}}

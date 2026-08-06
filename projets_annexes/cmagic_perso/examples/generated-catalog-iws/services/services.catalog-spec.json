@@ -6,7 +6,8 @@
   "iwsObject": "SERVIWS",
   "identifier": "id",
   "capabilities": [
-    "list"
+    "list",
+    "get"
   ],
   "fields": [
     {

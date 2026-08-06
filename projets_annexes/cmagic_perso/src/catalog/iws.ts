@@ -25,6 +25,7 @@ type CatalogIwsInterfacesModel = {
 type CatalogIwsProceduresModel =
     CatalogReadTemplateModel['procedures'] & {
         getListIws: string;
+        getOneIws: string;
         copyItems: string;
     };
 
@@ -39,14 +40,21 @@ export type CatalogIwsTemplateModel = {
         httpRest: string;
     };
     hasList: boolean;
+    hasGet: boolean;
     interfaces: CatalogIwsInterfacesModel;
     procedures: CatalogIwsProceduresModel;
     itemType: string;
     itemFields: CatalogIwsFieldModel[];
+    detailType: string;
+    detailFields: CatalogIwsFieldModel[];
+    id: CatalogIwsFieldModel;
 };
 
 export const catalogIwsGetListProcedure = (entityName: string): string =>
     `${entityName.toLowerCase()}_getlist_iws`;
+
+export const catalogIwsGetOneProcedure = (entityName: string): string =>
+    `${entityName.toLowerCase()}_getone_iws`;
 
 export const buildCatalogIwsTemplateModel = (
     spec: CatalogSpec
@@ -65,6 +73,7 @@ export const buildCatalogIwsTemplateModel = (
             httpRest: 'httpRest.rpgleinc'
         },
         hasList: readModel.hasList,
+        hasGet: readModel.hasGet,
         interfaces: {
             read: catalogRpgReadInterfaceSourceName(spec.resource),
             iws: catalogIwsInterfaceSourceName(spec.resource)
@@ -72,13 +81,23 @@ export const buildCatalogIwsTemplateModel = (
         procedures: {
             ...readModel.procedures,
             getListIws: catalogIwsGetListProcedure(spec.entity),
+            getOneIws: catalogIwsGetOneProcedure(spec.entity),
             copyItems: `${prefix}_copyIwsItems`
         },
         itemType: `${prefix}_item_iws_t`,
         itemFields: readModel.itemFields.map(field => ({
             name: field.rpgName,
             rpgType: field.rpgType
-        }))
+        })),
+        detailType: `${prefix}_detail_iws_t`,
+        detailFields: readModel.detailFields.map(field => ({
+            name: field.rpgName,
+            rpgType: field.rpgType
+        })),
+        id: {
+            name: readModel.id.rpgName,
+            rpgType: readModel.id.rpgType
+        }
     };
 };
 

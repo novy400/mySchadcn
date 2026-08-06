@@ -1,7 +1,7 @@
 # Plan d'implémentation
 
 _Branche : `codex/docs-restructuration`_
-_Dernière mise à jour : 2026-07-22_
+_Dernière mise à jour : 2026-08-06_
 
 ## Objectif
 
@@ -18,6 +18,7 @@ documentaire, par tranches petites et vérifiables.
 | 4 | Ajouter authentification et autorisations | Terminé |
 | 5 | Traiter la synchronisation des projections après mutation | Terminé |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
+| 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Prête pour validation IBM i |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -208,8 +209,59 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - smoke test navigateur : réussi ;
 - revue standards et conformité au plan : terminée ; aucun constat restant.
 
+## Tranche 7 — `GET` par identifiant avec IWS
+
+### Contrat retenu
+
+- une entité avec `iwsObject` conserve la capacité `LIST` obligatoire et peut déclarer
+  `GET` en complément ;
+- `service_getlist_iws` reste le premier export du service program ;
+- `service_getone_iws` reçoit l'identifiant typé par PCML et renvoie `item`, `errors`,
+  `httpStatus` et `httpHeaders` ;
+- la procédure de lecture commune `{entity}_get` reste l'unique accès Db2 ;
+- une ressource absente produit `404`, une erreur technique `500` et une terminaison
+  RPG inattendue `RNX9001` ;
+- IWS publie le détail comme sous-ressource `GET /{id}` de la même ressource REST.
+
+### Réalisé localement
+
+- extension du modèle de rendu et des templates IWS pour la structure de détail et la
+  procédure `GET` ;
+- export conditionnel de `service_getone_iws` dans le binder, après l'export `LIST`
+  existant ;
+- conservation exacte du contrat généré pour un catalogue limité à `LIST` ;
+- passage de l'exemple IWS à `operations { LIST, GET }` et régénération de ses vingt
+  artefacts ;
+- tests du compilateur, de l'interface PCML, du wrapper, du binder et de la
+  compatibilité `LIST` seule ;
+- archivage du [Swagger IWS 2.6](./cmagic/swagger.json) et du
+  [PCML SERVIWS3](./cmagic/SERVIWS3.pcml), puis fermeture de la réserve documentaire
+  de la session précédente ;
+- mise à jour du contrat Catalogue et de la recette de redéploiement IWS.
+
+### Validation locale
+
+- suite CMagic : 18 fichiers, 120 tests réussis ;
+- lint CMagic : réussi ;
+- build CMagic : réussi ;
+- génération répétée : vingt artefacts strictement identiques ;
+- `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build
+  réussi ;
+- revue Standards : aucun constat ;
+- revue Spec : deux constats corrigés dans la recette HTTP et la couverture des erreurs
+  `500`/`RNX9001`, puis suites CMagic et racine réexécutées avec succès.
+
+### Validation IBM i restante
+
+- transférer les sources régénérées et reconstruire `SERVICE` puis `SERVIWS` ;
+- redéployer `SERVIWS3` avec les deux procédures ;
+- mapper `service_getone_iws` sur `GET /{id}` ;
+- vérifier `A00` en `200`, un identifiant absent en `404`, puis archiver le nouveau
+  Swagger et le nouveau PCML contenant les deux procédures.
+
 ## Suite
 
-Les six tranches du plan initial sont terminées. Les évolutions suivantes relèvent d'un
-nouveau cadrage produit ou technique, notamment le branchement IBM i et l'enrichissement
-du modèle des commandes.
+Les six tranches du plan initial sont terminées. La tranche 7 est implémentée et validée
+localement ; sa clôture dépend du redéploiement sur IBM i décrit dans la recette. Les
+mutations IWS, le branchement IBM i du DataProvider et l'enrichissement du modèle des
+commandes relèvent de tranches ultérieures.

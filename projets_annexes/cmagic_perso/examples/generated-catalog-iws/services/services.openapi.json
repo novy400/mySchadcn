@@ -154,6 +154,45 @@
           }
         }
       }
+    },
+    "/api/services/{id}": {
+      "get": {
+        "operationId": "getService",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 3
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service trouvé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Service"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service inconnu"
+          }
+        }
+      }
     }
   },
   "components": {

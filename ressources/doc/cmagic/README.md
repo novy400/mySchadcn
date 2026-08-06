@@ -12,6 +12,9 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
   ILEastic, tests HTTP et collecte des preuves.
 - [Recette IBM i du catalogue avec IWS](./recette-ibmi-catalogue-iws.md) : build du
   wrapper IWS, déploiement dans IBM Web Administration, mapping PCML et tests HTTP.
+- [Relevé HTTP IWS du 5 août 2026](./validation-iws-2026-08-05.md),
+  [Swagger IWS 2.6](./swagger.json) et [PCML SERVIWS3](./SERVIWS3.pcml) : preuves du
+  contrat `LIST` effectivement déployé et testé sur IBM i.
 
 ## Matériaux de travail
 

@@ -1,13 +1,16 @@
 import { renderTemplate } from '../generation/template-renderer.js';
 import type { CatalogSpec } from './catalog-spec.js';
 import { catalogObjectName } from './ibmi-object-name.js';
-import { catalogIwsGetListProcedure } from './iws.js';
+import {
+    catalogIwsGetListProcedure,
+    catalogIwsGetOneProcedure
+} from './iws.js';
 
 const templateName = 'catalog-iws.bnd.hbs';
 
 type CatalogIwsBinderTemplateModel = {
     signature: string;
-    export: string;
+    exports: string[];
 };
 
 const buildTemplateModel = (
@@ -26,7 +29,12 @@ const buildTemplateModel = (
 
     return {
         signature: `${catalogObjectName(spec.iwsObject)}.0.0.1`,
-        export: catalogIwsGetListProcedure(spec.entity)
+        exports: [
+            catalogIwsGetListProcedure(spec.entity),
+            ...(spec.capabilities.includes('get')
+                ? [catalogIwsGetOneProcedure(spec.entity)]
+                : [])
+        ]
     };
 };
 

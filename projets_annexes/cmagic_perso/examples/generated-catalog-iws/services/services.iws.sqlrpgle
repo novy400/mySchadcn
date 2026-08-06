@@ -105,3 +105,47 @@ dcl-proc service_copyIwsItems;
     lItemPointer = list_iterate(pList);
   enddo;
 end-proc;
+dcl-proc service_getone_iws export;
+  dcl-pi *n;
+    id varchar(3) const;
+    item likeDS(service_detail_iws_t);
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lDetail likeDS(service_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear item;
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_OK;
+
+  if not service_get(id : lDetail : lErrors);
+    if lErrors.listError(1).nomZone = 'id';
+      httpStatus = HTTPREST_NOTFOUND;
+    else;
+      httpStatus = HTTPREST_SERVERERROR;
+    endif;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  eval-corr item = lDetail;
+
+  on-exit lAbended;
+    if lAbended;
+      httpStatus = HTTPREST_SERVERERROR;
+      if errors_LENGTH = 0;
+        errors_LENGTH = 1;
+        errors(1).nomZone = 'service_getone_iws';
+        errors(1).code = 'RNX9001';
+        errors(1).text =
+          'Unexpected error in service_getone_iws';
+        errors(1).textUser = errors(1).text;
+      endif;
+    endif;
+end-proc;

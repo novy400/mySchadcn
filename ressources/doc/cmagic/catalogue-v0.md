@@ -95,8 +95,8 @@ server ServiceApi object "SERVAPI" port 44000 host "*ANY" {
 }
 ```
 
-Pour publier seulement `service_search` avec IBM Integrated Web Services, le choix
-devient :
+Pour publier `service_search` et la lecture par identifiant avec IBM Integrated Web
+Services, le choix devient :
 
 ```cmagic
 entity Service resource "services" table "DEPARTMENT" iwsObject "SERVIWS" {
@@ -109,7 +109,7 @@ view list for Service {
 }
 
 operations for Service {
-    LIST
+    LIST, GET
 }
 ```
 
@@ -343,11 +343,25 @@ Le point d'entrée public est `{entity}_getlist_iws`. Sa signature PCML expose :
 - `httpStatus` ;
 - `httpHeaders`.
 
+Lorsque `GET` est déclaré, le même service program exporte également
+`{entity}_getone_iws`. Sa signature PCML expose :
+
+- `id` en entrée, avec le type RPG de l'identifiant du catalogue ;
+- `item`, structure de détail contenant tous les champs de l'entité ;
+- `errors_LENGTH` et `errors` ;
+- `httpStatus` ;
+- `httpHeaders`.
+
+Le wrapper appelle la procédure de lecture commune `{entity}_get`, copie le détail
+dans `item`, renvoie `HTTPREST_NOTFOUND` lorsque l'erreur porte sur `id` et
+`HTTPREST_SERVERERROR` pour une erreur technique. Une terminaison RPG inattendue est
+convertie en erreur `RNX9001`, comme pour la liste.
+
 Le module contient `pgminfo(*pcml:*module:*dclcase)`. Après compilation, le déploiement
-IWS doit publier le service program désigné par `iwsObject`, sélectionner
-`{entity}_getlist_iws`, mapper `httpStatus` au code de réponse et `httpHeaders` aux
-en-têtes sortants. Le chemin REST public est choisi lors du déploiement IWS ; il n'est
-donc pas codé dans le wrapper RPG.
+IWS doit publier le service program désigné par `iwsObject`, sélectionner séparément
+`{entity}_getlist_iws` et `{entity}_getone_iws`, mapper `httpStatus` au code de réponse
+et `httpHeaders` aux en-têtes sortants. Le chemin REST public de chaque procédure est
+choisi lors du déploiement IWS ; il n'est donc pas codé dans le wrapper RPG.
 
 Le projet IBM i cible doit déjà fournir `ciws.rpgleinc`, `httpRest.rpgleinc` et le
 service program `CIWS`, comme `applicationTemplate` et le projet de référence
@@ -360,9 +374,9 @@ lecture (`SERVICE` dans l'exemple) et `CIWS`, puis le wrapper le déclare dans
 `ctl-opt bnddir`. La compilation ne demande donc plus d'ajouter manuellement les
 services générés au binding directory partagé `CKOOL`.
 
-Le contrat IWS v0 couvre uniquement `LIST`/`SEARCH`. `GET` par identifiant continue à
-être disponible avec ILEastic lorsqu'il est déclaré, mais n'est pas encore généré pour
-IWS.
+Le contrat IWS de lecture couvre `LIST`/`SEARCH` et `GET`. Le compilateur exige encore
+`LIST` lorsqu'une entité choisit `iwsObject` : une exposition IWS limitée au seul
+`GET` reste hors du contrat actuel.
 
 ## DDL Db2 généré
 
@@ -431,9 +445,11 @@ SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM
 SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR
 ```
 
-Le binder IWS utilise la signature `SERVIWS.0.0.1` et exporte uniquement
-`service_getlist_iws`. Les règles ILEastic et IWS ne sont jamais produites ensemble
-pour une même entité.
+Le binder IWS utilise la signature `SERVIWS.0.0.1`. Il conserve
+`service_getlist_iws` comme premier export et ajoute `service_getone_iws` lorsque la
+capacité `GET` est déclarée. L'ajout est placé en fin de liste afin de préserver les
+exports existants. Les règles ILEastic et IWS ne sont jamais produites ensemble pour
+une même entité.
 
 ## Programme serveur ILEastic généré
 
@@ -472,7 +488,7 @@ historique des dix artefacts par catalogue reste inchangée.
 
 ## Hors périmètre de la tranche
 
-- opération IWS `GET` par identifiant et mutations IWS ;
+- exposition IWS limitée au seul `GET` et mutations IWS ;
 - configuration CORS, journalisation et arrêt contrôlé du serveur ILEastic ;
 - mutations `CREATE`, `UPDATE` et `DELETE` ;
 - authentification, autorisations et concurrence optimiste ;
@@ -481,6 +497,6 @@ historique des dix artefacts par catalogue reste inchangée.
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
 - compilation et exécution du module généré sur un IBM i réel.
 
-La prochaine verticale pourra valider la compilation des deux transports sur IBM i,
-puis vérifier leurs contrats HTTP de bout en bout avant d'étendre IWS à `GET` ou
-d'aborder les mutations.
+La prochaine validation doit compiler et redéployer le wrapper IWS enrichi sur IBM i,
+puis vérifier `service_getone_iws` avec un identifiant existant et un identifiant
+absent avant d'aborder les mutations.

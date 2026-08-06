@@ -1,4 +1,5 @@
 STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('SERVICE.0.0.1')
   EXPORT SYMBOL('service_search')
   EXPORT SYMBOL('service_getSupportedFields')
+  EXPORT SYMBOL('service_get')
 ENDPGMEXP
