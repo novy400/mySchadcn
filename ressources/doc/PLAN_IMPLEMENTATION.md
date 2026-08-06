@@ -22,6 +22,7 @@ documentaire, par tranches petites et vérifiables.
 | 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
 | 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
 | 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | Terminé |
+| 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -474,8 +475,41 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   `DELETE → 204`, puis `GET → 404`. Cette limite documentaire est connue et acceptée par
   le propriétaire du projet, qui déclare la tranche 10 **GO**.
 
+## Tranche 11 — Migration du moteur CMagic vers Langium 4.3.1
+
+### Périmètre retenu
+
+- Node 24 LTS, TypeScript 5.9, Langium 4.3.1 et `langium-cli` 4.3.0 ;
+- famille LSP 10 / protocole 3.18 pour le serveur et l'extension VS Code ;
+- adaptation limitée à la génération Langium, au CLI, à l'extension et au Web Worker ;
+- aucun changement de grammaire, de générateur métier, de DataProvider IBM i ou de pile
+  Monaco du lot B.
+
+### Réalisé
+
+- mise à jour ciblée des dépendances et du lockfile, avec Volta sur Node 24.18.0 ;
+- alignement du moteur VS Code minimal sur 1.91, exigé par le client LSP 10 ;
+- adaptation des sous-chemins d'import LSP et des descripteurs AST `Model.$type` ;
+- audit du diff généré Langium 3.5.2 vers 4.3.0 ;
+- mise à jour et suivi de
+  [`etude-langium-4.3.1-et-playground.md`](./cmagic/etude-langium-4.3.1-et-playground.md).
+
+### Validation locale
+
+- génération Langium sans avertissement ;
+- suite CMagic : 18 fichiers et 141 tests réussis, lint et build réussis ;
+- CLI, prépublication de l'extension et build du Web Worker réussis ;
+- smoke test LSP sur le serveur compilé : modèle valide sans diagnostic, modèle invalide
+  avec erreurs de syntaxe et métier, complétion, définition et survol fonctionnels ;
+- deux régénérations des vingt et un artefacts catalogue/IWS : hashes identiques entre les
+  exécutions et au point fixe `f35429f` ;
+- `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build réussi ;
+- revue Standards : aucune violation dure ; la duplication préexistante d'un helper de test
+  reste hors de cette tranche ciblée ;
+- revue Spec : plan et preuve LSP complétés pendant la revue finale.
+
 ## Suite
 
-Les dix tranches sont terminées. La prochaine verticale recommandée est le branchement
+Les onze tranches sont terminées. La prochaine verticale recommandée est le branchement
 progressif du DataProvider IBM i. L'enrichissement du modèle des commandes demeure une
 évolution séparée.

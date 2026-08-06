@@ -347,6 +347,9 @@ de build incrémental `*.tsbuildinfo` désormais émis par TypeScript 5.9 est ig
   valides, les erreurs de syntaxe, le linking et les validations métier ;
 - CLI : compilation verte et commande `generate-catalog` disponible ;
 - extension VS Code : serveur et extension bundlés, prépublication minifiée et lint verts ;
+- protocole LSP du serveur compilé : smoke test `stdio` vert pour l'initialisation, les
+  diagnostics d'un modèle valide et d'un modèle invalide, la complétion, la définition et
+  le survol de documentation ;
 - Web existant : build Vite vert, avec émission du Web Worker `main-browser` ;
 - racine mySchadcn : référence et vérification finale vertes avec 38 fichiers et 85 tests,
   lint et build inclus ;
@@ -362,20 +365,21 @@ Le client Web reste volontairement sur `monaco-languageclient 8.1.1` et
 que Langium, le serveur et l'extension VS Code utilisent la famille 3.18. La modernisation
 Monaco et la réduction du gros chunk Vite du wrapper appartiennent au lot B.
 
-La recette automatise le parsing, la validation, la génération et les builds, mais ne
-remplace pas une session interactive VS Code pour les diagnostics, la complétion, la
-navigation, le survol et la commande de génération. Enfin, `npm install` signale 30
-vulnérabilités dans l'arbre historique, principalement conservé pour le lot Monaco ; leur
-remédiation générale dépasserait le périmètre de cette migration ciblée.
+La recette couvre le protocole LSP de bout en bout sur le serveur compilé, mais ne remplace
+pas une session graphique VS Code pour le rendu de l'interface et l'activation par
+l'extension host. La commande de génération est couverte par la même CLI compilée que celle
+appelée par l'extension. Enfin, `npm install` signale 30 vulnérabilités dans l'arbre
+historique, dont la pile Monaco reste volontairement inchangée ; leur remédiation générale
+dépasserait le périmètre de cette migration ciblée.
 
 Le DataProvider IBM i, CMagic Studio, la grammaire métier et les artefacts synchronisés dans
 `cMagicIws` n'ont pas été modifiés.
 
 ## Conclusion
 
-La recommandation est donc : **planifier Langium 4.3.1 maintenant**, en séparant le lot
-« moteur/CLI/LSP » du lot « Monaco/IHM ». Le gain immédiat est surtout la remise sur un socle
-supporté et corrigé ; les nouveautés de langage sont un bénéfice secondaire. Pour la saisie
-des `.cmagic`, **reprendre les idées du Playground, mais faire évoluer l'éditeur Web CMagic
-déjà présent** avec une grammaire fixe, les validations métier et un vrai cycle
+Le lot « moteur/CLI/LSP » est désormais réalisé sur Langium 4.3.1, séparément du lot
+« Monaco/IHM ». Le gain immédiat est surtout la remise sur un socle supporté et corrigé ;
+les nouveautés de langage sont un bénéfice secondaire. Pour la saisie des `.cmagic`, la
+suite recommandée reste de **reprendre les idées du Playground, mais faire évoluer l'éditeur
+Web CMagic déjà présent** avec une grammaire fixe, les validations métier et un vrai cycle
 ouvrir–valider–enregistrer–générer.
