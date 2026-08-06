@@ -4,6 +4,7 @@ import {
     catalogIleasticSourceName,
     catalogIwsBinderSourceName,
     catalogIwsBindingDirectorySourceName,
+    catalogIwsReadBindingDirectorySourceName,
     catalogIwsSourceName,
     catalogRpgReadSourceName
 } from './artifact-names.js';
@@ -24,6 +25,7 @@ type CatalogRulesTemplateModel = {
     ileasticSource: string;
     iwsSource: string;
     iwsBinderSource: string;
+    iwsReadBindingDirectorySource: string;
     iwsBindingDirectorySource: string;
     binderSource: string;
 };
@@ -74,6 +76,8 @@ const buildTemplateModel = (
         ileasticSource: catalogIleasticSourceName(spec.resource),
         iwsSource: catalogIwsSourceName(spec.resource),
         iwsBinderSource: catalogIwsBinderSourceName(spec.resource),
+        iwsReadBindingDirectorySource:
+            catalogIwsReadBindingDirectorySourceName(spec.resource),
         iwsBindingDirectorySource:
             catalogIwsBindingDirectorySourceName(spec.resource),
         binderSource: catalogBinderSourceName(spec.resource)

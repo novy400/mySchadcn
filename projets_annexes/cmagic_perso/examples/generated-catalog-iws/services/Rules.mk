@@ -5,5 +5,6 @@ SERVICE.MODULE: services.read.sqlrpgle
 SERVICE.SRVPGM: services.bnd SERVICE.MODULE
 # Service IBM Integrated Web Services transport service program
 SERVIWS.MODULE: services.iws.sqlrpgle
-SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM
+SERVICE.BNDDIR: services.read.bnddir SERVICE.SRVPGM
 SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR
+SERVIWS.BNDDIR: services.iws.bnddir SERVIWS.SRVPGM

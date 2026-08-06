@@ -3,19 +3,44 @@ import type { CatalogSpec } from './catalog-spec.js';
 import { catalogObjectName } from './ibmi-object-name.js';
 
 const templateName = 'catalog-iws.bnddir.hbs';
-const iwsRuntimeObjectName = 'CIWS';
 
 type CatalogIwsBindingDirectoryTemplateModel = {
-    readObjectName: string;
-    runtimeObjectName: string;
+    objectNames: string[];
 };
 
-const buildTemplateModel = (
+const requireIwsObjectName = (spec: CatalogSpec): string => {
+    if (!spec.iwsObject) {
+        throw new Error(
+            `Catalog IWS binding directory requires iwsObject: ${spec.entity}`
+        );
+    }
+    return catalogObjectName(spec.iwsObject);
+};
+
+const buildReadTemplateModel = (
     spec: CatalogSpec
 ): CatalogIwsBindingDirectoryTemplateModel => ({
-    readObjectName: catalogObjectName(spec.entity),
-    runtimeObjectName: iwsRuntimeObjectName
+    objectNames: [catalogObjectName(spec.entity)]
 });
+
+const buildIwsTemplateModel = (
+    spec: CatalogSpec
+): CatalogIwsBindingDirectoryTemplateModel => ({
+    objectNames: [
+        catalogObjectName(spec.entity),
+        requireIwsObjectName(spec)
+    ]
+});
+
+export const generateCatalogIwsReadBindingDirectory = (
+    spec: CatalogSpec,
+    templatesDirectory?: string
+): string =>
+    renderTemplate(
+        templateName,
+        buildReadTemplateModel(spec),
+        templatesDirectory
+    );
 
 export const generateCatalogIwsBindingDirectory = (
     spec: CatalogSpec,
@@ -23,6 +48,6 @@ export const generateCatalogIwsBindingDirectory = (
 ): string =>
     renderTemplate(
         templateName,
-        buildTemplateModel(spec),
+        buildIwsTemplateModel(spec),
         templatesDirectory
     );

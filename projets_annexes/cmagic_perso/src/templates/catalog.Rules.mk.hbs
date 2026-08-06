@@ -11,6 +11,7 @@
 {{#if iwsObjectName}}
 # {{entityName}} IBM Integrated Web Services transport service program
 {{iwsObjectName}}.MODULE: {{iwsSource}}
-{{objectName}}.BNDDIR: {{iwsBindingDirectorySource}} {{objectName}}.SRVPGM CIWS.SRVPGM
+{{objectName}}.BNDDIR: {{iwsReadBindingDirectorySource}} {{objectName}}.SRVPGM
 {{iwsObjectName}}.SRVPGM: {{iwsBinderSource}} {{iwsObjectName}}.MODULE {{objectName}}.BNDDIR
+{{iwsObjectName}}.BNDDIR: {{iwsBindingDirectorySource}} {{iwsObjectName}}.SRVPGM
 {{/if}}

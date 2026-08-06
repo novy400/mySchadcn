@@ -5,6 +5,7 @@ import {
     generateCatalogIwsBindingDirectory,
     generateCatalogIwsBinder,
     generateCatalogIwsInterface,
+    generateCatalogIwsReadBindingDirectory,
     generateCatalogIwsWrapper
 } from '../../src/catalog/index.js';
 import { compileIwsServiceCatalog } from './test-utils.js';
@@ -121,19 +122,25 @@ describe('Catalogue IWS generator', () => {
         );
     });
 
-    test('generates a self-contained application binding directory', async () => {
-        const source = generateCatalogIwsBindingDirectory(
-            await compileIwsServiceCatalog()
-        );
+    test('generates staged read and IWS binding directories', async () => {
+        const service = await compileIwsServiceCatalog();
+        const readSource = generateCatalogIwsReadBindingDirectory(service);
+        const iwsSource = generateCatalogIwsBindingDirectory(service);
 
-        expect(source).toContain('CRTBNDDIR BNDDIR(&O/&N)');
-        expect(source).toContain(
+        expect(readSource).toContain('CRTBNDDIR BNDDIR(&O/&N)');
+        expect(readSource).toContain(
             'OBJ((*LIBL/SERVICE *SRVPGM))'
         );
-        expect(source).toContain(
-            'OBJ((*LIBL/CIWS *SRVPGM))'
+        expect(readSource).not.toContain('CIWS');
+        expect(readSource).not.toContain('SERVIWS');
+
+        expect(iwsSource).toContain(
+            'OBJ((*LIBL/SERVICE *SRVPGM))'
         );
-        expect(source).not.toContain('SERVIWS');
+        expect(iwsSource).toContain(
+            'OBJ((*LIBL/SERVIWS *SRVPGM))'
+        );
+        expect(iwsSource).not.toContain('CIWS');
     });
 
     test('keeps the published LIST-only interface unchanged without GET', async () => {
@@ -184,7 +191,7 @@ describe('Catalogue IWS generator', () => {
             );
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog-iws.bnddir.hbs'),
-                '{{readObjectName}}|{{runtimeObjectName}}\n',
+                '{{#each objectNames}}{{this}}{{#unless @last}},{{/unless}}{{/each}}\n',
                 'utf-8'
             );
             const service = await compileIwsServiceCatalog();
@@ -203,11 +210,17 @@ describe('Catalogue IWS generator', () => {
                 'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws\n'
             );
             expect(
+                generateCatalogIwsReadBindingDirectory(
+                    service,
+                    temporaryDirectory
+                )
+            ).toBe('SERVICE\n');
+            expect(
                 generateCatalogIwsBindingDirectory(
                     service,
                     temporaryDirectory
                 )
-            ).toBe('SERVICE|CIWS\n');
+            ).toBe('SERVICE,SERVIWS\n');
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });
         }

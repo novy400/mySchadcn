@@ -34,6 +34,10 @@ export const catalogIwsBindingDirectorySourceName = (
     resource: string
 ): string => `${resource}.iws.bnddir`;
 
+export const catalogIwsReadBindingDirectorySourceName = (
+    resource: string
+): string => `${resource}.read.bnddir`;
+
 export const catalogBinderSourceName = (resource: string): string =>
     `${resource}.bnd`;
 

@@ -63,6 +63,46 @@
         }
       }
     },
+    "service_detail_iws_t": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "nom": {
+          "type": "string",
+          "maxLength": 36
+        },
+        "idManageur": {
+          "type": "string",
+          "maxLength": 6
+        },
+        "idServiceAdmin": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "site": {
+          "type": "string",
+          "maxLength": 16
+        }
+      }
+    },
+    "service_getone_iwsResult": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/service_detail_iws_t"
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/errorItem"
+          }
+        }
+      }
+    },
     "service_getlist_iwsResult": {
       "type": "object",
       "properties": {
@@ -88,6 +128,40 @@
     }
   },
   "paths": {
+    "/{id}": {
+      "get": {
+        "tags": [
+          "SERVIWS3 APIs"
+        ],
+        "operationId": "service_getone_iws",
+        "consumes": [
+          "*/*"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "maxLength": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/service_getone_iwsResult"
+            }
+          },
+          "500": {
+            "description": "Unexpected exception"
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "tags": [

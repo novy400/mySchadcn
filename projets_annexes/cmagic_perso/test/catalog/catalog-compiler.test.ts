@@ -583,6 +583,13 @@ describe('CMagic Catalogue v0', () => {
                     'services.iws.bnddir'
                 )
             );
+            expect(artifacts.iwsReadBindingDirectory).toBe(
+                path.join(
+                    temporaryDirectory,
+                    'services',
+                    'services.read.bnddir'
+                )
+            );
             expect(fs.readFileSync(artifacts.iws as string, 'utf-8')).toContain(
                 'dcl-proc service_getlist_iws export;'
             );
@@ -603,12 +610,30 @@ describe('CMagic Catalogue v0', () => {
             ).toContain("EXPORT SYMBOL('service_getone_iws')");
             expect(
                 fs.readFileSync(
+                    artifacts.iwsReadBindingDirectory as string,
+                    'utf-8'
+                )
+            ).toContain('OBJ((*LIBL/SERVICE *SRVPGM))');
+            expect(
+                fs.readFileSync(
                     artifacts.iwsBindingDirectory as string,
                     'utf-8'
                 )
             ).toContain('OBJ((*LIBL/SERVICE *SRVPGM))');
+            expect(
+                fs.readFileSync(
+                    artifacts.iwsBindingDirectory as string,
+                    'utf-8'
+                )
+            ).toContain('OBJ((*LIBL/SERVIWS *SRVPGM))');
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
                 'SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR'
+            );
+            expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
+                'SERVICE.BNDDIR: services.read.bnddir SERVICE.SRVPGM'
+            );
+            expect(fs.readFileSync(artifacts.rules, 'utf-8')).toContain(
+                'SERVIWS.BNDDIR: services.iws.bnddir SERVIWS.SRVPGM'
             );
             expect(fs.readFileSync(artifacts.rules, 'utf-8')).not.toContain(
                 'SERVREST.MODULE:'

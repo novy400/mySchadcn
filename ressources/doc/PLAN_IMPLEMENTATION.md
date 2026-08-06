@@ -18,7 +18,7 @@ documentaire, par tranches petites et vérifiables.
 | 4 | Ajouter authentification et autorisations | Terminé |
 | 5 | Traiter la synchronisation des projections après mutation | Terminé |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
-| 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Prête pour validation IBM i |
+| 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Validation IBM i partielle |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -230,8 +230,10 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - export conditionnel de `service_getone_iws` dans le binder, après l'export `LIST`
   existant ;
 - conservation exacte du contrat généré pour un catalogue limité à `LIST` ;
-- passage de l'exemple IWS à `operations { LIST, GET }` et régénération de ses vingt
+- passage de l'exemple IWS à `operations { LIST, GET }` et régénération de ses vingt et un
   artefacts ;
+- génération de deux binding directories applicatifs : `SERVICE.BNDDIR` pour construire
+  le wrapper, puis `SERVIWS.BNDDIR` pour ses tests, sans dépendance directe à `CIWS` ;
 - tests du compilateur, de l'interface PCML, du wrapper, du binder et de la
   compatibilité `LIST` seule ;
 - archivage du [Swagger IWS 2.6](./cmagic/swagger.json) et du
@@ -244,24 +246,37 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - suite CMagic : 18 fichiers, 120 tests réussis ;
 - lint CMagic : réussi ;
 - build CMagic : réussi ;
-- génération répétée : vingt artefacts strictement identiques ;
+- génération répétée : vingt et un artefacts strictement identiques ;
 - `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build
   réussi ;
 - revue Standards : aucun constat ;
 - revue Spec : deux constats corrigés dans la recette HTTP et la couverture des erreurs
   `500`/`RNX9001`, puis suites CMagic et racine réexécutées avec succès.
 
+### Validation IBM i du 6 août 2026
+
+- `SERVICE` et `SERVIWS` reconstruits après correction manuelle des binding
+  directories ; cette correction est maintenant intégrée au générateur ;
+- suites RPGUnit existantes réussies : 6 tests/14 assertions pour le service et
+  4 tests/24 assertions pour le transport IWS ;
+- `SERVIWS3` redéployé avec `service_getlist_iws` sur `/` et `service_getone_iws` sur
+  `/{id}` ;
+- [Swagger IWS 2.6](./cmagic/swagger.json) et [PCML](./cmagic/SERVIWS3.pcml) actualisés
+  avec les deux procédures ;
+- [export curl](./cmagic/testCurl.html) archivé : le corps nominal de `GET /A00`
+  contient `item.id = A00` et aucune erreur.
+
 ### Validation IBM i restante
 
-- transférer les sources régénérées et reconstruire `SERVICE` puis `SERVIWS` ;
-- redéployer `SERVIWS3` avec les deux procédures ;
-- mapper `service_getone_iws` sur `GET /{id}` ;
-- vérifier `A00` en `200`, un identifiant absent en `404`, puis archiver le nouveau
-  Swagger et le nouveau PCML contenant les deux procédures.
+- capturer le statut explicite de `GET /A00` ;
+- exécuter et archiver un identifiant absent, par exemple `GET /ZZZ`, avec le statut
+  `404` et l'erreur portant sur `id` ;
+- ajouter la couverture RPGUnit de `service_get` et `service_getone_iws` en suivi.
 
 ## Suite
 
-Les six tranches du plan initial sont terminées. La tranche 7 est implémentée et validée
-localement ; sa clôture dépend du redéploiement sur IBM i décrit dans la recette. Les
+Les six tranches du plan initial sont terminées. La tranche 7 est implémentée, validée
+localement et partiellement validée sur IBM i ; sa clôture dépend de la preuve HTTP du
+cas absent en `404` décrite dans la recette. Les
 mutations IWS, le branchement IBM i du DataProvider et l'enrichissement du modèle des
 commandes relèvent de tranches ultérieures.

@@ -5,9 +5,10 @@ Cette procédure permet de compiler, déployer et tester sur IBM i le catalogue
 
 Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
 **5 août 2026** après la validation fonctionnelle du service IWS, puis étendue le
-**6 août 2026** avec le `GET` par identifiant. La correction du wrapper `LIST`
-validée sur IBM i est incluse dans `6d7a41e`. La tranche `GET` est validée localement
-et reste à redéployer sur IBM i avec cette recette.
+**6 août 2026** avec le `GET` par identifiant et le retour d'expérience sur les binding
+directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
+`6d7a41e`. Le `GET` nominal est maintenant déployé ; la preuve HTTP du cas absent en
+`404` reste à archiver.
 
 La recette doit être exécutée dans une bibliothèque et sur un serveur IWS de test.
 Elle ne remplace pas la
@@ -19,7 +20,8 @@ Elle ne remplace pas la
 La recette doit établir que :
 
 1. les sources IWS générées se compilent sans modification manuelle ;
-2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR` et `SERVIWS.SRVPGM` sont créés ;
+2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR`, `SERVIWS.SRVPGM` et `SERVIWS.BNDDIR` sont
+   créés ;
 3. `SERVIWS` exporte `service_getlist_iws` puis `service_getone_iws` ;
 4. le serveur IWS transmet `QUERY_STRING` au wrapper RPG ;
 5. les recherches, filtres, tris et paginations utilisent le même
@@ -32,8 +34,8 @@ La recette doit établir que :
 Cette version est volontairement limitée à la lecture :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
-- `GET` par identifiant est généré et testé localement, mais son redéploiement IBM i
-  reste à effectuer ;
+- `GET` par identifiant est généré et déployé sur IBM i ; le cas nominal `A00` est
+  observé, mais le statut `404` d'un identifiant absent reste à capturer ;
 - aucune mutation n'est générée ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
@@ -90,7 +92,7 @@ git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
 
 Résultat attendu :
 
-- `119` tests CMagic réussis ;
+- `120` tests CMagic réussis ;
 - build réussi ;
 - aucune différence après régénération ;
 - présence des fichiers suivants :
@@ -107,6 +109,7 @@ generated-catalog-iws/
     ├── services.bnd
     ├── services.iws.bnd
     ├── services.iws.bnddir
+    ├── services.read.bnddir
     ├── services.read.rpgleinc
     ├── services.read.sqlrpgle
     ├── services.iws.rpgleinc
@@ -219,8 +222,9 @@ WRKOBJ OBJ(*ALL/NOXDB) OBJTYPE(*BNDDIR)
 WRKOBJ OBJ(DB2SAMPLE/DEPARTMENT) OBJTYPE(*FILE)
 ```
 
-Le service program `CIWS` est un prérequis partagé. Les règles générées le référencent
-mais ne le reconstruisent pas.
+Le service program `CIWS` est un prérequis partagé. Le wrapper le résout indirectement
+par le binding directory `CKOOL` ; les règles générées ne le référencent pas et ne le
+reconstruisent pas.
 
 La validation de longueur des filtres nécessite `CMAGIC.0.0.2`. Cette version ajoute
 `maxLength` à `CMAGIC_supportedField` et concentre le contrôle dans
@@ -281,7 +285,7 @@ Dans `Manage > Application Servers`, sélectionner le serveur de test et noter :
 Le serveur doit être démarré avant le déploiement. Ne pas créer un nouveau serveur si
 un serveur IWS de test adapté existe déjà.
 
-## 6. Porte 4 — Compiler les cinq objets générés
+## 6. Porte 4 — Compiler les six objets générés
 
 Depuis la racine du projet BOB/TOBi :
 
@@ -304,19 +308,23 @@ erreur :
 ```bash
 makei build -v -t SERVICE.MODULE
 makei build -v -t SERVICE.SRVPGM
-makei build -v -t SERVIWS.MODULE
 makei build -v -t SERVICE.BNDDIR
+makei build -v -t SERVIWS.MODULE
 makei build -v -t SERVIWS.SRVPGM
+makei build -v -t SERVIWS.BNDDIR
 ```
 
-Ne pas ajouter `SERVICE` ou `SERVIWS` au binding directory partagé `CKOOL`. Le fichier
-généré `services.iws.bnddir` crée un binding directory applicatif `SERVICE` qui
-référence :
+Ne pas ajouter `SERVICE` ou `SERVIWS` au binding directory partagé `CKOOL`. Les deux
+fichiers générés matérialisent les étapes du graphe :
 
-- `SERVICE.SRVPGM` ;
-- `CIWS.SRVPGM`.
+- `services.read.bnddir` crée `SERVICE.BNDDIR` avec `SERVICE.SRVPGM`, pour construire
+  `SERVIWS.SRVPGM` ;
+- `services.iws.bnddir` crée ensuite `SERVIWS.BNDDIR` avec `SERVICE.SRVPGM` et
+  `SERVIWS.SRVPGM`, pour exécuter les tests RPGUnit du transport.
 
-Le wrapper `SERVIWS` se lie ensuite à ce binding directory applicatif.
+Le runtime `CIWS` est déjà résolu par le binding directory partagé `CKOOL` déclaré dans
+le wrapper. Il ne doit pas être ajouté à ces binding directories applicatifs ni aux
+dépendances BOB générées.
 
 ### Objets attendus
 
@@ -326,19 +334,22 @@ DSPOBJD OBJ(CMAGICTST/SERVICE) OBJTYPE(*SRVPGM)
 DSPOBJD OBJ(CMAGICTST/SERVICE) OBJTYPE(*BNDDIR)
 DSPOBJD OBJ(CMAGICTST/SERVIWS) OBJTYPE(*MODULE)
 DSPOBJD OBJ(CMAGICTST/SERVIWS) OBJTYPE(*SRVPGM)
+DSPOBJD OBJ(CMAGICTST/SERVIWS) OBJTYPE(*BNDDIR)
 ```
 
 Contrôler ensuite les entrées et exports :
 
 ```cl
 DSPBNDDIRE BNDDIR(CMAGICTST/SERVICE)
+DSPBNDDIRE BNDDIR(CMAGICTST/SERVIWS)
 DSPSRVPGM SRVPGM(CMAGICTST/SERVICE) DETAIL(*PROCEXP)
 DSPSRVPGM SRVPGM(CMAGICTST/SERVIWS) DETAIL(*PROCEXP)
 ```
 
 Attendu :
 
-- `SERVICE.BNDDIR` contient `SERVICE` et `CIWS` ;
+- `SERVICE.BNDDIR` contient uniquement `SERVICE` ;
+- `SERVIWS.BNDDIR` contient `SERVICE` et `SERVIWS` ;
 - `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields` et
   `service_get` ;
 - `SERVIWS.SRVPGM` exporte `service_getlist_iws` puis
@@ -497,7 +508,7 @@ normale et ne constitue pas un échec de la recette.
 Pour IWS 2.6, ouvrir `Manage > Application Servers`, sélectionner le serveur du port
 `10074`, puis le service REST `SERVIWS3`. Depuis l'action de consultation ou de
 téléchargement de sa définition, enregistrer le document Swagger généré. La preuve de
-la session du 5 août est archivée sous :
+la version actualisée après le redéploiement du 6 août est archivée sous :
 
 ```text
 ressources/doc/cmagic/swagger.json
@@ -513,21 +524,23 @@ les propriétés du serveur.
 
 Ne pas la confondre avec `services.openapi.json` généré par CMagic. Ce dernier décrit
 encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la description
-à contrôler ici est celle que le serveur IWS déduit réellement du PCML
-`service_getlist_iws`.
+à contrôler ici est celle que le serveur IWS déduit réellement du PCML des procédures
+`service_getlist_iws` et `service_getone_iws`.
 
 Vérifier au minimum :
 
 - URL de base : `/web/services/SERVIWS3` ;
 - méthode `GET` ;
-- opération `service_getlist_iws` ;
-- schéma nominal contenant `items`, `totalCount` et `errors` ;
+- opérations `service_getlist_iws` sur `/` et `service_getone_iws` sur `/{id}` ;
+- schémas nominaux contenant respectivement `items`, `totalCount`, `errors` et
+  `item`, `errors` ;
 - absence de `items_LENGTH`, `errors_LENGTH`, `httpStatus` et `httpHeaders` dans le
   corps public.
 
-Le [Swagger archivé](./swagger.json) confirme ces éléments pour le contrat `LIST`. Il
-ne décrit pas les filtres transmis par `QUERY_STRING` ni le statut `400` dynamique ;
-le [relevé HTTP](./validation-iws-2026-08-05.md) complète donc la preuve descriptive.
+Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) confirment les deux
+procédures. Le Swagger ne décrit pas les filtres transmis par `QUERY_STRING`, les
+statuts dynamiques `400`/`404` ou les en-têtes sortants ; les relevés HTTP complètent
+donc la preuve descriptive.
 
 Si les champs techniques apparaissent dans le corps, ne pas poursuivre comme si le
 contrat était conforme : reprendre le mapping des paramètres ou l'option de détection
@@ -735,7 +748,7 @@ Conserver au minimum :
 - les captures du wizard et du service actif ;
 - les en-têtes et corps des huit requêtes ;
 - les versions IBM i, IWS et BOB/TOBi ;
-- la liste et les dates des cinq objets générés ;
+- la liste et les dates des six objets générés ;
 - la sortie de `DSPBNDDIRE` et des deux `DSPSRVPGM` ;
 - le joblog en cas d'erreur ;
 - les modifications locales d'`iproj.json` ou `.env`.
@@ -750,7 +763,7 @@ l'analyse des résultats.
 | --- | --- |
 | `service_getlist_iws` absent du wizard | binder `services.iws.bnd`, export `SERVIWS`, PCML et `DSPSRVPGM` |
 | Le wizard demande un PCML IFS | compilation de `SERVIWS.MODULE` avec `pgminfo(*pcml:*module:*dclcase)` |
-| `CIWS` introuvable au build | objet `CIWS.SRVPGM`, liste de bibliothèques BOB et `SERVICE.BNDDIR` |
+| `CIWS` introuvable au build | objet `CIWS.SRVPGM`, liste de bibliothèques BOB et binding directory partagé `CKOOL` |
 | Symbole `service_search` non résolu | ordre de build, `SERVICE.SRVPGM` et contenu de `SERVICE.BNDDIR` |
 | HTTP `500` dès le premier appel | joblog IWS, droits du profil, liste de bibliothèques et table `DEPARTMENT` |
 | Pagination et filtres ignorés | `QUERY_STRING` non sélectionné ; corriger puis redéployer |
@@ -767,7 +780,7 @@ l'analyse des résultats.
 | Point | ILEastic | IWS | Décision ou suite |
 | --- | --- | --- | --- |
 | Build sans modification manuelle | | | |
-| Nombre d'objets spécifiques | 5 dans la recette actuelle | 5 générés + `CIWS` partagé | |
+| Nombre d'objets spécifiques | 5 dans la recette actuelle | 6 générés + `CIWS` partagé | |
 | Démarrage | programme `SERVAPI` | serveur IWS administré | |
 | URL de liste | `/api/services` | `/web/services/SERVICES/` | |
 | Enveloppe nominale | `{ data, total }` | `{ items, totalCount, errors }` | |
@@ -777,7 +790,7 @@ l'analyse des résultats.
 | Corps des réponses `4xx` | | potentiellement vide par IWS | |
 | `X-Total-Count` | | | |
 | CORS | | | |
-| `GET` par identifiant | disponible si déclaré | généré localement ; validation IBM i à faire | redéployer `service_getone_iws` |
+| `GET` par identifiant | disponible si déclaré | déployé ; `A00` observé, preuve `404` restante | capturer `A00` et `ZZZ` avec leurs statuts |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -785,10 +798,10 @@ l'analyse des résultats.
 
 | Porte | Résultat | Preuve ou première erreur |
 | --- | --- | --- |
-| 1. Artefacts figés | OK | 119 tests, build et génération déterministe validés localement |
+| 1. Artefacts figés | OK | 120 tests, build et génération déterministe validés localement |
 | 2. Sources transférées | OK | projet de validation `cMagicIws` |
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
-| 4. Cinq objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
+| 4. Six objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
 | 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
 | 6. Contrat IWS sauvegardé | OK | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; `/openapi/` non applicable |
 | 7. Requêtes HTTP exécutées | OK | [relevé HTTP](./validation-iws-2026-08-05.md) : `id=A000` retourne `400/CMG0003`, puis `id=A00` retourne `200` |
@@ -802,7 +815,7 @@ pour cette version.
 
 Conclusion :
 
-- **GO** si les cinq objets compilent, si le service reste actif et si les recherches
+- **GO** si les six objets compilent, si le service reste actif et si les recherches
   nominales et invalides respectent les statuts attendus ;
 - **GO avec réserve** si l'écart concerne uniquement l'enveloppe JSON, CORS ou le corps
   vide des erreurs, à condition que cet écart soit précisément documenté ;
@@ -835,11 +848,11 @@ Conclusion :
   ![Binding directory SERVICE enrichi temporairement avec SERVIWS](./image-5.png)
 
 Ce contournement n'est pas retenu dans le générateur : il mélangeait une dépendance de
-test avec le binding directory de production. La correction générée est désormais
-`rpgunit.rucrtrpg.bndSrvPgm: ["SERVIWS"]` dans `testing.json`. Le fichier
-`services.iws.bnddir` reste limité à `SERVICE` et `CIWS`, et la cible expérimentale
-`SERVICE2.BNDDIR` a été supprimée. La nouvelle exécution de `serviws.test.sqlrpgle`
-sur IBM i a confirmé cette configuration finale.
+test avec le binding directory de production. La correction retenue le 5 août ajoutait
+`rpgunit.rucrtrpg.bndSrvPgm: ["SERVIWS"]` dans `testing.json`. Le retour d'expérience
+du 6 août a complété cette solution : le runtime `CIWS` reste résolu par `CKOOL` et les
+tests utilisent un binding directory `SERVIWS` séparé. Le générateur reproduit
+maintenant cette configuration validée, décrite ci-dessous.
 
 Le déploiement IWS et l'appel nominal ont réussi. La capture suivante correspond au
 redéploiement nommé `SERVIWS3` :
@@ -851,7 +864,38 @@ pagination et filtre exact. Le
 [relevé HTTP du 5 août 2026](./validation-iws-2026-08-05.md) complète ces preuves avec
 le tri, la recherche libre, les requêtes invalides, les statuts et les en-têtes.
 
-### Cas RPGUnit ajoutés après la revue
+## Compte rendu de la session de tests du 6 août 2026
+
+### Correction des binding directories
+
+- suppression de l'entrée directe `CIWS` : elle est fournie par
+  `TEST2BIN/CKOOL` ;
+- création de `SERVICE.BNDDIR` avec `SERVICE.SRVPGM` avant le build de `SERVIWS` ;
+- création de `SERVIWS.BNDDIR` avec `SERVICE.SRVPGM` et `SERVIWS.SRVPGM` après ce
+  build, pour les tests unitaires.
+
+Le générateur et ses règles BOB ont été alignés sur ce graphe afin que la prochaine
+régénération ne nécessite plus ces modifications manuelles.
+
+![Suite service : 6 tests et 14 assertions réussis](./image/recette-ibmi-catalogue-iws/rpgunit-service-success.png)
+![Suite IWS : 4 tests et 24 assertions réussis](./image/recette-ibmi-catalogue-iws/rpgunit-iws-success.png)
+
+Le [relevé curl exporté](./testCurl.html) confirme les appels de liste, pagination,
+filtre et le corps nominal de `GET /A00` avec `item.id = A00` et `errors` vide. Le
+[Swagger](./swagger.json) décrit désormais `/` et `/{id}`, et le
+[PCML](./SERVIWS3.pcml) contient les deux procédures publiques.
+
+La tranche reste ouverte sur une preuve précise : l'export actuel ne contient ni le
+statut HTTP explicite de `GET /A00`, ni l'appel `GET /ZZZ`. Ces deux statuts doivent
+être archivés avant de conclure au respect complet du contrat `200`/`404`.
+
+### À faire
+
+- [ ] ajouter des tests RPGUnit pour `service_get` ;
+- [ ] ajouter des tests RPGUnit pour `service_getone_iws` ;
+- [ ] archiver les statuts HTTP de `GET /A00` et `GET /ZZZ`.
+
+### Couverture RPGUnit `LIST` déjà acquise
 
 `serviws.test.sqlrpgle` couvre désormais deux comportements supplémentaires :
 

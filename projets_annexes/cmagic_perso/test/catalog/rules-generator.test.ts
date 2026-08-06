@@ -44,11 +44,15 @@ describe('Catalogue Rules.mk generator', () => {
             'SERVIWS.MODULE: services.iws.sqlrpgle'
         );
         expect(source).toContain(
-            'SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM'
+            'SERVICE.BNDDIR: services.read.bnddir SERVICE.SRVPGM'
         );
         expect(source).toContain(
             'SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR'
         );
+        expect(source).toContain(
+            'SERVIWS.BNDDIR: services.iws.bnddir SERVIWS.SRVPGM'
+        );
+        expect(source).not.toContain('CIWS.SRVPGM');
         expect(source).not.toContain('SERVREST.MODULE:');
     });
 
@@ -71,7 +75,7 @@ describe('Catalogue Rules.mk generator', () => {
         try {
             fs.writeFileSync(
                 path.join(temporaryDirectory, 'catalog.Rules.mk.hbs'),
-                '{{objectName}}|{{ileasticObjectName}}|{{iwsObjectName}}|{{rpgReadSource}}|{{ileasticSource}}|{{iwsSource}}|{{iwsBinderSource}}|{{iwsBindingDirectorySource}}|{{binderSource}}\n',
+                '{{objectName}}|{{ileasticObjectName}}|{{iwsObjectName}}|{{rpgReadSource}}|{{ileasticSource}}|{{iwsSource}}|{{iwsBinderSource}}|{{iwsReadBindingDirectorySource}}|{{iwsBindingDirectorySource}}|{{binderSource}}\n',
                 'utf-8'
             );
 
@@ -81,7 +85,7 @@ describe('Catalogue Rules.mk generator', () => {
                     temporaryDirectory
                 )
             ).toBe(
-                'SERVICE|SERVREST||services.read.sqlrpgle|services.ileastic.sqlrpgle|services.iws.sqlrpgle|services.iws.bnd|services.iws.bnddir|services.bnd\n'
+                'SERVICE|SERVREST||services.read.sqlrpgle|services.ileastic.sqlrpgle|services.iws.sqlrpgle|services.iws.bnd|services.read.bnddir|services.iws.bnddir|services.bnd\n'
             );
         } finally {
             fs.rmSync(temporaryDirectory, { recursive: true, force: true });

@@ -3,7 +3,10 @@ export { buildCatalogServerSpecs } from './server-compiler.js';
 export { generateCatalogBinder } from './binder.js';
 export { generateCatalogIleasticInterface } from './ileastic-interface.js';
 export { generateCatalogIleasticWrapper } from './ileastic.js';
-export { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
+export {
+    generateCatalogIwsBindingDirectory,
+    generateCatalogIwsReadBindingDirectory
+} from './iws-binding-directory.js';
 export { generateCatalogIwsBinder } from './iws-binder.js';
 export {
     generateCatalogIwsInterface,

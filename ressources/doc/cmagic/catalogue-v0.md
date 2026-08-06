@@ -46,11 +46,13 @@ La commande écrit, dans un sous-dossier portant le nom de la ressource :
 
 Pour préserver la compatibilité du générateur historique, les sources ILEastic restent
 toujours présentes. La propriété `ileasticObject` active leur cible de compilation BOB.
-Le choix IWS ajoute six artefacts :
+Le choix IWS ajoute sept artefacts :
 
 - `iwsObject` génère `{resource}.iws.rpgleinc`, `{resource}.iws.sqlrpgle` et
   `{resource}.iws.bnd` ;
-- `{resource}.iws.bnddir` décrit le binding directory applicatif du wrapper ;
+- `{resource}.read.bnddir` décrit le binding directory utilisé pour construire le
+  wrapper ;
+- `{resource}.iws.bnddir` décrit le binding directory utilisé par ses tests ;
 - `includes/{resource}.iws.rpgleinc` adapte les chemins d'include aux tests ;
 - `{iwsObject}.test.sqlrpgle` fournit l'enveloppe RPGUnit du transport IWS.
 
@@ -368,11 +370,15 @@ service program `CIWS`, comme `applicationTemplate` et le projet de référence
 `projets_annexes/client`. Ces composants constituent le runtime partagé ; ils ne sont
 pas recopiés pour chaque catalogue généré.
 
-Le générateur produit également `{resource}.iws.bnddir` et la cible
-`{ENTITY}.BNDDIR`. Ce binding directory applicatif référence le service program de
-lecture (`SERVICE` dans l'exemple) et `CIWS`, puis le wrapper le déclare dans
-`ctl-opt bnddir`. La compilation ne demande donc plus d'ajouter manuellement les
-services générés au binding directory partagé `CKOOL`.
+Le générateur produit deux binding directories applicatifs. Le fichier
+`{resource}.read.bnddir` crée `{ENTITY}.BNDDIR` avec le seul service program de lecture
+(`SERVICE` dans l'exemple), afin de construire le wrapper. Après cette construction,
+`{resource}.iws.bnddir` crée `{IWSOBJECT}.BNDDIR` avec le service de lecture et le
+wrapper (`SERVICE` et `SERVIWS`) pour les tests RPGUnit.
+
+`CIWS` reste fourni par le binding directory partagé `CKOOL`, déjà déclaré dans le
+`ctl-opt bnddir` du wrapper. Le graphe généré ne crée donc ni entrée applicative pour
+`CIWS`, ni dépendance directe vers `CIWS.SRVPGM`.
 
 Le contrat IWS de lecture couvre `LIST`/`SEARCH` et `GET`. Le compilateur exige encore
 `LIST` lorsqu'une entité choisit `iwsObject` : une exposition IWS limitée au seul
@@ -441,9 +447,14 @@ Avec `iwsObject "SERVIWS"`, les règles de transport deviennent :
 
 ```make
 SERVIWS.MODULE: services.iws.sqlrpgle
-SERVICE.BNDDIR: services.iws.bnddir SERVICE.SRVPGM CIWS.SRVPGM
+SERVICE.BNDDIR: services.read.bnddir SERVICE.SRVPGM
 SERVIWS.SRVPGM: services.iws.bnd SERVIWS.MODULE SERVICE.BNDDIR
+SERVIWS.BNDDIR: services.iws.bnddir SERVIWS.SRVPGM
 ```
+
+`services.read.bnddir` contient `SERVICE`. `services.iws.bnddir` contient `SERVICE` et
+`SERVIWS`. Cette séparation garde le graphe acyclique et permet aux tests du transport
+de résoudre les deux services programs sans modifier `CKOOL`.
 
 Le binder IWS utilise la signature `SERVIWS.0.0.1`. Il conserve
 `service_getlist_iws` comme premier export et ajoute `service_getone_iws` lorsque la

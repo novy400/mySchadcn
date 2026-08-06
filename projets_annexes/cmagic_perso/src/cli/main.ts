@@ -96,6 +96,13 @@ export const generateCatalogAction = async (
                 chalk.green(`IWS binder generated: ${artifact.iwsBinder}`)
             );
         }
+        if (artifact.iwsReadBindingDirectory) {
+            console.log(
+                chalk.green(
+                    `IWS read binding directory generated: ${artifact.iwsReadBindingDirectory}`
+                )
+            );
+        }
         if (artifact.iwsBindingDirectory) {
             console.log(
                 chalk.green(

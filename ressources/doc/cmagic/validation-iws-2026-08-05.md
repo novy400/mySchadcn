@@ -134,12 +134,16 @@ Le fichier `services.openapi.json` de CMagic n'est pas le document produit par I
 deux artefacts effectivement issus du déploiement ont maintenant été archivés :
 
 - [swagger.json](./swagger.json), Swagger 2.0 intitulé `SERVIWS3 APIs`, avec la base
-  `/web/services/SERVIWS3` et l'opération `service_getlist_iws` ;
-- [SERVIWS3.pcml](./SERVIWS3.pcml), PCML 7.0 de la procédure
-  `service_getlist_iws` portée par `/QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM`.
+  `/web/services/SERVIWS3` et les opérations `service_getlist_iws` et
+  `service_getone_iws` ;
+- [SERVIWS3.pcml](./SERVIWS3.pcml), PCML 7.0 des deux procédures portées par
+  `/QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM` ;
+- [testCurl.html](./testCurl.html), export de la session du 6 août contenant notamment
+  le corps nominal de `GET /A00`.
 
 Les structures `service_item_iws_t`, `errorItem` et
-`service_getlist_iwsResult` concordent avec les sources générées et le corps HTTP
-observé. Le Swagger déduit du PCML ne déclare ni les paramètres de `QUERY_STRING` ni
-le statut `400` dynamique ; ces comportements restent prouvés par les appels HTTP de
-ce relevé. La dernière réserve documentaire de la session est fermée.
+`service_getlist_iwsResult` concordent avec les sources générées et les corps HTTP
+observés. Le Swagger déduit du PCML ne déclare ni les paramètres de `QUERY_STRING` ni
+les statuts dynamiques `400`/`404` ; ces comportements doivent être prouvés par les
+appels HTTP. Le relevé du 5 août couvre `LIST`. L'export du 6 août couvre le corps
+nominal de `GET /A00`, mais pas encore le statut explicite ni le cas absent `/ZZZ`.

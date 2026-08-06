@@ -11,6 +11,7 @@ import {
     catalogIleasticSourceName,
     catalogIwsBinderSourceName,
     catalogIwsBindingDirectorySourceName,
+    catalogIwsReadBindingDirectorySourceName,
     catalogIwsInterfaceSourceName,
     catalogIwsSourceName,
     catalogIwsTestSourceName,
@@ -27,7 +28,10 @@ import type { CatalogDiagnostic, CatalogSpec } from './catalog-spec.js';
 import { generateCatalogDdl } from './ddl.js';
 import { generateCatalogIleasticInterface } from './ileastic-interface.js';
 import { generateCatalogIleasticWrapper } from './ileastic.js';
-import { generateCatalogIwsBindingDirectory } from './iws-binding-directory.js';
+import {
+    generateCatalogIwsBindingDirectory,
+    generateCatalogIwsReadBindingDirectory
+} from './iws-binding-directory.js';
 import { generateCatalogIwsBinder } from './iws-binder.js';
 import {
     generateCatalogIwsInterface,
@@ -76,6 +80,7 @@ export type GeneratedCatalogArtifactPaths = {
     iwsTest?: string;
     iwsTestInterface?: string;
     iwsBinder?: string;
+    iwsReadBindingDirectory?: string;
     iwsBindingDirectory?: string;
     ddl: string;
     binder: string;
@@ -175,6 +180,10 @@ const writeCatalogArtifacts = (
                           resourceDirectory,
                           catalogIwsBinderSourceName(spec.resource)
                       ),
+                      iwsReadBindingDirectory: path.join(
+                          resourceDirectory,
+                          catalogIwsReadBindingDirectorySourceName(spec.resource)
+                      ),
                       iwsBindingDirectory: path.join(
                           resourceDirectory,
                           catalogIwsBindingDirectorySourceName(spec.resource)
@@ -268,6 +277,7 @@ const writeCatalogArtifacts = (
             artifacts.iws !== undefined &&
             artifacts.iwsInterface !== undefined &&
             artifacts.iwsBinder !== undefined &&
+            artifacts.iwsReadBindingDirectory !== undefined &&
             artifacts.iwsBindingDirectory !== undefined
         ) {
             writeArtifact(
@@ -278,6 +288,10 @@ const writeCatalogArtifacts = (
             writeArtifact(
                 artifacts.iwsBinder,
                 generateCatalogIwsBinder(spec)
+            );
+            writeArtifact(
+                artifacts.iwsReadBindingDirectory,
+                generateCatalogIwsReadBindingDirectory(spec)
             );
             writeArtifact(
                 artifacts.iwsBindingDirectory,
