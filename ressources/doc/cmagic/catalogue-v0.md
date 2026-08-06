@@ -29,6 +29,12 @@ node bin/cli.js generate-catalog examples/service-catalogue.cmagic `
   --destination examples/generated-catalog
 ```
 
+L'include canonique du runtime est `cmagic/includes/cmagic.rpgleinc`, dans le dépôt
+CMagic. Les copies actives de `cMagicIws`, `cMagicTest`, `applicationTemplate`, `client`
+et `cmagic_perso/examples` doivent rester alignées sur ce fichier. Toute évolution de
+`CMAGIC_supportedField`, comme l'ajout de `maxLength`, doit mettre à jour dans le même
+changement l'include partagé et les artefacts qui renseignent cette métadonnée.
+
 La commande écrit, dans un sous-dossier portant le nom de la ressource :
 
 - `{resource}.catalog-spec.json` ;
@@ -275,6 +281,11 @@ procédure se trouve entre les marqueurs `CMAGIC:MANUAL_START/END` : le dévelop
 y ajouter ses règles de gestion, avec déclarations locales si nécessaire. Cette zone
 est conservée lors des régénérations, alors que les contrôles basiques qui l'entourent
 continuent d'être régénérés.
+
+La procédure contractuelle et exportée reste `{entity}_isValid`. Son hook interne
+`{entity}_isValid_business` est défini directement dans le module, sans prototype
+`dcl-pr` explicite. Cette forme a été compilée et validée sur IBM i ; l'appel et la zone
+protégée restent présents dans chaque source générée.
 
 Le squelette du module se trouve dans
 `src/templates/catalog-read.sqlrpgle.hbs` et inclut le fichier
@@ -550,9 +561,11 @@ historique des dix artefacts par catalogue reste inchangée.
 - enrichissement de `CMAGIC_supportedField` avec les droits distincts de recherche,
   filtre et tri ;
 - durcissement de `cmagic_computeSqlClauses` pour lier ou échapper les valeurs ;
-- compilation et exécution du module généré sur un IBM i réel.
+- tests RPGUnit dédiés à `service_isValid`, `service_create` et
+  `service_create_iws` ; les suites de lecture existantes et la recette HTTP de création
+  sont déjà validées.
 
-Le wrapper IWS de lecture a été compilé, redéployé et accepté sur IBM i le 6 août 2026
-avec un identifiant existant et des identifiants absents. La verticale `CREATE` est
-implémentée et validée localement ; sa compilation, son redéploiement et sa recette IBM i
-restent à exécuter avant d'aborder `UPDATE`, puis `DELETE`.
+Le wrapper IWS couvrant `LIST`, `GET` et `CREATE` a été compilé, redéployé et accepté sur
+IBM i le 6 août 2026. La recette a confirmé la création `201`, la relecture `200`, le
+doublon `409/CAT1002`, la validation `400/CAT1001` et le nettoyage des données de test.
+La verticale `CREATE` est donc terminée avant d'aborder `UPDATE`, puis `DELETE`.

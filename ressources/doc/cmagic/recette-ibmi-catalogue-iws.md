@@ -884,7 +884,7 @@ l'analyse des résultats.
 | `X-Total-Count` | | | |
 | CORS | | | |
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
-| `CREATE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `201/400/409` à exécuter | valider avant `UPDATE` |
+| `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO avant `UPDATE` |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -895,17 +895,17 @@ l'analyse des résultats.
 | 1. Artefacts figés | OK local tranche 8 | 128 tests, lint, build et 21 artefacts déterministes validés localement |
 | 2. Sources transférées | OK | projet de validation `cMagicIws` |
 | 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
-| 4. Six objets compilés | OK | `CMAGIC.0.0.2`, `SERVICE` et `SERVIWS3` reconstruits avec succès |
-| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active |
-| 6. Contrat IWS sauvegardé | OK | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; `/openapi/` non applicable |
-| 7. Requêtes HTTP exécutées | OK accepté | [relevé HTTP](./validation-iws-2026-08-05.md) pour `LIST` ; [capture](./image/recette-ibmi-catalogue-iws/http-get-200-404-success.png) avec corps et statuts issus de requêtes absentes distinctes |
-| 8. Preuves conservées | OK | captures, [export curl](./testCurl.html), relevé HTTP, Swagger et PCML archivés |
+| 4. Objets compilés | OK | `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` reconstruits ; 2 fichiers RPGUnit, 10 cas et 38 assertions réussis |
+| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active avec `service_create_iws` publié en `POST /` |
+| 6. Contrat IWS sauvegardé | OK accepté | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel |
+| 7. Requêtes HTTP exécutées | OK | [export curl](./testCurl.html) : `ZC4` absent, création `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001`, création `ZC5` puis nettoyage |
+| 8. Preuves conservées | OK | export curl, Swagger, PCML et [capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786012662639.png) archivés |
 
-Conclusion de la session : **GO**. Le service
-IWS répond avec les helpers CIWS génériques, la validation de longueur est centralisée
-dans `cmagic_sanitizeContext` et la reprise après erreur est confirmée. Les en-têtes
-HTTP, le Swagger IWS 2.6 et le PCML sont archivés. L'absence de `/openapi/` est normale
-pour cette version.
+Conclusion de la session : **GO pour la tranche 8**. Le service IWS répond avec les
+helpers CIWS génériques, la validation de longueur est centralisée dans
+`cmagic_sanitizeContext` et `service_isValid` précède toute écriture. La procédure
+métier protégée reste disponible sans prototype privé explicite. Les réponses HTTP de
+création et d'erreur, le nettoyage, le Swagger IWS 2.6 et le PCML sont archivés.
 
 Conclusion :
 
@@ -992,10 +992,37 @@ Ces observations confirment séparément les deux comportements. Le statut et le
 proviennent pas du même identifiant absent, mais cette limite est explicitement acceptée
 par le propriétaire du projet le 6 août 2026. La tranche 7 est **GO**.
 
+## Compte rendu de la session de tests CREATE du 6 août 2026
+
+Le premier source transféré déclarait un prototype privé explicite pour
+`service_isValid_business`. La compilation IBM i a confirmé que ce prototype devait
+être supprimé. La procédure contractuelle reste `service_isValid` ; le générateur a été
+corrigé en conséquence et son hook interne protégé reste présent dans
+`services.read.sqlrpgle`.
+
+![Compilation et suites RPGUnit réussies](./image/recette-ibmi-catalogue-iws/1786012662639.png)
+
+Le relevé [testCurl.html](./testCurl.html) confirme la verticale complète :
+
+- `GET /ZC4` initial : `404` ;
+- `POST /` pour `ZC4` : `201`, puis `GET /ZC4` : `200` ;
+- second `POST /` pour `ZC4` : `409` avec `CAT1002/conflict` ;
+- identifiant invalide : `400` avec `CAT1001/id` ;
+- `POST /` pour `ZC5` : `201` ;
+- suppression des lignes `DEPTNO LIKE 'ZC%'`, puis contrôle d'une liste vide.
+
+Le Swagger et le PCML décrivent maintenant les trois procédures publiques. Leur réponse
+de succès statique reste annoncée à `200`, limite du contrat exporté par IWS 2.6, mais le
+mapping dynamique de `httpStatus` renvoie bien le `201` observé. La tranche 8 est
+**GO**.
+
+
 ### Suivi non bloquant
 
 - [ ] ajouter des tests RPGUnit pour `service_get` ;
 - [ ] ajouter des tests RPGUnit pour `service_getone_iws` ;
+- [ ] ajouter des tests RPGUnit dédiés à `service_isValid`, `service_create` et
+  `service_create_iws` ; la recette HTTP couvre déjà leurs comportements publics ;
 
 ### Couverture RPGUnit `LIST` déjà acquise
 

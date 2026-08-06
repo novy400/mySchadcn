@@ -124,7 +124,8 @@ describe('Catalogue RPG read generator', () => {
 
         expect(source).toContain('dcl-proc service_create export;');
         expect(source).toContain('dcl-proc service_isValid export;');
-        expect(source).toContain('dcl-pr service_isValid_business ind;');
+        expect(source).not.toContain('dcl-pr service_isValid_business ind;');
+        expect(source).toContain('dcl-proc service_isValid_business;');
         expect(source).toContain(
             'service_isValid(service_listeAction.creation'
         );
@@ -143,9 +144,6 @@ describe('Catalogue RPG read generator', () => {
 
         expect(source.indexOf('service_isValid(service_listeAction.creation')).toBeLessThan(
             source.indexOf('INSERT INTO DEPARTMENT')
-        );
-        expect(source.indexOf('dcl-pr service_isValid_business ind;')).toBeLessThan(
-            source.indexOf('if not service_isValid_business(')
         );
     });
 

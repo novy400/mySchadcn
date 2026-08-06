@@ -34,6 +34,19 @@
         <data length="4" name="httpStatus" precision="31" type="int" usage="output"/>
         <data count="10" length="100" name="httpHeaders" type="char" usage="output"/>
     </program>
+    <program entrypoint="service_create_iws" errormessage="" httpheaders="*NONE" httpstatusonfailure="500"
+        httpstatusonsuccess="200" inputWrapperIdentifier="service_create_iwsInput" name="service_create_iws"
+        outputWrapperIdentifier="service_create_iwsResult" parseorder="errors_LENGTH item errors httpStatus httpHeaders"
+        path="/QSYS.LIB/TESTBIN.LIB/SERVIWS.SRVPGM" restConsumes="application/json" restHttpRequestMethod="POST"
+        restOutErrorParam="*ALL" restOutHeadersParam="httpHeaders" restOutResponseCodeParam="httpStatus"
+        restProduces="application/json" threadsafe="false" trimmode="*TRAILING" wrapInputParams="false" wrapOutputParam="true">
+        <data name="input" struct="service_detail_iws_t" type="struct" usage="input"/>
+        <data name="item" struct="service_detail_iws_t" type="struct" usage="output"/>
+        <data init="10" length="4" name="errors_LENGTH" precision="31" transient="true" type="int" usage="output"/>
+        <data count="errors_LENGTH" name="errors" struct="errorItem" type="struct" usage="output"/>
+        <data length="4" name="httpStatus" precision="31" type="int" usage="output"/>
+        <data count="10" length="100" name="httpHeaders" type="char" usage="output"/>
+    </program>
     <program entrypoint="service_getlist_iws" errormessage="" httpheaders="*NONE" httpstatusonfailure="500"
         httpstatusonsuccess="200" inputWrapperIdentifier="service_getlist_iwsInput" name="service_getlist_iws"
         outputWrapperIdentifier="service_getlist_iwsResult"

@@ -23,13 +23,6 @@ dcl-proc service_reject_query;
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
-dcl-pr service_isValid_business ind;
-  pAction like(GLOBAL_codeAction) const;
-  pBeforeDetail likeDS(service_detail_t) const;
-  pAfterDetail likeDS(service_detail_t) const;
-  pErrors likeDS(GLOBAL_listError);
-end-pr;
-
 dcl-proc service_reject_mutation;
   dcl-pi *n;
     pErrors likeDS(GLOBAL_listError);

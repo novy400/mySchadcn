@@ -108,7 +108,7 @@
 </pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   975  100   975    0     0  70652      0 --:--:-- --:--:-- --:--:-- 75000
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   975  100   975    0     0  39690      0 --:--:-- --:--:-- --:--:-- 40625
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><h2 id="pagination">pagination</h2></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?page=1&perPage=3" | python3 -m json.tool</pre><br /><pre>
 {
     "items": [
@@ -140,7 +140,7 @@
 </pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   329  100   329    0     0   6633      0 --:--:-- --:--:-- --:--:--  7651
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   329  100   329    0     0   6456      0 --:--:-- --:--:-- --:--:--  6714
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
   deptno, deptname,mgrno, admrdept, location from db2sample.department limit 3 offset 0</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">A00</td><td style="text-align: left;">SPIFFY COMPUTER SERVICE DIV.</td><td style="text-align: left;">000010</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">B01</td><td style="text-align: left;">PLANNING TEST</td><td style="text-align: left;">000020</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">C01</td><td style="text-align: left;">INFORMATION CENTER</td><td style="text-align: left;">000030</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?idServiceAdmin=A00&page=1&perPage=6" | python3 -m json.tool</pre><br /><pre>
 {
@@ -187,7 +187,7 @@
 </pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   510  100   510    0     0   6773      0 --:--:-- --:--:-- --:--:--  7391
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   510  100   510    0     0   6442      0 --:--:-- --:--:-- --:--:--  6538
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
   deptno, deptname,mgrno, admrdept, location from db2sample.department where admrdept ='A00' limit 6 offset 0</pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">A00</td><td style="text-align: left;">SPIFFY COMPUTER SERVICE DIV.</td><td style="text-align: left;">000010</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">B01</td><td style="text-align: left;">PLANNING TEST</td><td style="text-align: left;">000020</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">C01</td><td style="text-align: left;">INFORMATION CENTER</td><td style="text-align: left;">000030</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">D01</td><td style="text-align: left;">DEVELOPMENT CENTER</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr><tr><td style="text-align: left;">E01</td><td style="text-align: left;">SUPPORT SERVICES</td><td style="text-align: left;">000050</td><td style="text-align: left;">A00</td><td style="text-align: left;">-</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3/A00" | python3 -m json.tool</pre><br /><pre>
 {
@@ -203,7 +203,7 @@
 </pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   125  100   125    0     0  13430      0 --:--:-- --:--:-- --:--:-- 15625
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   125  100   125    0     0  11962      0 --:--:-- --:--:-- --:--:-- 13888
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl  "http://cmspw7t:10074/web/services/SERVIWS3/XXX" | python3 -m json.tool</pre><br /><pre>
 {
     "item": {
@@ -226,11 +226,45 @@
 </pre><br /><pre>
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188  100   188    0     0  19733      0 --:--:-- --:--:-- --:--:-- 23500
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188  100   188    0     0  45786      0 --:--:-- --:--:-- --:--:-- 62666
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -D get-zzz.headers -o get-zzz.json -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZZZ</pre><br /><pre>
 HTTP 404
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -D get-a00.headers -o get-a00.json -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/A00</pre><br /><pre>
 HTTP 200
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json"  -d '{ "id": "ZC2", "nom": "CMAGIC CREATE TEST", "idManageur": "", "idServiceAdmin": "A00","site": "RECETTE"}' http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"ZC2","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
+  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno ='ZC1'</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC3","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"ZC3","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}HTTP 201
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC1","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"ZC1","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}HTTP 201
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC4</pre><br /><pre>
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"id","code":"CAT0001","valeur":"","text":"Service not found","textUser":"Service not found"}]}HTTP 404
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}
+HTTP 201
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS  -w "HTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/ZC4</pre><br /><pre>
+{"item":{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}HTTP 200
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC4","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" http://cmspw7t:10074/web/services/SERVIWS3/</pre><br /><pre>
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"conflict","code":"CAT1002","valeur":"","text":"Service already exists","textUser":"Service already exists"}]}
+HTTP 409
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" 'http://cmspw7t:10074/web/services/SERVIWS3/'</pre><br /><pre>
+{"item":{"id":"","nom":"","idManageur":"","idServiceAdmin":"","site":""},"errors":[{"nomZone":"id","code":"CAT1001","valeur":"","text":"id is required","textUser":"id is required"}]}
+HTTP 400
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl -sS -X POST -H "Content-Type: application/json" -d '{"id":"ZC5","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"}' -w "\nHTTP %{http_code}\n" 'http://cmspw7t:10074/web/services/SERVIWS3/'</pre><br /><pre>
+{"item":{"id":"ZC5","nom":"CMAGIC CREATE TEST","idManageur":"","idServiceAdmin":"A00","site":"RECETTE"},"errors":[]}
+HTTP 201
+</pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>select
+  deptno, deptname,mgrno, admrdept, location from db2sample.department where deptno like 'ZC%' </pre><br /><table style="width: 100%; margin-left: auto; margin-right: auto;"><thead><tr><th style="text-align: left;">DEPTNO</th><th style="text-align: left;">DEPTNAME</th><th style="text-align: left;">MGRNO</th><th style="text-align: left;">ADMRDEPT</th><th style="text-align: left;">LOCATION</th></tr></thead><tbody><tr><td style="text-align: left;">ZC1</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC2</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC3</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC4</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr><tr><td style="text-align: left;">ZC5</td><td style="text-align: left;">CMAGIC CREATE TEST</td><td style="text-align: left;">-</td><td style="text-align: left;">A00</td><td style="text-align: left;">RECETTE</td></tr></tbody></table></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>delete  from db2sample.department where deptno like 'ZC%' </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><pre>curl "http://cmspw7t:10074/web/services/SERVIWS3?id_LIKE=ZC&page=1&perPage=6" | python3 -m json.tool</pre><br /><pre>
+{
+    "items": [],
+    "totalCount": 0,
+    "errors": []
+}
+</pre><br /><pre>
+% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    39  100    39    0     0    583      0 --:--:-- --:--:-- --:--:--   590
 </pre></td></tr><tr><td class="notebookCell" style="padding-top: 0.2em; padding-bottom: 0.2em;"><hr /></td></tr>
                       </tbody>
                     </table>

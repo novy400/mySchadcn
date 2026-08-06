@@ -65,10 +65,11 @@ dcl-enum CMAGIC_typeChamp qualified;
 end-enum;
 
 dcl-ds CMAGIC_supportedField template qualified;
-  orderTri int(10);  // Ordre de tri des champs  
+  orderTri int(10);  // Ordre de tri des champs
   name char(32);      // Nom du champ
   sqlField char(32);   // Nom du champ SQL
   dataType char(1);   // Type de données (char, int, date, etc.)
+  maxLength int(10);  // Longueur maximale du filtre, 0 = non contrôlée
 end-ds;
 
 dcl-ds CMAGIC_supportedFields template qualified;

@@ -19,6 +19,7 @@ documentaire, par tranches petites et vérifiables.
 | 5 | Traiter la synchronisation des projections après mutation | Terminé |
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
 | 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
+| 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -326,20 +327,26 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - build CMagic : réussi ;
 - génération répétée : vingt et un artefacts strictement identiques.
 
-### Validation IBM i à réaliser
+### Validation IBM i du 6 août 2026
 
-- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
-  les sources générées ;
-- compléter les tests RPGUnit pour `service_isValid`, `service_create` et
-  `service_create_iws` ;
-- redéployer `SERVIWS3` avec `service_create_iws` comme `POST /` ;
-- vérifier une création `201`, sa relecture `200`, le doublon `409`, une validation
-  `400`, puis supprimer uniquement la ligne de recette ;
-- archiver le nouveau Swagger, le PCML, l'export curl et les captures.
+- reconstruction réussie de `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et
+  `SERVIWS.BNDDIR` ; la procédure contractuelle reste `service_isValid`. Le prototype
+  explicite de son hook interne `service_isValid_business`, inutile et incompatible
+  avec cette compilation IBM i, a été retiré du générateur tandis que le hook protégé
+  reste présent ;
+- suites RPGUnit existantes réussies : 2 fichiers, 10 cas, 38 assertions et aucun
+  échec ;
+- redéploiement de `SERVIWS3` avec `service_create_iws` comme `POST /` ;
+- création de `ZC4` avec `201`, relecture avec `200`, doublon avec `409/CAT1002`,
+  identifiant invalide avec `400/CAT1001`, seconde création de `ZC5` avec `201`, puis
+  suppression des seules lignes `ZC%` et contrôle d'une liste finale vide ;
+- Swagger, PCML, export curl et capture RPGUnit archivés ;
+- le Swagger et l'attribut PCML statique annoncent encore un succès `200`, mais le
+  paramètre de réponse dynamique `httpStatus` produit bien le `201` observé. Cette
+  limite documentaire d'IWS 2.6 est acceptée pour la v0.
 
 ## Suite
 
-Les sept premières tranches sont terminées. La tranche 8 est terminée localement et
-attend sa validation IBM i. Après cette validation, l'ordre recommandé reste `UPDATE`,
-puis `DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement
-du modèle des commandes demeure une évolution séparée.
+Les huit premières tranches sont terminées. L'ordre recommandé reste `UPDATE`, puis
+`DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement du
+modèle des commandes demeure une évolution séparée.

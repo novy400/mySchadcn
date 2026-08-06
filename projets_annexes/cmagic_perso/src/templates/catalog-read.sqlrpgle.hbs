@@ -31,13 +31,6 @@ dcl-proc {{procedures.rejectQuery}};
 end-proc;
 
 {{#if procedures.hasCreate}}
-dcl-pr {{procedures.isValidBusiness}} ind;
-  pAction like(GLOBAL_codeAction) const;
-  pBeforeDetail likeDS({{entityName}}_detail_t) const;
-  pAfterDetail likeDS({{entityName}}_detail_t) const;
-  pErrors likeDS(GLOBAL_listError);
-end-pr;
-
 dcl-proc {{procedures.rejectMutation}};
   dcl-pi *n;
     pErrors likeDS(GLOBAL_listError);
