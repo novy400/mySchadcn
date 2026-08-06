@@ -4,7 +4,8 @@ import { catalogObjectName } from './ibmi-object-name.js';
 import {
     catalogIwsCreateProcedure,
     catalogIwsGetListProcedure,
-    catalogIwsGetOneProcedure
+    catalogIwsGetOneProcedure,
+    catalogIwsUpdateProcedure
 } from './iws.js';
 
 const templateName = 'catalog-iws.bnd.hbs';
@@ -37,6 +38,9 @@ const buildTemplateModel = (
                 : []),
             ...(spec.capabilities.includes('create')
                 ? [catalogIwsCreateProcedure(spec.entity)]
+                : []),
+            ...(spec.capabilities.includes('update')
+                ? [catalogIwsUpdateProcedure(spec.entity)]
                 : [])
         ]
     };

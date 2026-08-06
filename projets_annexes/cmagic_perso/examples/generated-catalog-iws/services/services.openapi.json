@@ -235,6 +235,62 @@
             "description": "Service inconnu"
           }
         }
+      },
+      "put": {
+        "operationId": "updateService",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 3
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Service"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service modifie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Service"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Donnees Service invalides"
+          },
+          "404": {
+            "description": "Service inconnu"
+          },
+          "409": {
+            "description": "Conflit pendant la modification de Service"
+          },
+          "500": {
+            "description": "Erreur technique pendant la modification de Service"
+          }
+        }
       }
     }
   },

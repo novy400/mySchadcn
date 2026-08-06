@@ -40,6 +40,7 @@ type OpenApiOperation = {
 type OpenApiPath = {
     get?: OpenApiOperation;
     post?: OpenApiOperation;
+    put?: OpenApiOperation;
 };
 
 export type OpenApiDocument = {
@@ -233,6 +234,39 @@ export const generateOpenApiDocument = (spec: CatalogSpec): OpenApiDocument => {
                     },
                     '500': {
                         description: `Erreur technique pendant la creation de ${spec.entity}`
+                    }
+                }
+            }
+        };
+    }
+
+    if (spec.capabilities.includes('update')) {
+        paths[itemPath] = {
+            ...paths[itemPath],
+            put: {
+                operationId: `update${spec.entity}`,
+                parameters: [identifierParameter],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: recordReference
+                        }
+                    }
+                },
+                responses: {
+                    '200': recordResponse(`${spec.entity} modifie`),
+                    '400': {
+                        description: `Donnees ${spec.entity} invalides`
+                    },
+                    '404': {
+                        description: `${spec.entity} inconnu`
+                    },
+                    '409': {
+                        description: `Conflit pendant la modification de ${spec.entity}`
+                    },
+                    '500': {
+                        description: `Erreur technique pendant la modification de ${spec.entity}`
                     }
                 }
             }

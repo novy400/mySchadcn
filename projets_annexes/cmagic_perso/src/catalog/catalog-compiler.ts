@@ -359,7 +359,8 @@ const compileEntity = (
         capability =>
             capability !== 'list' &&
             capability !== 'get' &&
-            capability !== 'create'
+            capability !== 'create' &&
+            capability !== 'update'
     );
     if (unsupportedCapabilities.length > 0) {
         diagnostics.push(
@@ -379,6 +380,42 @@ const compileEntity = (
                 'CATALOG_ILEASTIC_CREATE_UNSUPPORTED',
                 entity,
                 `La capacite CREATE de ${entity.name} est actuellement exposee uniquement avec IWS.`
+            )
+        );
+    }
+    if (
+        ileasticObject !== undefined &&
+        capabilities.includes('update')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_ILEASTIC_UPDATE_UNSUPPORTED',
+                entity,
+                `La capacite UPDATE de ${entity.name} est actuellement exposee uniquement avec IWS.`
+            )
+        );
+    }
+    if (
+        capabilities.includes('update') &&
+        !capabilities.includes('get')
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_UPDATE_GET_REQUIRED',
+                entity,
+                `La capacite UPDATE de ${entity.name} exige GET pour charger l'etat precedent et verifier son existence.`
+            )
+        );
+    }
+    if (
+        capabilities.includes('update') &&
+        entity.fields.every(field => field.key)
+    ) {
+        diagnostics.push(
+            diagnostic(
+                'CATALOG_UPDATE_FIELD_REQUIRED',
+                entity,
+                `La capacite UPDATE de ${entity.name} exige au moins un champ non cle a modifier.`
             )
         );
     }

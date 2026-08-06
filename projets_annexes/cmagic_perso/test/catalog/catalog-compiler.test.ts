@@ -249,7 +249,7 @@ describe('CMagic Catalogue v0', () => {
         ]);
     });
 
-    test('compiles IWS as an alternative transport for LIST, GET and CREATE', async () => {
+    test('compiles IWS as an alternative transport for LIST, GET, CREATE and UPDATE', async () => {
         const model = await parseCMagicString(
             fs.readFileSync(
                 path.resolve('examples/service-catalogue-iws.cmagic'),
@@ -264,7 +264,7 @@ describe('CMagic Catalogue v0', () => {
             expect.objectContaining({
                 entity: 'Service',
                 iwsObject: 'SERVIWS',
-                capabilities: ['list', 'get', 'create']
+                capabilities: ['list', 'get', 'create', 'update']
             })
         );
         expect(compilation.specs[0]).not.toHaveProperty('ileasticObject');
@@ -400,6 +400,37 @@ describe('CMagic Catalogue v0', () => {
             })
         );
         expect(resourceContract.capabilities).toEqual(['read', 'create']);
+    });
+
+    test('publishes UPDATE in the OpenAPI and frontend contract', async () => {
+        const model = await parseCMagicString(`
+            entity Service resource "services" table "DEPARTMENT" {
+                id: String(3) column "DEPTNO" key required,
+                nom: String(36) column "DEPTNAME" required
+            }
+            view list for Service { id, nom }
+            operations for Service { LIST, GET, UPDATE }
+        `);
+        const [service] = buildCatalogSpecs(model).specs;
+
+        expect(service).toBeDefined();
+        const openApi = generateOpenApiDocument(service);
+        const resourceContract = generateResourceContract(service);
+
+        expect(openApi.paths['/api/services/{id}'].put).toEqual(
+            expect.objectContaining({
+                operationId: 'updateService',
+                requestBody: expect.objectContaining({ required: true }),
+                responses: expect.objectContaining({
+                    '200': expect.any(Object),
+                    '400': expect.any(Object),
+                    '404': expect.any(Object),
+                    '409': expect.any(Object),
+                    '500': expect.any(Object)
+                })
+            })
+        );
+        expect(resourceContract.capabilities).toEqual(['read', 'update']);
     });
 
     test('writes the thirteen deterministic catalogue artifacts', async () => {
@@ -1020,7 +1051,7 @@ end-proc;
         }
     });
 
-    test('accepts CREATE while keeping later mutations outside the current slice', async () => {
+    test('accepts CREATE and UPDATE while keeping DELETE outside the current slice', async () => {
         const createModel = await parseCMagicString(`
             entity Mutable resource "mutables" table "MUTABLE" {
                 id: Int column "ID" key required
@@ -1032,13 +1063,52 @@ end-proc;
         expect(createCompilation.diagnostics).toEqual([]);
         expect(createCompilation.specs[0]?.capabilities).toEqual(['create']);
 
-        const model = await parseCMagicString(`
+        const updateModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE" {
+                id: Int column "ID" key required,
+                label: String(40) column "LABEL" required
+            }
+            operations for Mutable { GET, UPDATE }
+        `);
+        const updateCompilation = buildCatalogSpecs(updateModel);
+
+        expect(updateCompilation.diagnostics).toEqual([]);
+        expect(updateCompilation.specs[0]?.capabilities).toEqual(['get', 'update']);
+
+        const updateWithoutGetModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE" {
+                id: Int column "ID" key required,
+                label: String(40) column "LABEL" required
+            }
+            operations for Mutable { UPDATE }
+        `);
+
+        expect(
+            buildCatalogSpecs(updateWithoutGetModel).diagnostics.map(
+                diagnostic => diagnostic.code
+            )
+        ).toEqual(['CATALOG_UPDATE_GET_REQUIRED']);
+
+        const updateWithoutFieldModel = await parseCMagicString(`
             entity Mutable resource "mutables" table "MUTABLE" {
                 id: Int column "ID" key required
             }
-            operations for Mutable { UPDATE, DELETE }
+            operations for Mutable { GET, UPDATE }
         `);
-        const compilation = buildCatalogSpecs(model);
+
+        expect(
+            buildCatalogSpecs(updateWithoutFieldModel).diagnostics.map(
+                diagnostic => diagnostic.code
+            )
+        ).toEqual(['CATALOG_UPDATE_FIELD_REQUIRED']);
+
+        const deleteModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE" {
+                id: Int column "ID" key required
+            }
+            operations for Mutable { DELETE }
+        `);
+        const compilation = buildCatalogSpecs(deleteModel);
 
         expect(compilation.specs).toEqual([]);
         expect(compilation.diagnostics.map(diagnostic => diagnostic.code)).toEqual([
@@ -1058,6 +1128,21 @@ end-proc;
                 diagnostic => diagnostic.code
             )
         ).toEqual(['CATALOG_ILEASTIC_CREATE_UNSUPPORTED']);
+
+        const ileasticUpdateModel = await parseCMagicString(`
+            entity Mutable resource "mutables" table "MUTABLE"
+                ileasticObject "MUTREST" {
+                id: Int column "ID" key required,
+                label: String(40) column "LABEL" required
+            }
+            operations for Mutable { GET, UPDATE }
+        `);
+
+        expect(
+            buildCatalogSpecs(ileasticUpdateModel).diagnostics.map(
+                diagnostic => diagnostic.code
+            )
+        ).toEqual(['CATALOG_ILEASTIC_UPDATE_UNSUPPORTED']);
 
         const iwsWithoutGetModel = await parseCMagicString(`
             entity Mutable resource "mutables" table "MUTABLE"

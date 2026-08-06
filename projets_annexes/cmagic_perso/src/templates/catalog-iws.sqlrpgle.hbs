@@ -160,6 +160,58 @@ dcl-proc {{procedures.createIws}} export;
 {{> handleUnexpectedIwsError procedure=procedures.createIws}}
 end-proc;
 {{/if}}
+{{#if hasUpdate}}
+dcl-proc {{procedures.updateIws}} export;
+  dcl-pi *n;
+    id {{id.rpgType}} const;
+    input likeDS({{detailType}}) const;
+    item likeDS({{detailType}});
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lUpdatedDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear item;
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_OK;
+  eval-corr lDetail = input;
+
+  if not {{procedures.update}}(id : lDetail : lErrors);
+    select;
+      when lErrors.listError(1).code = 'CAT0001'
+        and lErrors.listError(1).nomZone = 'id';
+        httpStatus = HTTPREST_NOTFOUND;
+      when lErrors.listError(1).nomZone = 'conflict';
+        httpStatus = HTTPREST_CONFLICT;
+      when lErrors.listError(1).nomZone = 'sql';
+        httpStatus = HTTPREST_SERVERERROR;
+      other;
+        httpStatus = HTTPREST_BADREQUEST;
+    endsl;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  clear lErrors;
+  if not {{procedures.get}}(id : lUpdatedDetail : lErrors);
+    httpStatus = HTTPREST_SERVERERROR;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+  eval-corr item = lUpdatedDetail;
+  httpStatus = HTTPREST_OK;
+
+  on-exit lAbended;
+{{> handleUnexpectedIwsError procedure=procedures.updateIws}}
+end-proc;
+{{/if}}
 {{#if hasGet}}
 dcl-proc {{procedures.getOneIws}} export;
   dcl-pi *n;

@@ -37,6 +37,9 @@ describe('Catalogue IWS generator', () => {
         expect(source).toContain(
             'dcl-pr service_getone_iws extproc(*dclcase);'
         );
+        expect(source).toContain(
+            'dcl-pr service_update_iws extproc(*dclcase);'
+        );
         expect(source).toContain('  id varchar(3) const;');
         expect(source).toContain(
             'item likeDS(service_detail_iws_t);'
@@ -117,6 +120,7 @@ describe('Catalogue IWS generator', () => {
                 "  EXPORT SYMBOL('service_getlist_iws')",
                 "  EXPORT SYMBOL('service_getone_iws')",
                 "  EXPORT SYMBOL('service_create_iws')",
+                "  EXPORT SYMBOL('service_update_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
@@ -160,8 +164,14 @@ describe('Catalogue IWS generator', () => {
         expect(generateCatalogIwsInterface(listOnlyService)).not.toContain(
             'service_create_iws'
         );
+        expect(generateCatalogIwsInterface(listOnlyService)).not.toContain(
+            'service_update_iws'
+        );
         expect(generateCatalogIwsWrapper(listOnlyService)).not.toContain(
             'service_create_iws'
+        );
+        expect(generateCatalogIwsWrapper(listOnlyService)).not.toContain(
+            'service_update_iws'
         );
         expect(generateCatalogIwsBinder(listOnlyService)).toBe(
             [
@@ -217,9 +227,81 @@ describe('Catalogue IWS generator', () => {
                 "  EXPORT SYMBOL('service_getlist_iws')",
                 "  EXPORT SYMBOL('service_getone_iws')",
                 "  EXPORT SYMBOL('service_create_iws')",
+                "  EXPORT SYMBOL('service_update_iws')",
                 'ENDPGMEXP',
                 ''
             ].join('\n')
+        );
+    });
+
+    test('publishes UPDATE with existence, validation and conflict outcomes', async () => {
+        const service = await compileIwsServiceCatalog();
+        const updateService = service;
+        const interfaceSource = generateCatalogIwsInterface(updateService);
+        const wrapperSource = generateCatalogIwsWrapper(updateService);
+
+        expect(interfaceSource).toContain(
+            'dcl-pr service_update_iws extproc(*dclcase);'
+        );
+        expect(interfaceSource).toContain('  id varchar(3) const;');
+        expect(interfaceSource).toContain(
+            '  input likeDS(service_detail_iws_t) const;'
+        );
+        expect(interfaceSource).toContain(
+            '  item likeDS(service_detail_iws_t);'
+        );
+
+        const updateSource = wrapperSource.slice(
+            wrapperSource.indexOf('dcl-proc service_update_iws export;')
+        );
+        expect(updateSource).toContain(
+            'if not service_update(id : lDetail : lErrors);'
+        );
+        expect(updateSource).toContain(
+            "when lErrors.listError(1).code = 'CAT0001'"
+        );
+        expect(updateSource).toContain(
+            "and lErrors.listError(1).nomZone = 'id';"
+        );
+        expect(updateSource).toContain('httpStatus = HTTPREST_NOTFOUND;');
+        expect(updateSource).toContain(
+            "when lErrors.listError(1).nomZone = 'conflict';"
+        );
+        expect(updateSource).toContain('httpStatus = HTTPREST_CONFLICT;');
+        expect(updateSource).toContain(
+            "when lErrors.listError(1).nomZone = 'sql';"
+        );
+        expect(updateSource).toContain('httpStatus = HTTPREST_BADREQUEST;');
+        expect(updateSource).toContain(
+            'if not service_get(id : lUpdatedDetail : lErrors);'
+        );
+        expect(updateSource).toContain('eval-corr item = lUpdatedDetail;');
+        expect(updateSource).toContain(
+            "errors(1).nomZone = 'service_update_iws';"
+        );
+
+        expect(generateCatalogIwsBinder(updateService)).toBe(
+            [
+                "STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')",
+                "  EXPORT SYMBOL('service_getlist_iws')",
+                "  EXPORT SYMBOL('service_getone_iws')",
+                "  EXPORT SYMBOL('service_create_iws')",
+                "  EXPORT SYMBOL('service_update_iws')",
+                'ENDPGMEXP',
+                ''
+            ].join('\n')
+        );
+    });
+
+    test('rejects an IWS UPDATE model that cannot load the previous state', async () => {
+        const service = await compileIwsServiceCatalog();
+        const updateWithoutGet = {
+            ...service,
+            capabilities: ['list', 'update'] as typeof service.capabilities
+        };
+
+        expect(() => generateCatalogIwsWrapper(updateWithoutGet)).toThrow(
+            'IWS UPDATE requires GET capability'
         );
     });
 
@@ -274,7 +356,7 @@ describe('Catalogue IWS generator', () => {
             expect(
                 generateCatalogIwsBinder(service, temporaryDirectory)
             ).toBe(
-                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws,service_create_iws\n'
+                'SERVIWS.0.0.1|service_getlist_iws,service_getone_iws,service_create_iws,service_update_iws\n'
             );
             expect(
                 generateCatalogIwsReadBindingDirectory(

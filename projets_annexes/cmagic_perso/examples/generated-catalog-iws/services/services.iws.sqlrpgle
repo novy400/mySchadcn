@@ -162,6 +162,66 @@ dcl-proc service_create_iws export;
       endif;
     endif;
 end-proc;
+dcl-proc service_update_iws export;
+  dcl-pi *n;
+    id varchar(3) const;
+    input likeDS(service_detail_iws_t) const;
+    item likeDS(service_detail_iws_t);
+    errors_LENGTH int(10);
+    errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+    httpStatus like(HTTPREST_httpStatus);
+    httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+  end-pi;
+  dcl-s lAbended ind inz(*off);
+  dcl-ds lDetail likeDS(service_detail_t) inz;
+  dcl-ds lUpdatedDetail likeDS(service_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+
+  clear item;
+  clear errors_LENGTH;
+  clear errors;
+  clear httpHeaders;
+  httpStatus = HTTPREST_OK;
+  eval-corr lDetail = input;
+
+  if not service_update(id : lDetail : lErrors);
+    select;
+      when lErrors.listError(1).code = 'CAT0001'
+        and lErrors.listError(1).nomZone = 'id';
+        httpStatus = HTTPREST_NOTFOUND;
+      when lErrors.listError(1).nomZone = 'conflict';
+        httpStatus = HTTPREST_CONFLICT;
+      when lErrors.listError(1).nomZone = 'sql';
+        httpStatus = HTTPREST_SERVERERROR;
+      other;
+        httpStatus = HTTPREST_BADREQUEST;
+    endsl;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+
+  clear lErrors;
+  if not service_get(id : lUpdatedDetail : lErrors);
+    httpStatus = HTTPREST_SERVERERROR;
+    errors_LENGTH = CIWS_setErrors(lErrors : errors);
+    return;
+  endif;
+  eval-corr item = lUpdatedDetail;
+  httpStatus = HTTPREST_OK;
+
+  on-exit lAbended;
+    if lAbended;
+      httpStatus = HTTPREST_SERVERERROR;
+      if errors_LENGTH = 0;
+        errors_LENGTH = 1;
+        errors(1).nomZone = 'service_update_iws';
+        errors(1).code = 'RNX9001';
+        errors(1).text =
+          'Unexpected error in service_update_iws';
+        errors(1).textUser = errors(1).text;
+      endif;
+    endif;
+end-proc;
 dcl-proc service_getone_iws export;
   dcl-pi *n;
     id varchar(3) const;

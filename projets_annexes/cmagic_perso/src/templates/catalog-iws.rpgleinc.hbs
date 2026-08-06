@@ -53,3 +53,14 @@ dcl-pr {{procedures.createIws}} extproc(*dclcase);
   httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
 end-pr;
 {{/if}}
+{{#if hasUpdate}}
+dcl-pr {{procedures.updateIws}} extproc(*dclcase);
+  id {{id.rpgType}} const;
+  input likeDS({{detailType}}) const;
+  item likeDS({{detailType}});
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+{{/if}}

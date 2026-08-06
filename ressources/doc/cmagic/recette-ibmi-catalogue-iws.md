@@ -7,8 +7,8 @@ Elle a été préparée pour la séance du **30 juillet 2026**, mise à jour le
 **5 août 2026** après la validation fonctionnelle du service IWS, puis étendue le
 **6 août 2026** avec le `GET` par identifiant et le retour d'expérience sur les binding
 directories. La correction du wrapper `LIST` validée sur IBM i est incluse dans
-`6d7a41e`. Le contrat `GET` est déployé et sa validation IBM i est acceptée avec la
-limite de preuve explicitée dans le compte rendu. La tranche `CREATE` est désormais
+`6d7a41e`. Les contrats `GET` et `CREATE` sont déployés et acceptés sur IBM i avec les
+limites de preuve explicitées dans le compte rendu. La tranche `UPDATE` est désormais
 implémentée et validée localement ; les étapes ci-dessous préparent sa première
 validation IBM i.
 
@@ -24,8 +24,8 @@ La recette doit établir que :
 1. les sources IWS générées se compilent sans modification manuelle ;
 2. `SERVICE.SRVPGM`, `SERVICE.BNDDIR`, `SERVIWS.SRVPGM` et `SERVIWS.BNDDIR` sont
    créés ;
-3. `SERVIWS` exporte `service_getlist_iws`, `service_getone_iws`, puis
-   `service_create_iws` ;
+3. `SERVIWS` exporte `service_getlist_iws`, `service_getone_iws`,
+   `service_create_iws`, puis `service_update_iws` ;
 4. le serveur IWS transmet `QUERY_STRING` au wrapper RPG ;
 5. les recherches, filtres, tris et paginations utilisent le même
    `service_search` que le transport ILEastic ;
@@ -34,15 +34,19 @@ La recette doit établir que :
 8. les erreurs de requête ne provoquent pas d'arrêt du service IWS ;
 9. `GET /SERVIWS3/{id}` renvoie un détail en `200` ou une erreur en `404` ;
 10. `POST /SERVIWS3/` crée une entité validée en `201`, rejette les données invalides
-    en `400`, les doublons en `409` et les erreurs techniques en `500`.
+    en `400`, les doublons en `409` et les erreurs techniques en `500` ;
+11. `PUT /SERVIWS3/{id}` modifie une entité existante en `200`, renvoie `404` si elle
+    n'existe pas, `400` si la validation échoue, `409` en cas de conflit et `500` pour
+    une erreur technique.
 
-Cette version couvre la lecture et la création :
+Cette version couvre la lecture, la création et la modification :
 
 - `LIST`/`SEARCH` a été validé sur IBM i le 5 août 2026 ;
 - `GET` par identifiant est généré, déployé et accepté sur IBM i : `A00` répond `200`,
   `/ZZZ` répond `404` et `/XXX` renvoie une erreur portant sur `id` ;
-- `CREATE` est généré et validé localement, mais pas encore accepté sur IBM i ;
-- `UPDATE` et `DELETE` ne sont pas générés ;
+- `CREATE` est généré, déployé et accepté sur IBM i ;
+- `UPDATE` est généré et validé localement, mais pas encore accepté sur IBM i ;
+- `DELETE` n'est pas généré ;
 - la réponse IWS nominale est `{ items, totalCount, errors }`, et non l'enveloppe
   ILEastic `{ data, total }` ;
 - la réponse IWS de détail est `{ item, errors }` ;
@@ -358,9 +362,9 @@ Attendu :
 - `SERVICE.BNDDIR` contient uniquement `SERVICE` ;
 - `SERVIWS.BNDDIR` contient `SERVICE` et `SERVIWS` ;
 - `SERVICE.SRVPGM` exporte `service_search`, `service_getSupportedFields`,
-  `service_get`, `service_create` et `service_isValid` ;
+  `service_get`, `service_create`, `service_isValid` et `service_update` ;
 - `SERVIWS.SRVPGM` exporte `service_getlist_iws` puis
-  `service_getone_iws`, puis `service_create_iws`.
+  `service_getone_iws`, `service_create_iws`, puis `service_update_iws`.
 
 Si le build échoue, conserver le premier message complet et le log. Ne pas corriger
 directement les sources générées : la correction devra être faite dans CMagic puis
@@ -385,8 +389,8 @@ Dans IBM Web Administration for i :
    demandé grâce à `pgminfo(*pcml:*module:*dclcase)` ;
 7. nommer la ressource `SERVIWS3` dans l'environnement de recette ;
 8. ne pas définir de chemin supplémentaire au niveau de la ressource ;
-9. sélectionner les procédures `service_getlist_iws`, `service_getone_iws` et
-   `service_create_iws`.
+9. sélectionner les procédures `service_getlist_iws`, `service_getone_iws`,
+   `service_create_iws` et `service_update_iws`.
 
 ### 7.1 Usage des paramètres
 
@@ -418,6 +422,18 @@ Pour `service_create_iws`, configurer :
 | Paramètre | Usage | Traitement IWS |
 | --- | --- | --- |
 | `input` | Input | corps JSON de l'entité à créer |
+| `item` | Output | corps JSON de l'entité persistée puis relue |
+| `errors_LENGTH` | Output | longueur du tableau `errors` |
+| `errors` | Output | corps JSON |
+| `httpStatus` | Output | **HTTP response/status code** |
+| `httpHeaders` | Output | **HTTP response headers** |
+
+Pour `service_update_iws`, configurer :
+
+| Paramètre | Usage | Traitement IWS |
+| --- | --- | --- |
+| `id` | Input | injecté depuis la variable `{id}` du chemin |
+| `input` | Input | corps JSON complet de l'entité à modifier |
 | `item` | Output | corps JSON de l'entité persistée puis relue |
 | `errors_LENGTH` | Output | longueur du tableau `errors` |
 | `errors` | Output | corps JSON |
@@ -467,6 +483,20 @@ Pour `service_create_iws`, choisir :
 | URI path template de la méthode | `*NONE` ou vide |
 | Type de contenu entrant | `JSON` |
 | Type de contenu produit | `JSON` |
+| Paramètre `input` | corps de requête, non enveloppé |
+| Paramètre du statut HTTP | `httpStatus` |
+| Paramètre des en-têtes HTTP | `httpHeaders` |
+| Paramètres de sortie | enveloppés |
+
+Pour `service_update_iws`, choisir :
+
+| Propriété | Valeur |
+| --- | --- |
+| Méthode HTTP | `PUT` |
+| URI path template de la méthode | `/{id}` |
+| Type de contenu entrant | `JSON` |
+| Type de contenu produit | `JSON` |
+| Paramètre `id` | variable de chemin `id` |
 | Paramètre `input` | corps de requête, non enveloppé |
 | Paramètre du statut HTTP | `httpStatus` |
 | Paramètre des en-têtes HTTP | `httpHeaders` |
@@ -528,8 +558,8 @@ curl -i http://cmspw7t:10074/web/services/SERVIWS3/ZZZ
 
 Le premier appel doit répondre `200` avec `item.id` égal à `A00`. Le second doit
 répondre `404` avec une erreur portant sur `id`. Conserver le Swagger et le PCML
-régénérés : le Swagger attendu doit alors décrire `GET /`, `POST /` et `GET /{id}`, et
-le PCML les trois procédures publiques.
+régénérés : le Swagger attendu doit alors décrire `GET /`, `POST /`, `GET /{id}` et
+`PUT /{id}`, et le PCML les quatre procédures publiques.
 
 ## 8. Porte 6 — Sauvegarder le contrat exposé par IWS
 
@@ -557,24 +587,25 @@ les propriétés du serveur.
 Ne pas la confondre avec `services.openapi.json` généré par CMagic. Ce dernier décrit
 encore le contrat REST fonctionnel commun `{ data, total }`, tandis que la description
 à contrôler ici est celle que le serveur IWS déduit réellement du PCML des procédures
-`service_getlist_iws`, `service_getone_iws` et `service_create_iws`.
+`service_getlist_iws`, `service_getone_iws`, `service_create_iws` et
+`service_update_iws`.
 
 Vérifier au minimum :
 
 - URL de base : `/web/services/SERVIWS3` ;
-- méthodes `GET` et `POST` ;
+- méthodes `GET`, `POST` et `PUT` ;
 - opérations `service_getlist_iws` en `GET /`, `service_create_iws` en `POST /` et
-  `service_getone_iws` en `GET /{id}` ;
+  `service_getone_iws` en `GET /{id}`, puis `service_update_iws` en `PUT /{id}` ;
 - schémas nominaux contenant respectivement `items`, `totalCount`, `errors` et
   `item`, `errors` ;
 - absence de `items_LENGTH`, `errors_LENGTH`, `httpStatus` et `httpHeaders` dans le
   corps public.
 
-Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) décrivent encore le
-dernier déploiement validé en lecture. Ils devront être remplacés après le déploiement
-de `CREATE`. Le Swagger ne décrit pas les filtres transmis par `QUERY_STRING` ni tous
-les statuts dynamiques et en-têtes sortants ; les relevés HTTP complètent donc la preuve
-descriptive.
+Le [Swagger archivé](./swagger.json) et le [PCML](./SERVIWS3.pcml) décrivent le dernier
+déploiement validé couvrant `LIST`, `GET` et `CREATE`. Ils devront être remplacés après
+le déploiement d'`UPDATE`. Le Swagger ne décrit pas les filtres transmis par
+`QUERY_STRING` ni tous les statuts dynamiques et en-têtes sortants ; les relevés HTTP
+complètent donc la preuve descriptive.
 
 Si les champs techniques apparaissent dans le corps, ne pas poursuivre comme si le
 contrat était conforme : reprendre le mapping des paramètres ou l'option de détection
@@ -794,7 +825,48 @@ RUNSQL SQL('DELETE FROM DB2SAMPLE.DEPARTMENT WHERE DEPTNO = ''ZC1''') COMMIT(*NO
 
 Si un autre identifiant a été retenu, adapter strictement la clause `WHERE`.
 
-### 9.11 Vérifications rapides avec `jq`
+### 9.11 `UPDATE` nominal, absence et validation
+
+Réserver un identifiant distinct, par exemple `ZU1`, vérifier qu'il est absent puis le
+créer avec `POST /`. Conserver ensuite un corps complet dans `update-zu1.payload.json` :
+
+```json
+{
+  "id": "ZU1",
+  "nom": "CMAGIC UPDATE TEST",
+  "idManageur": "",
+  "idServiceAdmin": "A00",
+  "site": "MODIFIE"
+}
+```
+
+Exécuter la modification :
+
+```bash
+curl -sS -X PUT \
+  -H "Content-Type: application/json" \
+  --data-binary @validation-cmagic-iws-20260730/update-zu1.payload.json \
+  -D validation-cmagic-iws-20260730/update-zu1.headers \
+  -o validation-cmagic-iws-20260730/update-zu1.json \
+  -w "%{http_code}\n" \
+  "${cmagic_iws_url}/ZU1"
+```
+
+Attendu : `200`, `item.id = "ZU1"`, `item.nom = "CMAGIC UPDATE TEST"`,
+`item.site = "MODIFIE"` et aucune erreur. `GET /ZU1` doit restituer les mêmes valeurs.
+
+Vérifier ensuite séparément :
+
+- `PUT /ZZZ` avec un corps portant `id = "ZZZ"` : `404/CAT0001/id` ;
+- `PUT /ZU1` avec un corps portant `id = "ZU2"` : `400/CAT1005/id` ;
+- `PUT /ZU1` avec `nom = ""` : `400/CAT1001/nom` ;
+- si une contrainte unique non-clé existe dans le projet cible, sa collision produit
+  `409/CAT1002/conflict`.
+
+Après conservation des preuves, supprimer uniquement `ZU1`, puis confirmer
+`GET /ZU1 → 404`.
+
+### 9.12 Vérifications rapides avec `jq`
 
 Si `jq` est disponible :
 
@@ -819,6 +891,10 @@ jq -e '.errors[0].code == "CAT1002" and .errors[0].nomZone == "conflict"' \
   validation-cmagic-iws-20260730/create-zc1-conflict.json
 jq -e '.errors[0].code == "CAT1001" and .errors[0].nomZone == "id"' \
   validation-cmagic-iws-20260730/create-invalid.json
+jq -e '.item.id == "ZU1" and .item.site == "MODIFIE" and (.errors | length) == 0' \
+  validation-cmagic-iws-20260730/update-zu1.json
+jq -e '.errors[0].code == "CAT1005" and .errors[0].nomZone == "id"' \
+  validation-cmagic-iws-20260730/update-id-mismatch.json
 ```
 
 ## 10. Porte 8 — Contrôler le job IWS et conserver les preuves
@@ -836,7 +912,7 @@ Conserver au minimum :
 - `build.log` ;
 - la description Swagger/OpenAPI IWS ;
 - les captures du wizard et du service actif ;
-- les en-têtes et corps de toutes les requêtes de lecture et de création ;
+- les en-têtes et corps de toutes les requêtes de lecture, création et modification ;
 - les versions IBM i, IWS et BOB/TOBi ;
 - la liste et les dates des six objets générés ;
 - la sortie de `DSPBNDDIRE` et des deux `DSPSRVPGM` ;
@@ -866,6 +942,8 @@ l'analyse des résultats.
 | `POST` répond `200` au lieu de `201` | mapping de `httpStatus` et sélection de `service_create_iws` |
 | Le corps de `POST` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
 | Une création avec champs facultatifs vides échoue sur une contrainte | vérifier la source régénérée avec `NULLIF`, la valeur de `idServiceAdmin` et le joblog SQL |
+| `PUT` répond `404` pour un identifiant modifié | vérifier le couple `CAT0001/id` : `CAT1005/id` doit rester une validation `400` |
+| Le corps de `PUT` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
 | Appel navigateur bloqué | CORS incomplet ; conserver les tests `curl` pour cette v0 |
 
 ## 12. Comparaison à remplir avec la recette ILEastic
@@ -884,7 +962,8 @@ l'analyse des résultats.
 | `X-Total-Count` | | | |
 | CORS | | | |
 | `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
-| `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO avant `UPDATE` |
+| `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO |
+| `UPDATE` | non exposé dans cette tranche ILEastic | généré localement ; recette IBM i `200/400/404` à exécuter | valider avant `DELETE` |
 | Simplicité de déploiement | | | |
 | Diagnostic et logs | | | |
 
@@ -1011,7 +1090,8 @@ Le relevé [testCurl.html](./testCurl.html) confirme la verticale complète :
 - `POST /` pour `ZC5` : `201` ;
 - suppression des lignes `DEPTNO LIKE 'ZC%'`, puis contrôle d'une liste vide.
 
-Le Swagger et le PCML décrivent maintenant les trois procédures publiques. Leur réponse
+À la clôture de la tranche 8, le Swagger et le PCML décrivaient les trois procédures
+publiques. Leur réponse
 de succès statique reste annoncée à `200`, limite du contrat exporté par IWS 2.6, mais le
 mapping dynamique de `httpStatus` renvoie bien le `201` observé. La tranche 8 est
 **GO**.

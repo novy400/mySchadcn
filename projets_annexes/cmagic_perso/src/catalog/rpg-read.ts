@@ -31,7 +31,7 @@ type FieldTemplateModel = FieldTypeTemplateModel & {
     required: boolean;
     requiredCondition?: string;
     domainCondition?: string;
-    createValue: string;
+    writeValue: string;
 };
 
 type ProcedureParameterTemplateModel = {
@@ -51,6 +51,7 @@ type ReadProcedureSignaturesTemplateModel = {
     search: ProcedureSignatureTemplateModel;
     get: ProcedureSignatureTemplateModel;
     create: ProcedureSignatureTemplateModel;
+    update: ProcedureSignatureTemplateModel;
     isValid: ProcedureSignatureTemplateModel;
 };
 
@@ -67,12 +68,15 @@ export type CatalogReadTemplateModel = {
     hasList: boolean;
     hasGet: boolean;
     hasCreate: boolean;
+    hasUpdate: boolean;
+    hasMutation: boolean;
     hasDetail: boolean;
     actionListName: string;
     procedures: CatalogReadProcedures;
     procedureSignatures: ReadProcedureSignaturesTemplateModel;
     itemFields: FieldTemplateModel[];
     detailFields: FieldTemplateModel[];
+    updateFields: FieldTemplateModel[];
     supportedFields: FieldTemplateModel[];
     defaultSortField: string;
     defaultSortOrder: string;
@@ -150,7 +154,7 @@ const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => {
                           `pAfterDetail.${field.name} <> '${value}'`
                   )
                   .join(' and ');
-    const createValue =
+    const writeValue =
         field.required || ['integer', 'decimal'].includes(field.type.kind)
             ? hostValue
             : field.type.kind === 'date'
@@ -163,7 +167,7 @@ const fieldModel = (field: CatalogFieldSpec): FieldTemplateModel => {
         rpgName: field.name,
         column: field.column,
         required: field.required,
-        createValue,
+        writeValue,
         ...(domainCondition === undefined ? {} : { domainCondition }),
         ...(field.required &&
         ['string', 'enum', 'boolean'].includes(field.type.kind)
@@ -258,6 +262,15 @@ const buildProcedureSignatures = (
             parameter('pErrors', 'likeDS(GLOBAL_listError)')
         ]
     },
+    update: {
+        name: procedures.update,
+        returnType: 'ind',
+        parameters: [
+            parameter('pId', id.rpgType, true),
+            parameter('pDetail', `likeDS(${entityName}_detail_t)`, true),
+            parameter('pErrors', 'likeDS(GLOBAL_listError)')
+        ]
+    },
     isValid: {
         name: procedures.isValid,
         returnType: 'ind',
@@ -286,6 +299,13 @@ export const buildCatalogReadTemplateModel = (
     const itemFields =
         list?.fields.map(name => requireField(fieldsByName, name, 'list')) ?? [];
     const entityName = spec.entity.toLowerCase();
+    const updateFields = fields.filter(field => field.name !== spec.identifier);
+
+    if (procedures.hasUpdate && updateFields.length === 0) {
+        throw new Error(
+            `Catalog UPDATE capability requires a non-key field: ${spec.entity}`
+        );
+    }
 
     requireFields(fieldsByName, list?.searchFields ?? [], 'search');
     requireFields(fieldsByName, list?.filterFields ?? [], 'filter');
@@ -304,7 +324,9 @@ export const buildCatalogReadTemplateModel = (
         hasList: procedures.hasList,
         hasGet: procedures.hasGet,
         hasCreate: procedures.hasCreate,
-        hasDetail: procedures.hasGet || procedures.hasCreate,
+        hasUpdate: procedures.hasUpdate,
+        hasMutation: procedures.hasMutation,
+        hasDetail: procedures.hasGet || procedures.hasMutation,
         actionListName: `${entityName}_listeAction`,
         procedures,
         procedureSignatures: buildProcedureSignatures(
@@ -314,6 +336,7 @@ export const buildCatalogReadTemplateModel = (
         ),
         itemFields,
         detailFields: fields,
+        updateFields,
         supportedFields: itemFields,
         defaultSortField: list?.defaultSort.field ?? spec.identifier,
         defaultSortOrder: list?.defaultSort.order ?? 'ASC',

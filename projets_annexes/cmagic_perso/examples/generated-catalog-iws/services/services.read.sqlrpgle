@@ -271,7 +271,8 @@ dcl-proc service_isValid export;
 
   clear pErrors;
   select;
-    when pAction = service_listeAction.creation;
+    when pAction = service_listeAction.creation
+      or pAction = service_listeAction.modification;
       if %trim(pAfterDetail.id) = *blanks;
         lErrorIndex += 1;
         pErrors.listError(lErrorIndex).code = 'CAT1001';
@@ -285,6 +286,16 @@ dcl-proc service_isValid export;
         pErrors.listError(lErrorIndex).code = 'CAT1001';
         pErrors.listError(lErrorIndex).nomZone = 'nom';
         pErrors.listError(lErrorIndex).text = 'nom is required';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+      if pAction = service_listeAction.modification
+        and pBeforeDetail.id <> pAfterDetail.id;
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1005';
+        pErrors.listError(lErrorIndex).nomZone = 'id';
+        pErrors.listError(lErrorIndex).text =
+          'id cannot be changed';
         pErrors.listError(lErrorIndex).textUser =
           pErrors.listError(lErrorIndex).text;
       endif;
@@ -312,7 +323,6 @@ dcl-proc service_isValid export;
       return *off;
     endif;
 end-proc;
-
 dcl-proc service_create export;
   dcl-pi *n ind;
     pDetail likeDS(service_detail_t) const;
@@ -362,7 +372,61 @@ dcl-proc service_create export;
       return *off;
     endif;
 end-proc;
+dcl-proc service_update export;
+  dcl-pi *n ind;
+    pId varchar(3) const;
+    pDetail likeDS(service_detail_t) const;
+    pErrors likeDS(GLOBAL_listError);
+  end-pi;
+  dcl-ds lBeforeDetail likeDS(service_detail_t) inz;
+  dcl-ds lAfterDetail likeDS(service_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
 
+  clear pErrors;
+  if not service_get(pId : lBeforeDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  lAfterDetail = pDetail;
+  clear lErrors;
+  if not service_isValid(service_listeAction.modification
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    UPDATE DEPARTMENT
+    SET
+      DEPTNAME = :pDetail.nom,
+      MGRNO = NULLIF(:pDetail.idManageur, ''),
+      ADMRDEPT = NULLIF(:pDetail.idServiceAdmin, ''),
+      LOCATION = NULLIF(:pDetail.site, '')
+    WHERE DEPTNO = :pId;
+  select;
+    when sqlState = '23505';
+      service_reject_mutation(
+        pErrors : 'CAT1002' : 'conflict' :
+        'Service update conflicts with existing data');
+      return *off;
+    when sqlState <> SQL_OK;
+      service_reject_mutation(
+        pErrors : sqlState : 'sql' :
+        'Unable to update Service');
+      return *off;
+  endsl;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      service_reject_mutation(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while updating Service');
+      return *off;
+    endif;
+end-proc;
 // Ajoutez les regles metier specifiques dans cette procedure preservee.
 // [CMAGIC:MANUAL_START]
 dcl-proc service_isValid_business;

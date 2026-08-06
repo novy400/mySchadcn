@@ -30,7 +30,7 @@ dcl-proc {{procedures.rejectQuery}};
   pErrors.listError(1).textUser = pMessage;
 end-proc;
 
-{{#if procedures.hasCreate}}
+{{#if procedures.hasMutation}}
 dcl-proc {{procedures.rejectMutation}};
   dcl-pi *n;
     pErrors likeDS(GLOBAL_listError);
@@ -227,7 +227,7 @@ dcl-proc {{procedureSignatures.get.name}} export;
   return *on;
 end-proc;
 {{/if}}
-{{#if procedures.hasCreate}}
+{{#if procedures.hasMutation}}
 dcl-proc {{procedureSignatures.isValid.name}} export;
   dcl-pi *n {{procedureSignatures.isValid.returnType}};
 {{#each procedureSignatures.isValid.parameters}}
@@ -240,7 +240,16 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
 
   clear pErrors;
   select;
+{{#if procedures.hasCreate}}
+{{#if procedures.hasUpdate}}
+    when pAction = {{actionListName}}.creation
+      or pAction = {{actionListName}}.modification;
+{{else}}
     when pAction = {{actionListName}}.creation;
+{{/if}}
+{{else}}
+    when pAction = {{actionListName}}.modification;
+{{/if}}
 {{#each detailFields}}
 {{#if requiredCondition}}
       if {{requiredCondition}};
@@ -263,6 +272,18 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
       endif;
 {{/if}}
 {{/each}}
+{{#if procedures.hasUpdate}}
+      if pAction = {{actionListName}}.modification
+        and pBeforeDetail.{{id.rpgName}} <> pAfterDetail.{{id.rpgName}};
+        lErrorIndex += 1;
+        pErrors.listError(lErrorIndex).code = 'CAT1005';
+        pErrors.listError(lErrorIndex).nomZone = '{{id.name}}';
+        pErrors.listError(lErrorIndex).text =
+          '{{id.name}} cannot be changed';
+        pErrors.listError(lErrorIndex).textUser =
+          pErrors.listError(lErrorIndex).text;
+      endif;
+{{/if}}
     other;
       {{procedures.rejectMutation}}(
         pErrors : 'CAT1003' : 'action' : 'Unsupported mutation action');
@@ -287,7 +308,8 @@ dcl-proc {{procedureSignatures.isValid.name}} export;
       return *off;
     endif;
 end-proc;
-
+{{/if}}
+{{#if procedures.hasCreate}}
 dcl-proc {{procedureSignatures.create.name}} export;
   dcl-pi *n {{procedureSignatures.create.returnType}};
 {{#each procedureSignatures.create.parameters}}
@@ -312,7 +334,7 @@ dcl-proc {{procedureSignatures.create.name}} export;
     INSERT INTO {{table}}
     ({{#each detailFields}}{{column}}{{#unless @last}}, {{/unless}}{{/each}})
     VALUES
-    ({{#each detailFields}}{{createValue}}{{#unless @last}}, {{/unless}}{{/each}});
+    ({{#each detailFields}}{{writeValue}}{{#unless @last}}, {{/unless}}{{/each}});
   select;
     when sqlState = '23505';
       {{procedures.rejectMutation}}(
@@ -337,7 +359,64 @@ dcl-proc {{procedureSignatures.create.name}} export;
       return *off;
     endif;
 end-proc;
+{{/if}}
+{{#if procedures.hasUpdate}}
+dcl-proc {{procedureSignatures.update.name}} export;
+  dcl-pi *n {{procedureSignatures.update.returnType}};
+{{#each procedureSignatures.update.parameters}}
+    {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+  end-pi;
+  dcl-ds lBeforeDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lAfterDetail likeDS({{entityName}}_detail_t) inz;
+  dcl-ds lErrors likeDS(GLOBAL_listError) inz;
+  dcl-s ErrorHappened ind;
 
+  clear pErrors;
+  if not {{procedures.get}}(pId : lBeforeDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  lAfterDetail = pDetail;
+  clear lErrors;
+  if not {{procedures.isValid}}({{actionListName}}.modification
+    : lBeforeDetail : lAfterDetail : lErrors);
+    pErrors = lErrors;
+    return *off;
+  endif;
+
+  exec sql
+    UPDATE {{table}}
+    SET
+{{#each updateFields}}
+      {{column}} = {{writeValue}}{{#unless @last}},{{/unless}}
+{{/each}}
+    WHERE {{id.column}} = :pId;
+  select;
+    when sqlState = '23505';
+      {{procedures.rejectMutation}}(
+        pErrors : 'CAT1002' : 'conflict' :
+        '{{entityDisplayName}} update conflicts with existing data');
+      return *off;
+    when sqlState <> SQL_OK;
+      {{procedures.rejectMutation}}(
+        pErrors : sqlState : 'sql' :
+        'Unable to update {{entityDisplayName}}');
+      return *off;
+  endsl;
+  return *on;
+
+  on-exit ErrorHappened;
+    if ErrorHappened;
+      {{procedures.rejectMutation}}(
+        pErrors : 'RNX9001' : 'sql' :
+        'Unexpected error while updating {{entityDisplayName}}');
+      return *off;
+    endif;
+end-proc;
+{{/if}}
+{{#if procedures.hasMutation}}
 // Ajoutez les regles metier specifiques dans cette procedure preservee.
 // [CMAGIC:MANUAL_START]
 dcl-proc {{procedures.isValidBusiness}};

@@ -68,6 +68,28 @@ describe('Catalogue binder generator', () => {
         );
     });
 
+    test('appends UPDATE after the already published CREATE API', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateCatalogBinder({
+            ...service,
+            capabilities: [...service.capabilities, 'create', 'update']
+        });
+
+        expect(source).toBe(
+            [
+                "STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('SERVICE.0.0.1')",
+                "  EXPORT SYMBOL('service_search')",
+                "  EXPORT SYMBOL('service_getSupportedFields')",
+                "  EXPORT SYMBOL('service_get')",
+                "  EXPORT SYMBOL('service_create')",
+                "  EXPORT SYMBOL('service_isValid')",
+                "  EXPORT SYMBOL('service_update')",
+                'ENDPGMEXP',
+                ''
+            ].join('\n')
+        );
+    });
+
     test('rejects entity names that cannot be IBM i object names', async () => {
         const service = await compileServiceCatalog();
 

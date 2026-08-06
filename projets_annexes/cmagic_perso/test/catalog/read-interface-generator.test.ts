@@ -87,6 +87,27 @@ describe('Catalogue RPG read interface generator', () => {
         expect(source).not.toContain('dcl-pr service_get ind');
     });
 
+    test('publishes the UPDATE validation contract', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateCatalogReadInterface({
+            ...service,
+            capabilities: ['get', 'update'],
+            list: undefined
+        });
+
+        expect(source).toContain('dcl-ds service_detail_t qualified template;');
+        expect(source).toContain('dcl-enum service_listeAction qualified;');
+        expect(source).toContain("  modification 'update';");
+        expect(source).toContain(
+            'dcl-pr service_isValid ind extproc(*dclcase);'
+        );
+        expect(source).toContain(
+            'dcl-pr service_update ind extproc(*dclcase);'
+        );
+        expect(source).toContain('  pId varchar(3) const;');
+        expect(source).toContain('  pDetail likeDS(service_detail_t) const;');
+    });
+
     test('keeps public prototypes aligned with implementation interfaces', async () => {
         const service = await compileServiceCatalog();
         const publicInterface = generateCatalogReadInterface(service);

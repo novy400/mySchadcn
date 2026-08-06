@@ -40,6 +40,7 @@ dcl-pr service_get ind extproc(*dclcase);
 end-pr;
 dcl-enum service_listeAction qualified;
   creation 'create';
+  modification 'update';
 end-enum;
 
 dcl-pr service_isValid ind extproc(*dclcase);
@@ -52,5 +53,10 @@ end-pr;
 dcl-pr service_create ind extproc(*dclcase);
   pDetail likeDS(service_detail_t) const;
   pId varchar(3);
+  pErrors likeDS(GLOBAL_listError);
+end-pr;
+dcl-pr service_update ind extproc(*dclcase);
+  pId varchar(3) const;
+  pDetail likeDS(service_detail_t) const;
   pErrors likeDS(GLOBAL_listError);
 end-pr;

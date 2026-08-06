@@ -20,6 +20,7 @@ documentaire, par tranches petites et vérifiables.
 | 6 | Réduire les avertissements CSS de test et la taille du bundle | Terminé |
 | 7 | Ajouter `GET` par identifiant au transport IWS CMagic | Terminé |
 | 8 | Ajouter `CREATE` avec validation métier au transport IWS CMagic | Terminé |
+| 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | À valider sur IBM i |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -299,7 +300,7 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   conflit Db2 `23505` avec `409`, et une erreur technique avec `500` ;
 - une exposition IWS avec `CREATE` exige aussi `GET`, afin que la réponse `201` restitue
   systématiquement la donnée réellement persistée ;
-- `UPDATE` et `DELETE` restent refusés par le compilateur ;
+- à l'issue de cette tranche, `UPDATE` et `DELETE` restaient refusés par le compilateur ;
 - le transport ILEastic reste en lecture seule et refuse donc une entité déclarant
   simultanément `ileasticObject` et `CREATE`.
 
@@ -345,8 +346,70 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   paramètre de réponse dynamique `httpStatus` produit bien le `201` observé. Cette
   limite documentaire d'IWS 2.6 est acceptée pour la v0.
 
+## Tranche 9 — `UPDATE` avec validation préalable et IWS
+
+### Contrat retenu
+
+- `UPDATE` exige `GET` pour charger l'état `before` et confirmer l'existence de
+  l'entité avant toute validation ou écriture ;
+- `service_update(pId, pDetail, pErrors)` appelle
+  `service_isValid(modification, before, after, errors)` avant tout SQL ;
+- l'identifiant naturel est immuable : une différence entre le chemin et le corps
+  produit `CAT1005/id` ;
+- les contrôles `required`, booléens et enums sont communs à `CREATE` et `UPDATE`, puis
+  le hook interne protégé applique les règles métier spécifiques ;
+- l'instruction Db2 modifie uniquement les colonnes non-clés et convertit les valeurs
+  facultatives vides en `NULL` ;
+- `service_update_iws` reçoit `id` depuis le chemin et `input` depuis le corps, relit la
+  donnée persistée et renvoie `200`, `400`, `404`, `409` ou `500` ;
+- OpenAPI publie `PUT /api/{resource}/{id}` et le contrat frontend ajoute la capacité
+  `update` ;
+- ILEastic reste en lecture seule et `DELETE` reste refusé par le compilateur.
+
+### Réalisé localement
+
+- activation de `UPDATE`/`CHANGE` dans le compilateur avec diagnostics lorsque `GET`
+  ou un champ non-clé manque ;
+- génération des prototypes, procédures, actions, binders et exports
+  `service_update`/`service_update_iws` sans déplacer les exports déjà publiés ;
+- chargement de l'état précédent, validation de l'identifiant immuable, écriture des
+  seuls champs non-clés et gestion des erreurs Db2 ;
+- mapping IWS de l'absence vers `404`, de la validation vers `400`, du conflit vers
+  `409` et des erreurs SQL/RPG vers `500` ;
+- ajout de `PUT`, des réponses et de la capacité `update` aux contrats générés ;
+- passage de l'exemple IWS à `operations { LIST, GET, CREATE, UPDATE }` ;
+- régénération déterministe des vingt et un artefacts et synchronisation des onze
+  fichiers affectés vers `cMagicIws` ;
+- couverture TDD du compilateur, du service RPG, des interfaces, des binders, du
+  wrapper IWS et des contrats.
+
+### Validation locale
+
+- suite CMagic : 18 fichiers, 135 tests réussis ;
+- lint CMagic : réussi ;
+- build CMagic : réussi ;
+- génération répétée : vingt et un artefacts strictement identiques ;
+- comparaison des onze artefacts synchronisés avec `cMagicIws` : identiques ;
+- `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build
+  réussi ;
+- revue Standards : aucune violation ; une duplication interne mineure a été
+  simplifiée en partageant une seule expression d'écriture SQL ;
+- revue Spec : aucun constat.
+
+### Validation IBM i à réaliser
+
+- reconstruire `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` sans modifier
+  les sources générées ;
+- redéployer `SERVIWS3` avec `service_update_iws` comme `PUT /{id}` ;
+- vérifier une modification nominale `200` puis sa relecture, une entité absente `404`,
+  un identifiant modifié `400/CAT1005` et une donnée obligatoire absente
+  `400/CAT1001` ;
+- supprimer uniquement la ligne créée pour la recette et archiver Swagger, PCML,
+  export curl et captures.
+
 ## Suite
 
-Les huit premières tranches sont terminées. L'ordre recommandé reste `UPDATE`, puis
-`DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement du
-modèle des commandes demeure une évolution séparée.
+Les huit premières tranches sont terminées. La tranche 9 est implémentée localement et
+attend sa validation IBM i. Après cette validation, la prochaine verticale recommandée
+est `DELETE`, avant le branchement progressif du DataProvider IBM i. L'enrichissement
+du modèle des commandes demeure une évolution séparée.

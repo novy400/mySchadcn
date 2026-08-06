@@ -147,6 +147,65 @@ describe('Catalogue RPG read generator', () => {
         );
     });
 
+    test('loads and validates UPDATE before changing non-key fields', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateRpgReadModule({
+            ...service,
+            capabilities: [...service.capabilities, 'update']
+        });
+
+        expect(source).toContain('dcl-proc service_update export;');
+        expect(source).toContain(
+            'if not service_get(pId : lBeforeDetail : lErrors);'
+        );
+        expect(source).toContain(
+            'service_isValid(service_listeAction.modification'
+        );
+        expect(source).toContain(
+            "pErrors.listError(lErrorIndex).code = 'CAT1005';"
+        );
+        expect(source).toContain(
+            "pErrors.listError(lErrorIndex).nomZone = 'id';"
+        );
+        expect(source).toContain('UPDATE DEPARTMENT');
+        expect(source).toContain('DEPTNAME = :pDetail.nom,');
+        expect(source).toContain(
+            "MGRNO = NULLIF(:pDetail.idManageur, ''),"
+        );
+        expect(source).toContain(
+            "ADMRDEPT = NULLIF(:pDetail.idServiceAdmin, ''),"
+        );
+        expect(source).toContain(
+            "LOCATION = NULLIF(:pDetail.site, '')"
+        );
+        expect(source).toContain('WHERE DEPTNO = :pId');
+        expect(source).not.toContain('SET DEPTNO =');
+        expect(source).toContain("when sqlState = '23505';");
+        expect(source).toContain("pErrors : 'CAT1002' : 'conflict'");
+
+        expect(
+            source.indexOf('service_get(pId : lBeforeDetail : lErrors)')
+        ).toBeLessThan(
+            source.indexOf('service_isValid(service_listeAction.modification')
+        );
+        expect(
+            source.indexOf('service_isValid(service_listeAction.modification')
+        ).toBeLessThan(source.indexOf('UPDATE DEPARTMENT'));
+    });
+
+    test('rejects UPDATE generation without a non-key field', async () => {
+        const service = await compileServiceCatalog();
+
+        expect(() =>
+            generateRpgReadModule({
+                ...service,
+                capabilities: ['get', 'update'],
+                list: undefined,
+                fields: service.fields.filter(field => field.key)
+            })
+        ).toThrow('Catalog UPDATE capability requires a non-key field');
+    });
+
     test('generates basic Boolean and enum domain validation', async () => {
         const service = await compileServiceCatalog();
         const source = generateRpgReadModule({

@@ -41,9 +41,14 @@ dcl-pr {{procedureSignatures.get.name}} {{procedureSignatures.get.returnType}} e
 {{/each}}
 end-pr;
 {{/if}}
-{{#if procedures.hasCreate}}
+{{#if procedures.hasMutation}}
 dcl-enum {{actionListName}} qualified;
+{{#if procedures.hasCreate}}
   creation 'create';
+{{/if}}
+{{#if procedures.hasUpdate}}
+  modification 'update';
+{{/if}}
 end-enum;
 
 dcl-pr {{procedureSignatures.isValid.name}} {{procedureSignatures.isValid.returnType}} extproc(*dclcase);
@@ -52,9 +57,18 @@ dcl-pr {{procedureSignatures.isValid.name}} {{procedureSignatures.isValid.return
 {{/each}}
 end-pr;
 
+{{#if procedures.hasCreate}}
 dcl-pr {{procedureSignatures.create.name}} {{procedureSignatures.create.returnType}} extproc(*dclcase);
 {{#each procedureSignatures.create.parameters}}
   {{name}} {{type}}{{#if isConst}} const{{/if}};
 {{/each}}
 end-pr;
+{{/if}}
+{{#if procedures.hasUpdate}}
+dcl-pr {{procedureSignatures.update.name}} {{procedureSignatures.update.returnType}} extproc(*dclcase);
+{{#each procedureSignatures.update.parameters}}
+  {{name}} {{type}}{{#if isConst}} const{{/if}};
+{{/each}}
+end-pr;
+{{/if}}
 {{/if}}

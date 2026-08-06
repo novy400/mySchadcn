@@ -10,7 +10,8 @@ export const servicesResourceContract = {
   ],
   "capabilities": [
     "read",
-    "create"
+    "create",
+    "update"
   ],
   "list": {
     "filters": [

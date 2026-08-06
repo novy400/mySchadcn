@@ -13,5 +13,6 @@ view list for Service {
 operations for Service {
     LIST,
     GET,
-    CREATE
+    CREATE,
+    UPDATE
 }
