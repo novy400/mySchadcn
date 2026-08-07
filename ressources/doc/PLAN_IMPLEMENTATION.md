@@ -25,6 +25,7 @@ documentaire, par tranches petites et vérifiables.
 | 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
 | 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | Terminé |
 | 13 | Ajouter LIST et SHOW pour le référentiel technique `services` | Terminé |
+| 14 | Basculer atomiquement `fournisseurs` vers IBM i | Implémentée localement — déploiement IBM i requis |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -602,8 +603,151 @@ développement locale.
 - aucune modification de l'adapter IWS, de FakeRest, des projections, du moteur CMagic ou
   de `httpd.conf`.
 
+## Tranche 14 — Bascule atomique de `fournisseurs` vers IBM i
+
+### Résultat du cadrage
+
+La ressource CRM `fournisseurs` est un bon deuxième pilote : elle ne possède aucune
+relation React Admin et n'alimente aucune projection. Sa migration peut donc rester locale
+à son module et au DataProvider. Les écrans existants consomment six champs : `id`, `nom`,
+`adresse`, `ville`, `telephone` et `email`.
+
+La tranche exposera exactement `getList`, `getOne`, `create` et `update`. Elle n'ajoutera
+ni `getMany`, ni `getManyReference`, ni mutation en masse, ni suppression. `services`
+conservera son contrat strictement limité à `getList` et `getOne`.
+
+### Décisions d'architecture
+
+- **Module UI** : conserver `src/modules/crm/fournisseurs` et ses écrans LIST, CREATE et
+  EDIT ; la migration change l'implémentation du transport, pas la notion métier CRM.
+- **Interface** : le registre `resourceContracts.ts` reste la source de vérité et déclare
+  explicitement les quatre opérations de `fournisseurs`.
+- **Seam** : `createMigratingDataProvider` continue de prendre la décision de routage par
+  ressource. Ajouter `fournisseurs` à la collection des ressources migrées route ses quatre
+  opérations ensemble ; aucun routage conditionnel par opération n'est autorisé.
+- **Adapter** : approfondir `iwsDataProvider` pour résoudre une URL par ressource et cacher
+  la sérialisation HTTP, les enveloppes IWS, les contrôles d'identifiant et les erreurs.
+  L'interface React Admin reste `getList`, `getOne`, `create` et `update`.
+- **Localité** : regrouper les URL IWS dans une seule configuration typée. Conserver
+  `VITE_IBM_I_API_URL` pour `services` afin de ne pas casser la configuration validée, et
+  ajouter une variable publique dédiée à `fournisseurs`, sans hôte ni secret versionné.
+- **HTTP** : utiliser `POST` sur la collection pour CREATE et `PUT /{id}` pour UPDATE,
+  conformément au transport IWS généré par CMagic. Les requêtes envoient les champs
+  publics directement dans le corps JSON ; les réponses attendues restent
+  `{ item, errors }` et sont adaptées en `{ data }`.
+- **Identifiant** : retenir par défaut une clé métier saisie au CREATE, renvoyée sans
+  transformation et non modifiable dans EDIT. Le générateur CMagic actuel exige la clé
+  lors d'une création. Une clé générée par Db2 nécessiterait une évolution CMagic distincte
+  et doit être décidée avant l'implémentation si elle est préférée.
+- **Mise à jour** : construire le corps PUT complet à partir de `previousData` et `data`,
+  imposer l'identifiant de l'URL dans le corps et n'envoyer que les six champs du contrat.
+
+### Schéma Db2 de départ
+
+La tranche part sur une nouvelle table, sans dépendre d'un fichier métier existant. Le nom
+SQL court proposé est `FOURNIS`, afin de rester prévisible dans les contraintes de nommage
+IBM i. Le schéma ou la bibliothèque de déploiement reste une décision d'environnement.
+
+| Colonne | Type Db2 proposé | Contrainte | Champ public |
+| --- | --- | --- | --- |
+| `ID` | `VARCHAR(10)` | clé primaire, non nul | `id` |
+| `NOM` | `VARCHAR(100)` | non nul | `nom` |
+| `ADRESSE` | `VARCHAR(160)` | nullable | `adresse` |
+| `VILLE` | `VARCHAR(80)` | nullable | `ville` |
+| `TELEPHONE` | `VARCHAR(20)` | nullable | `telephone` |
+| `EMAIL` | `VARCHAR(254)` | nullable | `email` |
+
+`id` et `nom` sont recherchables ; les quatre autres champs textuels le sont également
+pour conserver une recherche `q` cohérente avec les champs visibles. `ville` accepte les
+filtres `EQ` et `LIKE`, et seul `nom` est triable dans le contrat frontend initial. Le SQL
+ajoute `ID` comme dernier critère afin de rendre pagination et tri déterministes.
+
+Le catalogue CMagic utilise l'entité technique courte `Fournis`, ressource `fournisseurs`,
+adossée à `FOURNIS`, avec une vue LIST sur les six champs et les opérations LIST, GET,
+CREATE et UPDATE. Le nom court respecte la limite IBM i de dix caractères sans modifier le
+nom public de la ressource. Il produit également le DDL de création ; aucune modification manuelle
+de table ne doit diverger de cet artefact généré.
+
+### Contrat cible à valider avec IBM i
+
+| Élément | Valeur retenue | Validation restante |
+| --- | --- | --- |
+| Ressource | `fournisseurs`, table neuve `FOURNIS` | schéma ou bibliothèque de déploiement |
+| Identifiant | `VARCHAR(10)`, stable, saisi au CREATE et immuable | règle de format métier |
+| Champs requis | `id`, `nom` | libellés d'erreur utilisateur |
+| Champs facultatifs | `adresse`, `ville`, `telephone`, `email` | chaîne vide ou valeur SQL nulle |
+| LIST | pagination, recherche `q`, filtre `ville`, tri `nom` | recette de performance et ordre secondaire `id` |
+| GET | `/{id}` | enregistrement absent → `404` |
+| CREATE | `POST`, six champs, réponse `201` | unicité et enveloppe `{ item, errors }` |
+| UPDATE | `PUT /{id}`, corps complet, réponse `200` | contrôle clé chemin/corps et concurrence |
+| Erreurs | `400`, `401`, `403`, `404`, `409`, `422`, `500` | codes stables, `nomZone`, `textUser`, corrélation |
+| Publication | `/web/services/FOURIWS1` sur la même origine | déploiement et publication IWS |
+
+Le catalogue fournisseur et ses vingt et un artefacts sont maintenant versionnés sous
+`projets_annexes/cmagic_perso/examples/generated-fournisseurs-iws`. L'objet généré est
+`FOURIWS` et l'URL cliente retenue est `/web/services/FOURIWS1`. Le smoke test du 7 août
+2026 atteint bien le proxy Vite, mais cette URL répond encore `404` sans enveloppe IWS :
+la table, les objets et le service restent donc à déployer avant la recette d'écriture.
+
+### Réalisation TDD et preuves locales
+
+1. Le catalogue CMagic `Fournis` et le schéma `FOURNIS` couvrent LIST, GET, CREATE et
+   UPDATE. Deux générations successives ont produit les mêmes hashes pour les vingt et un
+   artefacts, dont le DDL, OpenAPI, les sources RPG et les enveloppes RPGUnit.
+2. La suite CMagic passe avec 19 fichiers et 142 tests, puis lint et build. La compilation
+   et la recette IBM i restent à exécuter après choix de la bibliothèque de déploiement.
+3. Au seam React Admin, les tests du registre et du DataProvider utilisent un
+   `fetcher` simulé : URL par ressource, pagination, recherche, filtre, tri, POST, PUT,
+   enveloppes, identifiants et erreurs de champ. Aucun test frontend ne contacte le réseau.
+4. Tester le provider composite : les quatre opérations de `fournisseurs` atteignent le
+   même adapter IWS ; `getMany`, `getManyReference`, `updateMany`, DELETE et DELETE MANY sont
+   refusés avant le transport ; `services` reste en lecture seule et une ressource témoin
+   reste sur FakeRest.
+5. Tester les écrans avec un DataProvider simulé : paramètres LIST, ouverture de EDIT et
+   appel GET, soumission CREATE/UPDATE, règles de validation, droits Lecteur/Agent/Responsable
+   et absence de contrôle de suppression. Désactiver le tri des colonnes non déclarées ;
+   seul `nom` reste triable tant que le contrat n'est pas élargi.
+6. Les six suites ciblées passent avec 53 tests. `npm run check` est vert avec 43 fichiers
+   et 125 tests, puis un build de production réussi ; les projections restent couvertes.
+
+### Bascule et retour arrière
+
+La préparation de l'adapter, de l'URL et des tests peut être livrée sans changer le
+routage. La bascule finale est un changement unique de la liste `restResources`, qui ajoute
+`fournisseurs` après validation de l'endpoint. À partir de cet instant, LIST, GET, CREATE et
+UPDATE utilisent tous IBM i ; aucune lecture IBM i avec écriture FakeRest, ou l'inverse,
+n'est admise.
+
+Conserver temporairement les deux enregistrements FakeRest comme jeu de repli, mais les
+considérer comme inactifs après la bascule. Un retour vers FakeRest n'est sûr qu'avant la
+première écriture IBM i. Après une création ou une modification réelle, le retour arrière
+doit geler les écritures et réconcilier les données ; le chemin normal devient alors la
+correction en avant sur IBM i.
+
+### Gates de réalisation
+
+**NO GO pour le déploiement et les écritures réelles** tant que les points suivants ne
+sont pas fournis et validés :
+
+- schéma ou bibliothèque IBM i où créer la nouvelle table `FOURNIS` ;
+- règle d'attribution de `id`, avec confirmation du choix « clé saisie » ou décision
+  d'étendre CMagic pour une clé générée ;
+- publication de `FOURIWS` sous l'URL `/web/services/FOURIWS1` ;
+- contrat réel POST/PUT et erreurs, vérifié au seam HTTP public ;
+- jeu de données de recette, stratégie de nettoyage et autorisation d'écriture sur
+  l'environnement IBM i visé.
+
+**GO** après génération reproductible, tests RPGUnit, recette HTTP directe, tests frontend
+ciblés, `npm run check`, smoke test via le proxy Vite et vérification manuelle avec les trois
+rôles. La recette doit prouver pagination, recherche, filtre, tri, GET avant EDIT, CREATE,
+UPDATE, erreurs de validation, absence de DELETE, maintien de `services` en lecture seule,
+maintien des autres ressources sur FakeRest et absence de régression des projections.
+
 ## Suite
 
-Les treize tranches sont terminées. `services` reste strictement en lecture seule. La
-prochaine évolution envisagée est la conception puis la bascule atomique de `fournisseurs`
-vers IBM i avec LIST, GET, CREATE et UPDATE ; elle n'ajoutera aucune mutation à `services`.
+La tranche 14 est prête localement autour de la nouvelle table Db2 `FOURNIS`. La prochaine
+action est de choisir la bibliothèque IBM i, créer la table depuis le DDL généré, compiler
+`FOURNIS` et `FOURIWS`, publier `FOURIWS1`, puis exécuter la recette LIST/GET/CREATE/UPDATE.
+La bascule ne peut être déclarée **GO** tant que le smoke test, actuellement en `404`, ne
+répond pas avec l'enveloppe IWS attendue. La procédure opérateur complète est décrite dans
+[`recette-ibmi-fournisseurs-iws.md`](./cmagic/recette-ibmi-fournisseurs-iws.md).
