@@ -23,7 +23,7 @@ documentaire, par tranches petites et vérifiables.
 | 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
 | 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | Terminé |
 | 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
-| 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | En revue |
+| 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -545,14 +545,19 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - documentation de l'URL IWS et du principe de proxy intranet à partir de l'exemple
   ILEastic fonctionnel.
 
-### Validation avant revue
+### Validation
 
 - tests ciblés des providers et du registre : 4 fichiers, 37 tests réussis ;
 - `npm run check` : lint réussi, 39 fichiers et 103 tests réussis, build réussi ;
-- revue Standards/Spec depuis `82b0b9baf9aedf7d51107be580bd6fcc28b892a2` : en cours.
+- revue Standards depuis `82b0b9baf9aedf7d51107be580bd6fcc28b892a2` : les deux
+  jugements initiaux sur l'interface partielle et la duplication des filtres ont été
+  corrigés ; aucun constat actionnable restant ;
+- revue Spec depuis le même point fixe : les deux constats initiaux sur les opérations de
+  lecture et l'annulation au seam composite ont été corrigés ; aucun constat actionnable
+  restant.
 
 ## Suite
 
-Les onze premières tranches sont terminées et la tranche 12 est en revue. La prochaine
-verticale IBM i devra être choisie uniquement lorsqu'un endpoint correspondra à une ressource
-CRM existante. L'enrichissement du modèle des commandes demeure une évolution séparée.
+Les douze tranches sont terminées. La prochaine verticale IBM i devra être choisie
+uniquement lorsqu'un endpoint correspondra à une ressource CRM existante. L'enrichissement
+du modèle des commandes demeure une évolution séparée.
