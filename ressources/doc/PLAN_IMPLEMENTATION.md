@@ -556,6 +556,23 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
   lecture et l'annulation au seam composite ont été corrigés ; aucun constat actionnable
   restant.
 
+### Validation d'intégration du 7 août 2026
+
+- l'endpoint `http://cmspw7t:10074/web/services/SERVIWS3` est directement accessible
+  depuis le poste de développement ; aucune modification de `httpd.conf` n'est nécessaire ;
+- le serveur de développement Vite relaie uniquement `/web/services/SERVIWS3` vers une
+  cible définie par `IBM_I_DEV_PROXY_TARGET`, variable serveur absente du bundle client ;
+- la cible réelle est placée dans `.env.local`, ignoré par Git, tandis que
+  `.env.example` ne contient qu'un hôte générique sans secret ;
+- un contrôle en lecture via le proxy Vite a répondu `200` avec l'enveloppe IWS attendue
+  et un tableau `items` contenant les services ;
+- la recette fonctionnelle couvre LIST, GET, pagination, tri, recherche, filtres, erreurs,
+  stabilité des identifiants, maintien de FakeRest et absence d'écriture IBM i ;
+- le propriétaire du projet confirme avoir exécuté cette recette et valide son résultat.
+
+Décision : **GO** pour la première verticale DataProvider IBM i et sa configuration de
+développement locale.
+
 ## Suite
 
 Les douze tranches sont terminées. La prochaine verticale IBM i devra être choisie
