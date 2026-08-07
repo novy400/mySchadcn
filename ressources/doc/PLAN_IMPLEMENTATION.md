@@ -491,6 +491,10 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - alignement du moteur VS Code minimal sur 1.91, exigé par le client LSP 10 ;
 - adaptation des sous-chemins d'import LSP et des descripteurs AST `Model.$type` ;
 - audit du diff généré Langium 3.5.2 vers 4.3.0 ;
+- correction du workflow `vscode:prepublish`, qui reconstruit désormais la grammaire,
+  l'extension et le serveur réellement empaquetés ;
+- livraison et installation locale de l'extension CMagic `0.0.3`, avec un test LSP exécuté
+  depuis le VSIX ;
 - mise à jour et suivi de
   [`etude-langium-4.3.1-et-playground.md`](./cmagic/etude-langium-4.3.1-et-playground.md).
 
@@ -498,15 +502,19 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 
 - génération Langium sans avertissement ;
 - suite CMagic : 18 fichiers et 141 tests réussis, lint et build réussis ;
-- CLI, prépublication de l'extension et build du Web Worker réussis ;
+- CLI, prépublication de l'extension, packaging du VSIX et build du Web Worker réussis ;
+- `cmagic-0.0.3.vsix` vérifié avec Langium 4.3.1, famille LSP 10 et zéro diagnostic sur le
+  modèle valide `service-catalogue-iws.cmagic` ; le bundle serveur installé est identique à
+  celui du VSIX ;
 - smoke test LSP sur le serveur compilé : modèle valide sans diagnostic, modèle invalide
   avec erreurs de syntaxe et métier, complétion, définition et survol fonctionnels ;
 - deux régénérations des vingt et un artefacts catalogue/IWS : hashes identiques entre les
   exécutions et au point fixe `f35429f` ;
 - `npm run check` à la racine : lint réussi, 38 fichiers et 85 tests réussis, build réussi ;
-- revue Standards : aucune violation dure ; la duplication préexistante d'un helper de test
-  reste hors de cette tranche ciblée ;
-- revue Spec : plan et preuve LSP complétés pendant la revue finale.
+- revue Standards : aucune violation dure ; deux duplications mineures restent hors de cette
+  tranche ciblée (helper de test préexistant et scripts npm explicites) ;
+- revue Spec : plan et preuve LSP complétés pendant la revue finale ; la vérification
+  graphique de la fenêtre VS Code reste à confirmer après `Developer: Reload Window`.
 
 ## Suite
 
