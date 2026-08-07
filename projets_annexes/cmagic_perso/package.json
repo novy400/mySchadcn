@@ -1,7 +1,7 @@
 {
     "name": "cmagic",
     "description": "Please enter a brief description here",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "cmagic-publisher",
     "icon": "icon.png",
     "type": "module",
@@ -9,13 +9,16 @@
         "copy:templates": "cpr src/templates out/templates -o",
         "build": "npm-run-all langium:generate copy:templates build:ts",
         "build:ts": "tsc -b tsconfig.src.json && node esbuild.mjs",
+        "build:ts:minify": "tsc -b tsconfig.src.json && node esbuild.mjs --minify",
+        "build:vscode": "npm-run-all langium:generate copy:templates build:ts:minify",
         "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.src.json --watch\" \"node esbuild.mjs --watch\"",
         "lint": "eslint src",
         "langium:generate": "langium generate",
         "langium:generate:production": "langium generate --mode=production",
         "langium:watch": "langium generate --watch",
-        "vscode:prepublish": "npm run esbuild-base -- --minify && npm run lint",
-        "esbuild-base": "esbuild ./src/extension/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+        "vscode:prepublish": "npm-run-all build:vscode lint",
+        "package:vsix": "vsce package",
+        "test:vsix": "node scripts/verify-vsix.mjs",
         "build:web": "npm run build",
         "bundle": "vite build",
         "bundle:serve": "http-server ./dist --port 5175",
@@ -55,7 +58,9 @@
         "typescript": "~5.9.3",
         "vite": "~5.2.7",
         "vitest": "~1.4.0",
-        "vscode": "npm:@codingame/monaco-vscode-api@~3.2.3"
+        "vscode": "npm:@codingame/monaco-vscode-api@~3.2.3",
+        "vscode-jsonrpc": "~9.0.0",
+        "yauzl": "~2.10.0"
     },
     "volta": {
         "node": "24.18.0",

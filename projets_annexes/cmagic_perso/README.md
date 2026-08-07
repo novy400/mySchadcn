@@ -19,9 +19,16 @@ npm run langium:generate && npm run build
 ```
 
 ### Installation de l'extension VS Code
+
 ```bash
-# Installer l'extension packagée
-code --install-extension cmagic-0.0.2.vsix
+# Reconstruire la grammaire, l'extension et le serveur, puis créer le VSIX
+npm run package:vsix
+
+# Vérifier le manifeste et le serveur LSP réellement empaquetés
+npm run test:vsix
+
+# Installer l'extension packagée et recharger la fenêtre VS Code
+code --install-extension cmagic-0.0.3.vsix --force
 ```
 
 ## 📋 Commandes de Génération

@@ -5,7 +5,6 @@ langium-quickstart.md
 # Sources TypeScript (gardez seulement les .js compilés)
 src/**
 *.ts
-!out/**/*.js
 
 # Fichiers de développement
 .vscode/**
@@ -24,6 +23,7 @@ node_modules/langium-cli/**
 
 # Tests
 test/**
+scripts/**
 **/*.test.js
 **/*.spec.js
 
@@ -39,6 +39,7 @@ Thumbs.db
 
 # Gardez seulement les fichiers essentiels
 !package.json
-!out/**
+out/main.js
+out/main.js.map
 !syntaxes/**
 !language-configuration.json
