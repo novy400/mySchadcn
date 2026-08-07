@@ -1,6 +1,6 @@
 # Étude Langium 4.3.1 et IHM Web pour les fichiers `.cmagic`
 
-_Statut : décision mise en œuvre pour le lot A — 6 août 2026._
+_Statut : décision mise en œuvre pour le lot A, packaging VS Code corrigé — 7 août 2026._
 
 ## Décision proposée
 
@@ -314,6 +314,7 @@ builds ; le repli vers Node 22 n'a donc pas été nécessaire.
 | protocole / types LSP | transitifs | `3.18.1` ou `3.18.2` / `3.18.0` |
 | `@types/node` | `^24.0.0` | `24.13.3` |
 | `@types/vscode` | `~1.91.0` | `1.91.0` |
+| extension CMagic | `0.0.3` | VSIX installé localement |
 
 Le moteur VS Code minimal de l'extension passe de `^1.67.0` à `^1.91.0`, contrainte
 déclarée par `vscode-languageclient 10.0.1`. Les paquets ESLint TypeScript passent en
@@ -358,6 +359,36 @@ de build incrémental `*.tsbuildinfo` désormais émis par TypeScript 5.9 est ig
   manifeste trié des 21 hashes est
   `d307369698fb09a5833976d768058c337b584fcc7fb57c51637f06ab59743a04`.
 
+### Correctif de livraison de l'extension VS Code
+
+La recette graphique du 7 août 2026 a révélé que VS Code chargeait encore l'extension
+`cmagic-publisher.cmagic-0.0.1`, fondée sur Langium 3.5. Le test différentiel sur
+`examples/service-catalogue-iws.cmagic` a produit zéro diagnostic avec le serveur compilé
+du dépôt, mais 27 diagnostics syntaxiques avec le serveur installé, identiques à ceux
+affichés dans VS Code. Le VSIX historique `cmagic-0.0.2.vsix` était lui aussi obsolète : son
+manifeste déclarait encore Langium 3.5 et la famille LSP 9.
+
+Le script `vscode:prepublish` ne reconstruisait que `out/main.js`, alors que le manifeste
+de l'extension exécute `out/extension/main.cjs`, lequel démarre
+`out/language/main.cjs`. La prépublication exécute désormais la génération Langium, la
+copie des templates, TypeScript, puis le bundling minifié de ces deux points d'entrée avant
+le lint. `npm run package:vsix` produit la version `0.0.3` et `npm run test:vsix` extrait le
+VSIX comme un consommateur, compare ses familles Langium/LSP au manifeste source et ouvre
+le modèle valide via le serveur LSP réellement empaqueté.
+
+Le VSIX `cmagic-0.0.3.vsix` passe ce contrôle avec Langium `~4.3.1`, les familles client et
+serveur LSP 10 et zéro diagnostic. Il a été installé localement avec `--force`. Une fenêtre
+VS Code déjà ouverte doit être rechargée afin d'arrêter l'ancien processus de serveur de
+langage. Son SHA-256 est
+`1d3e64e7b2754cc9705b905c4175f536cf0f52309ee82386cd1047148e01ba86` ; le serveur installé
+porte le même SHA-256 que l'entrée du VSIX,
+`c86b6b00d060514bd41636806c6016d6e7f5fca9691bb6dd2d21afcde04a8d7f`. Le bundle historique
+et inutilisé `out/main.js` est exclu du paquet. Les avertissements `vsce` restants concernent
+l'absence historique de métadonnées
+`repository`/`LICENSE` et le nombre de fichiers de la pile Monaco existante ; ils ne sont
+pas émis par la génération Langium et leur traitement n'appartient pas à cette migration
+ciblée.
+
 ### Limites conservées
 
 Le client Web reste volontairement sur `monaco-languageclient 8.1.1` et
@@ -365,10 +396,10 @@ Le client Web reste volontairement sur `monaco-languageclient 8.1.1` et
 que Langium, le serveur et l'extension VS Code utilisent la famille 3.18. La modernisation
 Monaco et la réduction du gros chunk Vite du wrapper appartiennent au lot B.
 
-La recette couvre le protocole LSP de bout en bout sur le serveur compilé, mais ne remplace
-pas une session graphique VS Code pour le rendu de l'interface et l'activation par
-l'extension host. La commande de génération est couverte par la même CLI compilée que celle
-appelée par l'extension. Enfin, `npm install` signale 30 vulnérabilités dans l'arbre
+La recette couvre le protocole LSP de bout en bout sur le serveur compilé et sur celui du
+VSIX, mais le rendu de l'interface après rechargement de l'extension host reste une
+vérification graphique. La commande de génération est couverte par la même CLI compilée que
+celle appelée par l'extension. Enfin, `npm install` signale 30 vulnérabilités dans l'arbre
 historique, dont la pile Monaco reste volontairement inchangée ; leur remédiation générale
 dépasserait le périmètre de cette migration ciblée.
 
