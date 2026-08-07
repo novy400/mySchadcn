@@ -116,4 +116,25 @@ describe('composite DataProvider', () => {
       UnsupportedResourceOperationError,
     );
   });
+
+  it('advertises abort support only when both providers support it by default', () => {
+    const restProvider = createSourceProvider('rest');
+    const fallbackProvider = createSourceProvider('fake');
+    restProvider.supportAbortSignal = true;
+
+    const partiallyAbortableProvider = createCompositeDataProvider({
+      restProvider,
+      fallbackProvider,
+      restResources: ['clients'],
+    });
+    expect(partiallyAbortableProvider.supportAbortSignal).toBe(false);
+
+    fallbackProvider.supportAbortSignal = true;
+    const fullyAbortableProvider = createCompositeDataProvider({
+      restProvider,
+      fallbackProvider,
+      restResources: ['clients'],
+    });
+    expect(fullyAbortableProvider.supportAbortSignal).toBe(true);
+  });
 });

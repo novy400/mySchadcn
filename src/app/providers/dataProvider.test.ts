@@ -1,4 +1,3 @@
-import type { DataProvider } from 'ra-core';
 import { describe, expect, it, vi } from 'vitest';
 import fakeDataProvider from 'ra-data-fakerest';
 import baseData from '@/data/raw/baseData';
@@ -9,6 +8,7 @@ import dataProvider, {
   removeEmptyFilters,
 } from './dataProvider';
 import { UnsupportedResourceOperationError } from './compositeDataProvider';
+import type { IwsDataProvider } from './iwsDataProvider';
 
 const createFreshProvider = () =>
   createProjectionAwareDataProvider(
@@ -21,7 +21,10 @@ describe('dataProvider filter normalization', () => {
       data: [{ id: 'A00', nom: 'Service IBM i' }],
       total: 1,
     }));
-    const iwsProvider = { getList: iwsGetList } as unknown as DataProvider;
+    const iwsProvider = {
+      getList: iwsGetList,
+      supportAbortSignal: true,
+    } as unknown as IwsDataProvider;
     const provider = createMigratingDataProvider(
       createFreshProvider(),
       iwsProvider,
@@ -51,13 +54,55 @@ describe('dataProvider filter normalization', () => {
     const iwsCreate = vi.fn();
     const provider = createMigratingDataProvider(
       createFreshProvider(),
-      { create: iwsCreate } as unknown as DataProvider,
+      {
+        create: iwsCreate,
+        supportAbortSignal: true,
+      } as unknown as IwsDataProvider,
     );
 
     expect(() =>
       provider.create('services', { data: { id: 'A00' } }),
     ).toThrow(UnsupportedResourceOperationError);
     expect(iwsCreate).not.toHaveBeenCalled();
+  });
+
+  it('rejects service read operations outside getList and getOne', () => {
+    const iwsGetMany = vi.fn();
+    const provider = createMigratingDataProvider(
+      createFreshProvider(),
+      {
+        getMany: iwsGetMany,
+        supportAbortSignal: true,
+      } as unknown as IwsDataProvider,
+    );
+
+    expect(() => provider.getMany('services', { ids: ['A00'] })).toThrow(
+      UnsupportedResourceOperationError,
+    );
+    expect(iwsGetMany).not.toHaveBeenCalled();
+  });
+
+  it('exposes IWS abort support through the composite provider', async () => {
+    const iwsGetList = vi.fn(async () => ({ data: [], total: 0 }));
+    const provider = createMigratingDataProvider(
+      createFreshProvider(),
+      {
+        getList: iwsGetList,
+        supportAbortSignal: true,
+      } as unknown as IwsDataProvider,
+    );
+    const controller = new AbortController();
+
+    await provider.getList('services', {
+      filter: {},
+      signal: controller.signal,
+    });
+
+    expect(provider.supportAbortSignal).toBe(true);
+    expect(iwsGetList).toHaveBeenCalledWith(
+      'services',
+      expect.objectContaining({ signal: controller.signal }),
+    );
   });
 
   it('removes empty UI filters while preserving meaningful falsey values', () => {

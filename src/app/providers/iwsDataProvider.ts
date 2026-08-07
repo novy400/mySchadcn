@@ -1,4 +1,17 @@
-import { HttpError, type DataProvider, type GetListParams, type RaRecord } from 'ra-core';
+import {
+  HttpError,
+  type DataProvider,
+  type GetListParams,
+  type GetListResult,
+  type GetOneParams,
+  type GetOneResult,
+  type RaRecord,
+} from 'ra-core';
+import { removeEmptyFilters } from './filterUtils';
+
+export type IwsDataProvider = Pick<DataProvider, 'getList' | 'getOne'> & {
+  supportAbortSignal: true;
+};
 
 type IwsDataProviderOptions = {
   apiUrl: string;
@@ -105,18 +118,6 @@ const assertRecordHasId = (record: RaRecord) => {
   }
 };
 
-const hasFilterValue = (value: unknown) => {
-  if (typeof value === 'string') {
-    return value.trim() !== '';
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0;
-  }
-
-  return value !== undefined && value !== null;
-};
-
 const buildListUrl = (apiUrl: string, params: GetListParams) => {
   const query = new URLSearchParams();
 
@@ -128,10 +129,10 @@ const buildListUrl = (apiUrl: string, params: GetListParams) => {
     query.set('sort', params.sort.field);
     query.set('order', params.sort.order);
   }
-  for (const [name, value] of Object.entries(params.filter ?? {})) {
-    if (hasFilterValue(value)) {
-      query.set(name, String(value));
-    }
+  for (const [name, value] of Object.entries(
+    removeEmptyFilters(params.filter ?? {}),
+  )) {
+    query.set(name, String(value));
   }
 
   const baseUrl = apiUrl.replace(/\/+$/, '');
@@ -142,10 +143,12 @@ const buildListUrl = (apiUrl: string, params: GetListParams) => {
 export const createIwsDataProvider = ({
   apiUrl,
   fetcher = globalThis.fetch,
-}: IwsDataProviderOptions): DataProvider =>
-  ({
+}: IwsDataProviderOptions): IwsDataProvider => ({
     supportAbortSignal: true,
-    getList: async (_resource, params) => {
+    getList: async <RecordType extends RaRecord = RaRecord>(
+      _resource: string,
+      params: GetListParams,
+    ): Promise<GetListResult<RecordType>> => {
       const response = await fetcher(buildListUrl(apiUrl, params), {
         headers: { Accept: 'application/json' },
         signal: params.signal,
@@ -154,9 +157,12 @@ export const createIwsDataProvider = ({
       assertSuccessfulResponse(response, body);
       body.items.forEach(assertRecordHasId);
 
-      return { data: body.items, total: body.totalCount };
+      return { data: body.items as RecordType[], total: body.totalCount };
     },
-    getOne: async (_resource, params) => {
+    getOne: async <RecordType extends RaRecord = RaRecord>(
+      _resource: string,
+      params: GetOneParams<RecordType>,
+    ): Promise<GetOneResult<RecordType>> => {
       const baseUrl = apiUrl.replace(/\/+$/, '');
       const response = await fetcher(
         `${baseUrl}/${encodeURIComponent(String(params.id))}`,
@@ -177,6 +183,6 @@ export const createIwsDataProvider = ({
         });
       }
 
-      return { data: body.item };
+      return { data: body.item as RecordType };
     },
-  }) as DataProvider;
+  });

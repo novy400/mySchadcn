@@ -72,6 +72,7 @@ describe('IBM i resource contracts', () => {
       identifier: 'id',
       fields: ['id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
       capabilities: ['read'],
+      operations: ['getList', 'getOne'],
       list: {
         filters: ['q', 'id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
         sortFields: ['id', 'nom'],

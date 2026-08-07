@@ -1,6 +1,16 @@
 import type { OrderAction } from '@/modules/crm/orders/order.lifecycle';
 
 export type ResourceCapability = 'read' | 'create' | 'update' | 'delete';
+export type ResourceOperation =
+  | 'getList'
+  | 'getOne'
+  | 'getMany'
+  | 'getManyReference'
+  | 'create'
+  | 'update'
+  | 'updateMany'
+  | 'delete'
+  | 'deleteMany';
 export type ResourceKind = 'entity' | 'projection' | 'detail';
 
 export const resourceNames = [
@@ -25,6 +35,7 @@ export type ResourceContract = {
   identifier: 'id';
   fields: readonly string[];
   capabilities: readonly ResourceCapability[];
+  operations?: readonly ResourceOperation[];
   list?: {
     filters: readonly string[];
     sortFields: readonly string[];
@@ -167,6 +178,7 @@ export const resourceContracts = {
     identifier: 'id',
     fields: ['id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
     capabilities: ['read'],
+    operations: ['getList', 'getOne'],
     list: {
       filters: ['q', 'id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
       sortFields: ['id', 'nom'],

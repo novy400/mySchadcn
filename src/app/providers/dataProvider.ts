@@ -12,24 +12,15 @@ import type { Note } from '@/modules/crm/notes/note.types';
 import type { ProjectionSourceData } from '@/data/projections/buildSummaries';
 import type { ResourceName } from './resourceContracts';
 import { createCompositeDataProvider } from './compositeDataProvider';
-import { createIwsDataProvider } from './iwsDataProvider';
+import {
+  createIwsDataProvider,
+  type IwsDataProvider,
+} from './iwsDataProvider';
+import { removeEmptyFilters } from './filterUtils';
+
+export { removeEmptyFilters } from './filterUtils';
 
 const baseDataProvider = fakeDataProvider(fakerestData);
-
-export const removeEmptyFilters = (filter: Record<string, unknown>) =>
-  Object.fromEntries(
-    Object.entries(filter).filter(([, value]) => {
-      if (typeof value === 'string') {
-        return value.trim() !== '';
-      }
-
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-
-      return value !== undefined;
-    })
-  );
 
 const projectionSourceResources = {
   clients: true,
@@ -144,12 +135,13 @@ export const createProjectionAwareDataProvider = (
 
 export const createMigratingDataProvider = (
   fallbackProvider: DataProvider,
-  iwsProvider: DataProvider,
+  iwsProvider: IwsDataProvider,
 ): DataProvider =>
   createCompositeDataProvider({
     restProvider: iwsProvider,
     fallbackProvider,
     restResources: ['services'],
+    supportAbortSignal: iwsProvider.supportAbortSignal,
   });
 
 const projectionAwareDataProvider = createProjectionAwareDataProvider({

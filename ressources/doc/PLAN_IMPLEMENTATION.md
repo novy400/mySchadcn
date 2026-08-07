@@ -539,14 +539,16 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - conservation des erreurs IWS, des erreurs de champ et de l'identifiant de corrélation ;
 - transfert de l'`AbortSignal` par l'adapter ;
 - provider composite configuré avec `services` comme unique ressource migrée ;
+- contrat d'opérations limitant explicitement `services` à `getList` et `getOne` ;
+- annonce de l'annulation au seam composite puis transfert du signal jusqu'au `fetch` IWS ;
 - test d'une ressource non migrée contre le vrai provider FakeRest ;
 - documentation de l'URL IWS et du principe de proxy intranet à partir de l'exemple
   ILEastic fonctionnel.
 
 ### Validation avant revue
 
-- tests ciblés des providers et du registre : 4 fichiers, 34 tests réussis ;
-- `npm run check` : lint réussi, 39 fichiers et 100 tests réussis, build réussi ;
+- tests ciblés des providers et du registre : 4 fichiers, 37 tests réussis ;
+- `npm run check` : lint réussi, 39 fichiers et 103 tests réussis, build réussi ;
 - revue Standards/Spec depuis `82b0b9baf9aedf7d51107be580bd6fcc28b892a2` : en cours.
 
 ## Suite

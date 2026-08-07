@@ -4,12 +4,14 @@ import {
   resourceContracts,
   type ResourceCapability,
   type ResourceName,
+  type ResourceOperation,
 } from './resourceContracts';
 
 type CompositeDataProviderOptions = {
-  restProvider: DataProvider;
+  restProvider: Partial<DataProvider>;
   fallbackProvider: DataProvider;
   restResources: readonly ResourceName[];
+  supportAbortSignal?: boolean;
 };
 
 export class UnknownResourceError extends Error {
@@ -20,13 +22,16 @@ export class UnknownResourceError extends Error {
 }
 
 export class UnsupportedResourceOperationError extends Error {
-  constructor(resource: ResourceName, capability: ResourceCapability) {
-    super(`Capacité ${capability} absente du contrat de la ressource ${resource}`);
+  constructor(
+    resource: ResourceName,
+    operation: ResourceCapability | ResourceOperation,
+  ) {
+    super(`Opération ${operation} absente du contrat de la ressource ${resource}`);
     this.name = 'UnsupportedResourceOperationError';
   }
 }
 
-const operationCapabilities: Readonly<Record<string, ResourceCapability>> = {
+const operationCapabilities: Readonly<Record<ResourceOperation, ResourceCapability>> = {
   getList: 'read',
   getOne: 'read',
   getMany: 'read',
@@ -38,11 +43,18 @@ const operationCapabilities: Readonly<Record<string, ResourceCapability>> = {
   deleteMany: 'delete',
 };
 
+const isResourceOperation = (property: string): property is ResourceOperation =>
+  Object.hasOwn(operationCapabilities, property);
+
 export const enforceResourceContracts = (provider: DataProvider): DataProvider =>
   new Proxy(provider, {
     get: (target, property, receiver) => {
       const providerMethod = Reflect.get(target, property, receiver);
-      const capability = typeof property === 'string' ? operationCapabilities[property] : undefined;
+      const operation =
+        typeof property === 'string' && isResourceOperation(property)
+          ? property
+          : undefined;
+      const capability = operation ? operationCapabilities[operation] : undefined;
 
       if (!capability || typeof providerMethod !== 'function') {
         return providerMethod;
@@ -53,7 +65,22 @@ export const enforceResourceContracts = (provider: DataProvider): DataProvider =
           throw new UnknownResourceError(resource);
         }
 
-        const capabilities = resourceContracts[resource].capabilities as readonly ResourceCapability[];
+        const contract = resourceContracts[resource];
+        const operations =
+          'operations' in contract
+            ? (contract.operations as readonly ResourceOperation[])
+            : undefined;
+        if (
+          operations &&
+          !operations.includes(operation!)
+        ) {
+          throw new UnsupportedResourceOperationError(
+            resource,
+            operation!,
+          );
+        }
+
+        const capabilities = contract.capabilities as readonly ResourceCapability[];
         if (!capabilities.includes(capability)) {
           throw new UnsupportedResourceOperationError(resource, capability);
         }
@@ -67,6 +94,7 @@ export const createCompositeDataProvider = ({
   restProvider,
   fallbackProvider,
   restResources,
+  supportAbortSignal,
 }: CompositeDataProviderOptions): DataProvider => {
   for (const resource of restResources) {
     if (!isResourceName(resource)) {
@@ -80,11 +108,20 @@ export const createCompositeDataProvider = ({
       throw new UnknownResourceError(resource);
     }
 
-    return migratedResources.has(resource) ? restProvider : fallbackProvider;
+    return (migratedResources.has(resource)
+      ? restProvider
+      : fallbackProvider) as DataProvider;
   });
 
-  combinedProvider.supportAbortSignal = Boolean(
-    restProvider.supportAbortSignal && fallbackProvider.supportAbortSignal,
-  );
-  return enforceResourceContracts(combinedProvider);
+  const advertisesAbortSignal =
+    supportAbortSignal ??
+    Boolean(restProvider.supportAbortSignal && fallbackProvider.supportAbortSignal);
+  const contractedProvider = enforceResourceContracts(combinedProvider);
+
+  return new Proxy(contractedProvider, {
+    get: (target, property, receiver) =>
+      property === 'supportAbortSignal'
+        ? advertisesAbortSignal
+        : Reflect.get(target, property, receiver),
+  });
 };

@@ -157,7 +157,9 @@ La première ressource migrée est `services`, entité technique en lecture seul
 à l'endpoint IWS `/web/services/SERVIWS3`. Seuls LIST et GET sont branchés. L'URL publique
 est fournie par `VITE_IBM_I_API_URL`, avec `/web/services/SERVIWS3` comme chemin relatif par
 défaut. FakeRest reste le provider de toutes les autres ressources, y compris les sources et
-les sorties des projections.
+les sorties des projections. Le registre limite explicitement `services` à `getList` et
+`getOne` : `getMany`, `getManyReference` et les mutations sont refusés avant d'atteindre
+l'adapter IWS.
 
 Ordre recommandé : `clients`, `contacts`, `tasks` avec `tasks_with_client`, puis le reste
 des ressources. Une ressource et ses projections dépendantes doivent être migrées dans la

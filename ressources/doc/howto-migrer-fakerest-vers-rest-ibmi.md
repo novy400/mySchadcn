@@ -173,9 +173,11 @@ Le périmètre frontend est volontairement limité à :
 - `getList`, qui transmet `page`, `perPage`, `sort`, `order`, `q` et les filtres puis
   transforme `{ items, totalCount, errors }` en `{ data, total }` ;
 - `getOne`, qui appelle `/{id}` puis transforme `{ item, errors }` en `{ data }` ;
+- le rejet explicite de `getMany` et `getManyReference`, absents de cette première tranche ;
 - la conservation de l'identifiant naturel `id` fourni par IBM i ;
 - la conversion des statuts `400`, `401`, `403`, `404`, `409` et `500` en `HttpError` ;
-- le transfert de l'`AbortSignal` lorsque l'appelant le fournit.
+- l'annonce de la prise en charge de l'`AbortSignal` par le provider composite et son
+  transfert jusqu'au `fetch` IWS lorsque React Admin le fournit.
 
 Les autres ressources et les projections restent sur leur chemin FakeRest actuel. Les
 mutations de `services` ne sont pas exposées et aucun écran CRM n'est ajouté pour cette
