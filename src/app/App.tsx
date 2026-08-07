@@ -12,6 +12,7 @@ import { contactsSummary } from '../modules/crm/contacts-summary';
 import { fournisseurs } from '../modules/crm/fournisseurs';
 import { customerResource, customerSignalietiqueResource, customerRisqueResource } from '../modules/crm/customers';
 import { orders } from '../modules/crm/orders';
+import { services } from '../modules/ibmi/services';
 import { authProvider, DemoLoginPage } from './auth';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
       <Resource {...contactsSummary} />
       <Resource {...fournisseurs} />
       <Resource {...orders} />
+      <Resource {...services} />
 
       {/* Ressources de détail avec Tabs */}
       <Resource {...customerResource} />
