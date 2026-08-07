@@ -24,6 +24,7 @@ documentaire, par tranches petites et vérifiables.
 | 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | Terminé |
 | 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
 | 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | Terminé |
+| 13 | Ajouter LIST et SHOW pour le référentiel technique `services` | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -573,8 +574,36 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 Décision : **GO** pour la première verticale DataProvider IBM i et sa configuration de
 développement locale.
 
+## Tranche 13 — Écrans en lecture seule pour `services`
+
+### Périmètre retenu
+
+- présenter `services` comme un référentiel technique IBM i, séparé des modules CRM ;
+- exposer uniquement LIST et SHOW avec les cinq champs du contrat ;
+- conserver `getList` et `getOne` comme seules opérations nécessaires ;
+- n'ajouter aucune mutation, relation ou action métier.
+
+### Réalisé
+
+- module dédié `src/modules/ibmi/services` avec une ressource « Services IBM i » ;
+- LIST paginée avec recherche `q`, filtres `id`, `nom`, `idManageur`,
+  `idServiceAdmin` et `site`, et tris limités à `id` et `nom` ;
+- ouverture de SHOW depuis chaque ligne et restitution des cinq champs contractuels ;
+- désactivation des actions groupées et absence de route ou contrôle CREATE, EDIT et DELETE ;
+- accès en lecture confirmé pour Lecteur, Agent et Responsable ;
+- tests React Admin utilisant exclusivement un DataProvider simulé.
+
+### Validation
+
+- tests ciblés UI et déclaration : 4 fichiers, 8 tests réussis ;
+- `npm run check` : lint réussi, 43 fichiers et 111 tests réussis, build réussi ;
+- smoke test LIST puis SHOW via le proxy Vite : réponses `200`, cinq champs présents et
+  identifiant stable entre les deux lectures ;
+- aucune modification de l'adapter IWS, de FakeRest, des projections, du moteur CMagic ou
+  de `httpd.conf`.
+
 ## Suite
 
-Les douze tranches sont terminées. La prochaine verticale IBM i devra être choisie
-uniquement lorsqu'un endpoint correspondra à une ressource CRM existante. L'enrichissement
-du modèle des commandes demeure une évolution séparée.
+Les treize tranches sont terminées. `services` reste strictement en lecture seule. La
+prochaine évolution envisagée est la conception puis la bascule atomique de `fournisseurs`
+vers IBM i avec LIST, GET, CREATE et UPDATE ; elle n'ajoutera aucune mutation à `services`.

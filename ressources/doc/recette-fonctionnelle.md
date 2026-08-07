@@ -94,9 +94,10 @@ Ouvrir ensuite l'URL affichee par Vite.
 
 ### 10. DataProvider IBM i — ressource technique `services`
 
-Cette première tranche ne déclare pas encore d'écran ni d'entrée de menu `services`.
-La recette porte sur le seam public du DataProvider, l'accès HTTP en lecture seule et la
-non-régression des ressources CRM restées sur FakeRest.
+La ressource `services` expose maintenant des écrans LIST et SHOW en lecture seule sous le
+libellé « Services IBM i ». Elle reste un référentiel technique séparé des notions métier
+CRM. La recette porte sur le seam public du DataProvider, les écrans React Admin, l'accès
+HTTP en lecture seule et la non-régression des ressources restées sur FakeRest.
 
 #### 10.1 Préparer l'accès local
 
@@ -129,7 +130,33 @@ Résultat attendu : quatre fichiers et 37 tests réussis. Ces tests doivent conf
 - le rejet de `getMany`, `getManyReference`, `CREATE`, `UPDATE` et `DELETE` pour
   `services`.
 
-#### 10.3 Vérifier LIST via le proxy Vite
+#### 10.3 Vérifier les écrans LIST et SHOW sans réseau réel
+
+```bash
+npm run test -- src/app/App.test.tsx src/modules/ibmi/services/ServiceList.test.tsx src/modules/ibmi/services/ServiceShow.test.tsx src/modules/ibmi/services/ServiceResource.test.tsx
+```
+
+Résultat attendu : quatre fichiers et huit tests réussis. Ces tests utilisent un
+DataProvider simulé et doivent confirmer :
+
+- l'entrée « Services IBM i » dans la navigation d'un rôle autorisé ;
+- l'appel de `getList('services')`, la pagination, la recherche `q`, les filtres permis et
+  les seuls tris `id` et `nom` ;
+- la restitution de `id`, `nom`, `idManageur`, `idServiceAdmin` et `site` ;
+- l'ouverture de SHOW depuis une ligne et l'appel de `getOne('services')` ;
+- l'absence de sélection groupée, CREATE, EDIT, DELETE, `getMany` et
+  `getManyReference`.
+
+Avec `npm run dev`, se connecter successivement comme Lecteur, Agent et Responsable puis :
+
+- vérifier la présence de « Services IBM i » dans la navigation ;
+- ouvrir LIST, changer la pagination et trier par `id` puis `nom` ;
+- saisir une recherche et activer quelques filtres techniques ;
+- ouvrir une ligne et vérifier les cinq champs dans SHOW ;
+- confirmer l'absence de bouton de création, modification ou suppression sur les deux
+  écrans.
+
+#### 10.4 Vérifier LIST via le proxy Vite
 
 Lancer `npm run dev`, relever l'URL affichée par Vite, puis exécuter depuis un second
 terminal en adaptant le port si nécessaire :
@@ -157,7 +184,7 @@ Invoke-RestMethod "http://localhost:5173/web/services/SERVIWS3?page=1&perPage=10
 Vérifier que la recherche ne restitue que les lignes sémantiquement correspondantes,
 que le filtre exact est respecté et que le tri est observable.
 
-#### 10.4 Vérifier GET et les erreurs de lecture
+#### 10.5 Vérifier GET et les erreurs de lecture
 
 ```powershell
 $detail = Invoke-RestMethod "http://localhost:5173/web/services/SERVIWS3/A00"
@@ -183,7 +210,7 @@ Ne pas provoquer volontairement de `409` ou `500` sur l'environnement IBM i. Leu
 adaptation, ainsi que celles de `401` et `403`, est vérifiée par les tests unitaires avec
 des réponses HTTP simulées.
 
-#### 10.5 Vérifier les non-régressions et les limites de tranche
+#### 10.6 Vérifier les non-régressions et les limites de tranche
 
 - ouvrir le Dashboard, `clients`, `contacts`, `tasks`, `contacts_summary` et
   `fournisseurs` ;
@@ -191,10 +218,11 @@ des réponses HTTP simulées.
 - créer ou modifier une donnée FakeRest autorisée, puis vérifier la projection associée ;
 - confirmer qu'aucun écran CRM existant n'effectue d'appel vers `SERVIWS3` ;
 - ne réaliser aucun `POST`, `PUT`, `PATCH` ou `DELETE` sur `services` dans cette tranche ;
-- terminer par `npm run check` et attendre 39 fichiers et 103 tests réussis.
+- terminer par `npm run check` et attendre 43 fichiers et 111 tests réussis.
 
-La tranche est **GO** si LIST et GET fonctionnent via Vite, si les erreurs de lecture sont
-conformes, si les ressources CRM restent sur FakeRest et si `npm run check` reste vert.
+La tranche est **GO** si les écrans LIST et SHOW restent strictement en lecture seule, si
+LIST et GET fonctionnent via Vite, si les erreurs de lecture sont conformes, si les
+ressources CRM restent sur FakeRest et si `npm run check` reste vert.
 Elle est **NO GO** si une écriture atteint IBM i, si une autre ressource est routée vers
 IWS, si un `id` est absent ou instable, ou si une projection existante régresse.
 
@@ -202,5 +230,5 @@ IWS, si un `id` est absent ou instable, ou si une projection existante régresse
 
 Les écrans CRM utilisent encore `ra-data-fakerest`. Leurs modifications sont donc en
 mémoire et ne persistent pas après un rechargement complet de la page. Seule la ressource
-technique `services`, limitée à LIST et GET et non encore exposée par un écran, lit les
-données réelles du service IBM i `SERVIWS3`.
+technique `services`, limitée à LIST et GET et exposée par des écrans en lecture seule, lit
+les données réelles du service IBM i `SERVIWS3`.
