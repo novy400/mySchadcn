@@ -80,6 +80,9 @@ export type CatalogReadTemplateModel = {
     detailFields: FieldTemplateModel[];
     updateFields: FieldTemplateModel[];
     supportedFields: FieldTemplateModel[];
+    allowedFilterFields: string[];
+    allowedSortFields: string[];
+    allowsSearch: boolean;
     defaultSortField: string;
     defaultSortOrder: string;
     id: FieldTemplateModel;
@@ -349,6 +352,9 @@ export const buildCatalogReadTemplateModel = (
         detailFields: fields,
         updateFields,
         supportedFields: itemFields,
+        allowedFilterFields: [...(list?.filterFields ?? [])],
+        allowedSortFields: [...(list?.sortFields ?? [])],
+        allowsSearch: (list?.searchFields.length ?? 0) > 0,
         defaultSortField: list?.defaultSort.field ?? spec.identifier,
         defaultSortOrder: list?.defaultSort.order ?? 'ASC',
         id

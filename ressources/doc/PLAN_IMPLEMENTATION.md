@@ -694,7 +694,7 @@ la table, les objets et le service restent donc à déployer avant la recette d'
 1. Le catalogue CMagic `Fournis` et le schéma `FOURNIS` couvrent LIST, GET, CREATE et
    UPDATE. Deux générations successives ont produit les mêmes hashes pour les vingt et un
    artefacts, dont le DDL, OpenAPI, les sources RPG et les enveloppes RPGUnit.
-2. La suite CMagic passe avec 19 fichiers et 142 tests, puis lint et build. La compilation
+2. La suite CMagic passe avec 19 fichiers et 143 tests, puis lint et build. La compilation
    et la recette IBM i restent à exécuter après choix de la bibliothèque de déploiement.
 3. Au seam React Admin, les tests du registre et du DataProvider utilisent un
    `fetcher` simulé : URL par ressource, pagination, recherche, filtre, tri, POST, PUT,
@@ -709,6 +709,12 @@ la table, les objets et le service restent donc à déployer avant la recette d'
    seul `nom` reste triable tant que le contrat n'est pas élargi.
 6. Les six suites ciblées passent avec 53 tests. `npm run check` est vert avec 43 fichiers
    et 125 tests, puis un build de production réussi ; les projections restent couvertes.
+
+La revue Standards/Spec a déclenché un test rouge puis une correction du générateur : le
+module RPG rejette désormais tout filtre/tri LIST absent du catalogue et ajoute la clé
+`ID ASC` comme départage stable après le tri `nom`. Le signalement sur les colonnes
+facultatives a été écarté après lecture du seam runtime : `CMAGIC.0.0.2` construit déjà le
+SELECT dynamique avec `IFNULL`. La recette IBM i couvre néanmoins explicitement ce cas.
 
 ### Bascule et retour arrière
 

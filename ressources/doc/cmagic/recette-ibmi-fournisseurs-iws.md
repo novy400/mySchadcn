@@ -56,7 +56,9 @@ chemins existants :
 ```
 
 Conserver les bibliothèques qui fournissent `CIWS`, `CKOOL`, `NOXDB` et CMagic. Vérifier
-que `CURLIB` désigne bien la bibliothèque de recette choisie.
+que `CURLIB` désigne bien la bibliothèque de recette choisie. Le runtime CMagic doit être
+au moins en version `CMAGIC.0.0.2` : `cmagic_computeSqlClauses` y protège les colonnes SQL
+nullables avec `IFNULL` pendant LIST.
 
 ## 3. Créer la table neuve `FOURNIS`
 
@@ -140,6 +142,27 @@ Exports attendus :
   `fournis_update_iws`.
 
 Il ne doit exister aucun export `delete`.
+
+### 4.1 Compléter et exécuter RPGUnit
+
+Les fichiers `fournis.test.sqlrpgle` et `fouriws.test.sqlrpgle` sont des enveloppes
+générées : leurs zones manuelles doivent être complétées sur le projet IBM i avant le GO.
+`testing.json` référence déjà `FOURNIS` et `FOURIWS`.
+
+Couvrir au minimum :
+
+- LIST vide, pagination et tri `nom` avec deux lignes portant le même nom ;
+- rejet d'un tri sur `adresse` et d'un filtre sur `telephone` ;
+- recherche `q` et filtre `ville` ;
+- LIST et GET d'une ligne dont les quatre champs facultatifs valent SQL NULL, restitués
+  comme chaînes vides ;
+- CREATE nominal, clé dupliquée et champs requis absents ;
+- UPDATE nominal, clé absente et incohérence entre clé de chemin et corps ;
+- absence de procédure DELETE.
+
+Exécuter les deux suites avec l'intégration RPGUnit déjà utilisée par le projet et
+conserver la capture ou le journal du nombre de cas/assertions. Un simple succès de
+compilation des enveloppes sans cas manuel ne valide pas cette porte.
 
 ## 5. Publier `FOURIWS1` dans IBM Web Administration for i
 
@@ -229,6 +252,28 @@ Invoke-RestMethod "$baseUrl?page=1&perPage=5&sort=nom&order=ASC&ville=Lille"
 
 Vérifier le filtrage, l'ordre par `nom` et la cohérence de `totalCount`.
 
+Créer ensuite une ligne dont les champs facultatifs sont vides afin de valider la lecture
+des SQL NULL :
+
+```powershell
+$emptyId = "T14VIDE01"
+$emptyBody = @{
+  id = $emptyId
+  nom = "Fournisseur sans coordonnées"
+  adresse = ""
+  ville = ""
+  telephone = ""
+  email = ""
+} | ConvertTo-Json
+
+$emptyResponse = Invoke-WebRequest $baseUrl -Method Post -ContentType "application/json" -Body $emptyBody
+$emptyResponse.StatusCode
+Invoke-RestMethod "$baseUrl/$emptyId" | ConvertTo-Json -Depth 6
+```
+
+Attendu : `201`, puis GET `200`; les quatre valeurs facultatives sont restituées comme
+chaînes vides et LIST continue de répondre sans erreur SQL de valeur nulle.
+
 ### 6.4 UPDATE puis relecture
 
 ```powershell
@@ -280,11 +325,11 @@ Après les tests HTTP et UI, supprimer uniquement la clé isolée depuis ACS Run
 
 ```sql
 DELETE FROM <BIBLIOTHEQUE_RECETTE>.FOURNIS
-WHERE ID = 'T14REC001';
+WHERE ID IN ('T14REC001', 'T14VIDE01');
 
 SELECT COUNT(*) AS RESTANT
 FROM <BIBLIOTHEQUE_RECETTE>.FOURNIS
-WHERE ID = 'T14REC001';
+WHERE ID IN ('T14REC001', 'T14VIDE01');
 ```
 
 Attendu : `RESTANT = 0`. Ne pas supprimer la table tant que la recette applicative n'est
@@ -301,7 +346,7 @@ VITE_IBM_I_FOURNISSEURS_API_URL=/web/services/FOURIWS1
 
 Lancer `npm run dev`, puis vérifier :
 
-- Lecteur : LIST et ouverture d'une ligne, sans création ni modification ;
+- Lecteur : LIST uniquement, sans création, modification ni ligne cliquable ;
 - Agent et Responsable : LIST, CREATE, ouverture d'une ligne vers EDIT et UPDATE ;
 - recherche `q`, filtre `ville`, pagination et tri `nom` ;
 - les six champs ;
@@ -309,6 +354,11 @@ Lancer `npm run dev`, puis vérifier :
 - aucun bouton DELETE et aucune sélection groupée ;
 - `services` toujours en lecture seule ;
 - les autres ressources et les projections toujours sur FakeRest.
+
+Ne déployer le commit applicatif qui ajoute `fournisseurs` au routage IWS qu'après la
+réussite des sections 5 et 6. Le service `FOURIWS1` et cette bascule frontend forment une
+mise en production atomique ; si le service répond encore `404`, conserver la version
+applicative précédente.
 
 ## 9. Critères GO / NO GO
 

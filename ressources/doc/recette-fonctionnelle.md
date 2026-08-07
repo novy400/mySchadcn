@@ -161,9 +161,10 @@ avec la même clé pour vérifier le `409`, envoyer un champ invalide pour véri
 `422`, et demander une clé absente pour vérifier `404`. Nettoyer ensuite `T14REC001`
 directement en SQL dans la bibliothèque de recette.
 
-Dans l'interface, vérifier la liste avec les trois rôles, l'absence de bouton CREATE pour
-Lecteur, la création pour Agent/Responsable, l'ouverture d'une ligne vers EDIT, la clé
-désactivée, la sauvegarde pessimiste et l'absence totale de suppression.
+Dans l'interface, vérifier la liste avec les trois rôles. Pour Lecteur, la ligne n'ouvre pas
+EDIT et aucun bouton CREATE n'apparaît. Pour Agent/Responsable, vérifier la création,
+l'ouverture d'une ligne vers EDIT, la clé désactivée, la sauvegarde pessimiste et l'absence
+totale de suppression.
 
 Au 7 août 2026, le smoke test en lecture via Vite atteint le proxy mais reçoit `404` sans
 enveloppe IWS sur `FOURIWS1`. Les étapes 8.3 et 8.4 sont donc en attente du déploiement ;

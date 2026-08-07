@@ -77,6 +77,36 @@ describe('Catalogue RPG read generator', () => {
         expect(source).not.toContain('Filter value exceeds maximum length');
     });
 
+    test('enforces LIST filter and sort whitelists with a stable identifier tiebreaker', async () => {
+        const service = await compileServiceCatalog();
+        const source = generateRpgReadModule({
+            ...service,
+            list: {
+                ...service.list!,
+                filterFields: ['site'],
+                sortFields: ['nom']
+            }
+        });
+
+        expect(source).toContain('for-each lRequestedSort in pContext.sort;');
+        expect(source).toContain(
+            "if %trim(lRequestedSort.field) <> 'nom';"
+        );
+        expect(source).toContain('for-each lRequestedFilter in pContext.filter;');
+        expect(source).toContain(
+            "if %trim(lRequestedFilter.field) <> 'q' and"
+        );
+        expect(source).toContain(
+            "%trim(lRequestedFilter.field) <> 'site';"
+        );
+        expect(source).toContain(
+            "if %trim(lContext.sort(1).field) <> 'id';"
+        );
+        expect(source).toContain(
+            "lOrderBy = %trim(lOrderBy) + ', DEPTNO ASC';"
+        );
+    });
+
     test('rejects SQL identifiers that cannot be safely generated', async () => {
         const service = await compileServiceCatalog();
         const unsafeSpec: CatalogSpec = {
