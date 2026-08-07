@@ -15,6 +15,7 @@ export const resourceNames = [
   'customers',
   'customerSignalietiques',
   'customerRisques',
+  'services',
 ] as const;
 
 export type ResourceName = (typeof resourceNames)[number];
@@ -160,6 +161,16 @@ export const resourceContracts = {
     fields: ['id', 'score', 'statut', 'lastReview'],
     capabilities: ['read'],
     sourceResource: 'customers',
+  },
+  services: {
+    kind: 'entity',
+    identifier: 'id',
+    fields: ['id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
+    capabilities: ['read'],
+    list: {
+      filters: ['q', 'id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
+      sortFields: ['id', 'nom'],
+    },
   },
 } as const satisfies Record<ResourceName, ResourceContract>;
 

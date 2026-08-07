@@ -11,7 +11,8 @@ import type { Client } from '@/modules/crm/clients/client.types';
 import type { Note } from '@/modules/crm/notes/note.types';
 import type { ProjectionSourceData } from '@/data/projections/buildSummaries';
 import type { ResourceName } from './resourceContracts';
-import { enforceResourceContracts } from './compositeDataProvider';
+import { createCompositeDataProvider } from './compositeDataProvider';
+import { createIwsDataProvider } from './iwsDataProvider';
 
 const baseDataProvider = fakeDataProvider(fakerestData);
 
@@ -141,6 +142,16 @@ export const createProjectionAwareDataProvider = (
   };
 };
 
+export const createMigratingDataProvider = (
+  fallbackProvider: DataProvider,
+  iwsProvider: DataProvider,
+): DataProvider =>
+  createCompositeDataProvider({
+    restProvider: iwsProvider,
+    fallbackProvider,
+    restResources: ['services'],
+  });
+
 const projectionAwareDataProvider = createProjectionAwareDataProvider({
   ...baseDataProvider,
   getList: (resource, params) =>
@@ -155,8 +166,14 @@ const projectionAwareDataProvider = createProjectionAwareDataProvider({
     }),
 });
 
-export const dataProvider: DataProvider = enforceResourceContracts(
+const iwsDataProvider = createIwsDataProvider({
+  apiUrl:
+    import.meta.env.VITE_IBM_I_API_URL || '/web/services/SERVIWS3',
+});
+
+export const dataProvider: DataProvider = createMigratingDataProvider(
   projectionAwareDataProvider,
+  iwsDataProvider,
 );
 
 export default dataProvider;

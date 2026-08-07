@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resourceContracts } from './resourceContracts';
 
 describe('IBM i resource contracts', () => {
-  it('describes every resource consumed by the administration screens', () => {
+  it('describes every screen resource and technical provider resource', () => {
     expect(Object.keys(resourceContracts)).toEqual([
       'clients',
       'contacts',
@@ -15,6 +15,7 @@ describe('IBM i resource contracts', () => {
       'customers',
       'customerSignalietiques',
       'customerRisques',
+      'services',
     ]);
   });
 
@@ -63,5 +64,18 @@ describe('IBM i resource contracts', () => {
       },
     });
     expect(resourceContracts.orders.relations).toEqual({ customer_id: 'customers' });
+  });
+
+  it('limits the technical IBM i services resource to its validated read contract', () => {
+    expect(resourceContracts.services).toEqual({
+      kind: 'entity',
+      identifier: 'id',
+      fields: ['id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
+      capabilities: ['read'],
+      list: {
+        filters: ['q', 'id', 'nom', 'idManageur', 'idServiceAdmin', 'site'],
+        sortFields: ['id', 'nom'],
+      },
+    });
   });
 });

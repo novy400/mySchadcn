@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import type { DataProvider } from 'ra-core';
+import { describe, expect, it, vi } from 'vitest';
 import fakeDataProvider from 'ra-data-fakerest';
 import baseData from '@/data/raw/baseData';
 import { buildSummaries } from '@/data/projections/buildSummaries';
 import dataProvider, {
   createProjectionAwareDataProvider,
+  createMigratingDataProvider,
   removeEmptyFilters,
 } from './dataProvider';
 import { UnsupportedResourceOperationError } from './compositeDataProvider';
@@ -14,6 +16,50 @@ const createFreshProvider = () =>
   );
 
 describe('dataProvider filter normalization', () => {
+  it('routes only services to IBM i and keeps an unmigrated resource on FakeRest', async () => {
+    const iwsGetList = vi.fn(async () => ({
+      data: [{ id: 'A00', nom: 'Service IBM i' }],
+      total: 1,
+    }));
+    const iwsProvider = { getList: iwsGetList } as unknown as DataProvider;
+    const provider = createMigratingDataProvider(
+      createFreshProvider(),
+      iwsProvider,
+    );
+
+    await expect(
+      provider.getList('services', {
+        pagination: { page: 1, perPage: 25 },
+        sort: { field: 'nom', order: 'ASC' },
+        filter: {},
+      }),
+    ).resolves.toEqual({
+      data: [{ id: 'A00', nom: 'Service IBM i' }],
+      total: 1,
+    });
+    await expect(
+      provider.getList('fournisseurs', {
+        pagination: { page: 1, perPage: 25 },
+        sort: { field: 'nom', order: 'ASC' },
+        filter: {},
+      }),
+    ).resolves.toMatchObject({ total: 2 });
+    expect(iwsGetList).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects service mutations before they reach the IWS adapter', () => {
+    const iwsCreate = vi.fn();
+    const provider = createMigratingDataProvider(
+      createFreshProvider(),
+      { create: iwsCreate } as unknown as DataProvider,
+    );
+
+    expect(() =>
+      provider.create('services', { data: { id: 'A00' } }),
+    ).toThrow(UnsupportedResourceOperationError);
+    expect(iwsCreate).not.toHaveBeenCalled();
+  });
+
   it('removes empty UI filters while preserving meaningful falsey values', () => {
     expect(
       removeEmptyFilters({
