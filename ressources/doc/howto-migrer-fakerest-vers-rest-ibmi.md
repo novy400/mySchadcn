@@ -160,6 +160,27 @@ Cet extrait est un pseudo-code incomplet. Le provider composite réel doit route
 les méthodes du contrat utilisées par l'application, conserver les signaux d'annulation
 et présenter les mêmes formes de résultats et d'erreurs pour les deux sources.
 
+### Première verticale active : `services`
+
+La première bascule effective conserve FakeRest comme source par défaut et route uniquement
+la ressource technique `services` vers
+[`iwsDataProvider.ts`](../../src/app/providers/iwsDataProvider.ts). Cette ressource correspond
+exactement à l'entité CMagic `Service` adossée à `DB2SAMPLE.DEPARTMENT` ; elle ne doit pas
+être confondue avec les clients du CRM.
+
+Le périmètre frontend est volontairement limité à :
+
+- `getList`, qui transmet `page`, `perPage`, `sort`, `order`, `q` et les filtres puis
+  transforme `{ items, totalCount, errors }` en `{ data, total }` ;
+- `getOne`, qui appelle `/{id}` puis transforme `{ item, errors }` en `{ data }` ;
+- la conservation de l'identifiant naturel `id` fourni par IBM i ;
+- la conversion des statuts `400`, `401`, `403`, `404`, `409` et `500` en `HttpError` ;
+- le transfert de l'`AbortSignal` lorsque l'appelant le fournit.
+
+Les autres ressources et les projections restent sur leur chemin FakeRest actuel. Les
+mutations de `services` ne sont pas exposées et aucun écran CRM n'est ajouté pour cette
+ressource technique.
+
 ## 8. Validation de migration
 
 Checklist:
@@ -189,13 +210,22 @@ méthode `customAction` n'appartient pas au contrat DataProvider standard.
 
 ## 10. Variables d'environnement
 
-Ajouter une variable d'URL API:
+La verticale IWS utilise l'URL publique de la ressource complète :
 
 ```bash
-VITE_API_URL=https://mon-api-ibmi.exemple.com
+VITE_IBM_I_API_URL=/web/services/SERVIWS3
 ```
 
-Puis lire cette valeur dans `dataProvider.ts`.
+La valeur relative ci-dessus utilise la même origine que l'application déployée. Une URL
+publique absolue peut être fournie pour un autre environnement. Le fichier
+[`.env.example`](../../.env.example) documente la variable sans imposer d'hôte local.
+
+Dans un intranet où le port applicatif est bloqué, le serveur HTTP IBM i peut publier un
+chemin accessible et le relayer vers le service interne. La configuration
+[`httpd.conf`](../../projets_annexes/applicationTemplate/ressources/conf/httpd.conf) fournit
+un exemple fonctionnel de `ProxyPass` pour une API ILEastic. Le principe de proxy est
+réutilisable, mais sa cible `/api` sur le port `44000` ne constitue pas l'URL du service IWS
+`SERVIWS3` et ne doit pas être recopiée sans adaptation par l'équipe IBM i.
 
 Ne pas versionner de secret dans une variable `VITE_*` : ces variables sont intégrées au
 bundle client. L'URL publique de l'API peut y figurer, mais pas un jeton ou mot de passe.

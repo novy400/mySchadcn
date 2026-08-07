@@ -1,6 +1,6 @@
 # Contrat du DataProvider IBM i
 
-_Version du contrat : 1 — 2026-07-22_
+_Version du contrat : 2 — 2026-08-07_
 
 ## Finalité
 
@@ -137,12 +137,27 @@ Le DataProvider transforme cette réponse en erreur React Admin tout en conserva
 Le traitement de `401`, `403` et du contrat de session est détaillé dans
 [Authentification et autorisations](./authentification-autorisations.md).
 
+### Adaptation des erreurs IWS
+
+Le transport IWS validé peut renvoyer un tableau `errors` dont les entrées contiennent
+`code`, `nomZone`, `valeur`, `text` et `textUser`. L'adapter utilise la première erreur
+comme code et message principaux, construit `fieldErrors` à partir de `nomZone`, conserve
+le tableau d'origine et reprend `X-Correlation-Id` lorsqu'il est présent. Si IWS supprime le
+corps d'une réponse en erreur, l'adapter produit tout de même un code `HTTP_{status}` et un
+message déterministe.
+
 ## Migration progressive
 
 Le module [`compositeDataProvider.ts`](../../src/app/providers/compositeDataProvider.ts)
 route toutes les opérations standard vers l'adapter REST pour les ressources migrées et
 vers FakeRest pour les autres. La configuration refuse un nom absent du registre, ce qui
 évite une bascule silencieuse vers la mauvaise source.
+
+La première ressource migrée est `services`, entité technique en lecture seule correspondant
+à l'endpoint IWS `/web/services/SERVIWS3`. Seuls LIST et GET sont branchés. L'URL publique
+est fournie par `VITE_IBM_I_API_URL`, avec `/web/services/SERVIWS3` comme chemin relatif par
+défaut. FakeRest reste le provider de toutes les autres ressources, y compris les sources et
+les sorties des projections.
 
 Ordre recommandé : `clients`, `contacts`, `tasks` avec `tasks_with_client`, puis le reste
 des ressources. Une ressource et ses projections dépendantes doivent être migrées dans la

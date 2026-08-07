@@ -1,7 +1,7 @@
 # Plan d'implémentation
 
 _Branche : `codex/docs-restructuration`_
-_Dernière mise à jour : 2026-08-06_
+_Dernière mise à jour : 2026-08-07_
 
 ## Objectif
 
@@ -23,6 +23,7 @@ documentaire, par tranches petites et vérifiables.
 | 9 | Ajouter `UPDATE` avec validation préalable au transport IWS CMagic | Terminé |
 | 10 | Ajouter `DELETE` avec validation préalable au transport IWS CMagic | Terminé |
 | 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
+| 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | En revue |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -516,8 +517,40 @@ dans [`authentification-autorisations.md`](./authentification-autorisations.md).
 - revue Spec : plan et preuve LSP complétés pendant la revue finale ; la vérification
   graphique de la fenêtre VS Code reste à confirmer après `Developer: Reload Window`.
 
+## Tranche 12 — Première verticale du DataProvider IBM i
+
+### Contrat retenu
+
+- FakeRest reste le provider par défaut de l'administration et de ses projections ;
+- la ressource technique `services` correspond exactement à l'entité CMagic `Service`
+  adossée à `DB2SAMPLE.DEPARTMENT` et exposée par IWS sous `SERVIWS3` ;
+- seule cette ressource est routée vers IBM i ; `clients` n'est pas artificiellement
+  associé à un domaine différent ;
+- la tranche expose uniquement `getList` et `getOne`, sans écran CRM ni mutation ;
+- l'URL publique provient de `VITE_IBM_I_API_URL`, sans secret dans le bundle.
+
+### Réalisé
+
+- adapter IWS convertissant la pagination, le tri, la recherche et les filtres React Admin ;
+- adaptation des enveloppes `{ items, totalCount, errors }` et `{ item, errors }` ;
+- validation de la présence et de la cohérence de l'identifiant naturel ;
+- conversion déterministe des statuts `400`, `401`, `403`, `404`, `409` et `500`, y
+  compris lorsque le corps IWS est vide ;
+- conservation des erreurs IWS, des erreurs de champ et de l'identifiant de corrélation ;
+- transfert de l'`AbortSignal` par l'adapter ;
+- provider composite configuré avec `services` comme unique ressource migrée ;
+- test d'une ressource non migrée contre le vrai provider FakeRest ;
+- documentation de l'URL IWS et du principe de proxy intranet à partir de l'exemple
+  ILEastic fonctionnel.
+
+### Validation avant revue
+
+- tests ciblés des providers et du registre : 4 fichiers, 34 tests réussis ;
+- `npm run check` : lint réussi, 39 fichiers et 100 tests réussis, build réussi ;
+- revue Standards/Spec depuis `82b0b9baf9aedf7d51107be580bd6fcc28b892a2` : en cours.
+
 ## Suite
 
-Les onze tranches sont terminées. La prochaine verticale recommandée est le branchement
-progressif du DataProvider IBM i. L'enrichissement du modèle des commandes demeure une
-évolution séparée.
+Les onze premières tranches sont terminées et la tranche 12 est en revue. La prochaine
+verticale IBM i devra être choisie uniquement lorsqu'un endpoint correspondra à une ressource
+CRM existante. L'enrichissement du modèle des commandes demeure une évolution séparée.
