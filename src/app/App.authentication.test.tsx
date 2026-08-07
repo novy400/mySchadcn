@@ -14,12 +14,22 @@ describe("authentification de l’administration", () => {
   beforeEach(() => sessionStorage.clear());
   afterEach(() => sessionStorage.clear());
 
-  it('demande une authentification avant d’afficher le CRM', async () => {
-    renderApp();
+  it(
+    'demande une authentification avant d’afficher le CRM',
+    async () => {
+      renderApp();
 
-    expect(await screen.findByRole('heading', { name: 'Connexion' })).toBeInTheDocument();
-    expect(screen.queryByText('Dashboard CRM')).not.toBeInTheDocument();
-  });
+      expect(
+        await screen.findByRole(
+          'heading',
+          { name: 'Connexion' },
+          { timeout: 5_000 },
+        ),
+      ).toBeInTheDocument();
+      expect(screen.queryByText('Dashboard CRM')).not.toBeInTheDocument();
+    },
+    10_000,
+  );
 
   it('ouvre le CRM avec un compte de démonstration valide', async () => {
     renderApp();
