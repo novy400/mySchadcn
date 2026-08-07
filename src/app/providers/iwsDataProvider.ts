@@ -1,20 +1,32 @@
 import {
   HttpError,
+  type CreateParams,
+  type CreateResult,
   type DataProvider,
   type GetListParams,
   type GetListResult,
   type GetOneParams,
   type GetOneResult,
   type RaRecord,
+  type UpdateParams,
+  type UpdateResult,
 } from 'ra-core';
 import { removeEmptyFilters } from './filterUtils';
+import {
+  isResourceName,
+  resourceContracts,
+  type ResourceName,
+} from './resourceContracts';
 
-export type IwsDataProvider = Pick<DataProvider, 'getList' | 'getOne'> & {
+export type IwsDataProvider = Pick<
+  DataProvider,
+  'getList' | 'getOne' | 'create' | 'update'
+> & {
   supportAbortSignal: true;
 };
 
 type IwsDataProviderOptions = {
-  apiUrl: string;
+  apiUrls: Readonly<Partial<Record<ResourceName, string>>>;
   fetcher?: typeof fetch;
 };
 
@@ -41,8 +53,9 @@ const httpErrorMessages: Readonly<Record<number, string>> = {
   400: 'Requête IBM i invalide',
   401: 'Authentification IBM i requise',
   403: 'Accès IBM i interdit',
-  404: 'Service IBM i introuvable',
+  404: 'Ressource IBM i introuvable',
   409: 'Conflit IBM i',
+  422: 'Validation IBM i échouée',
   500: 'Erreur interne IBM i',
 };
 
@@ -118,6 +131,31 @@ const assertRecordHasId = (record: RaRecord) => {
   }
 };
 
+const assertRecordMatchesId = (record: RaRecord, expectedId: unknown) => {
+  assertRecordHasId(record);
+  if (String(record.id) !== String(expectedId)) {
+    const message = 'Réponse IBM i invalide : identifiant incohérent';
+    throw new HttpError(message, 500, {
+      status: 500,
+      code: 'IWS_INVALID_RESPONSE',
+      message,
+    });
+  }
+};
+
+const serializeResourceRecord = (
+  resource: string,
+  record: Readonly<Record<string, unknown>>,
+) => {
+  if (!isResourceName(resource)) {
+    throw new Error(`Ressource IWS inconnue : ${resource}`);
+  }
+
+  return Object.fromEntries(
+    resourceContracts[resource].fields.map((field) => [field, record[field]]),
+  );
+};
+
 const buildListUrl = (apiUrl: string, params: GetListParams) => {
   const query = new URLSearchParams();
 
@@ -141,15 +179,24 @@ const buildListUrl = (apiUrl: string, params: GetListParams) => {
 };
 
 export const createIwsDataProvider = ({
-  apiUrl,
+  apiUrls,
   fetcher = globalThis.fetch,
-}: IwsDataProviderOptions): IwsDataProvider => ({
+}: IwsDataProviderOptions): IwsDataProvider => {
+  const resolveApiUrl = (resource: string) => {
+    const resolvedUrl = apiUrls[resource as ResourceName];
+    if (!resolvedUrl) {
+      throw new Error(`URL IWS absente pour la ressource ${resource}`);
+    }
+    return resolvedUrl;
+  };
+
+  return {
     supportAbortSignal: true,
     getList: async <RecordType extends RaRecord = RaRecord>(
-      _resource: string,
+      resource: string,
       params: GetListParams,
     ): Promise<GetListResult<RecordType>> => {
-      const response = await fetcher(buildListUrl(apiUrl, params), {
+      const response = await fetcher(buildListUrl(resolveApiUrl(resource), params), {
         headers: { Accept: 'application/json' },
         signal: params.signal,
       });
@@ -160,10 +207,10 @@ export const createIwsDataProvider = ({
       return { data: body.items as RecordType[], total: body.totalCount };
     },
     getOne: async <RecordType extends RaRecord = RaRecord>(
-      _resource: string,
+      resource: string,
       params: GetOneParams<RecordType>,
     ): Promise<GetOneResult<RecordType>> => {
-      const baseUrl = apiUrl.replace(/\/+$/, '');
+      const baseUrl = resolveApiUrl(resource).replace(/\/+$/, '');
       const response = await fetcher(
         `${baseUrl}/${encodeURIComponent(String(params.id))}`,
         {
@@ -173,16 +220,60 @@ export const createIwsDataProvider = ({
       );
       const body = (await readJson(response)) as IwsOneResponse;
       assertSuccessfulResponse(response, body);
-      assertRecordHasId(body.item);
-      if (String(body.item.id) !== String(params.id)) {
-        const message = 'Réponse IBM i invalide : identifiant incohérent';
-        throw new HttpError(message, 500, {
-          status: 500,
-          code: 'IWS_INVALID_RESPONSE',
-          message,
-        });
-      }
+      assertRecordMatchesId(body.item, params.id);
 
       return { data: body.item as RecordType };
     },
-  });
+    create: async <RecordType extends Omit<RaRecord, 'id'> = Omit<RaRecord, 'id'>>(
+      resource: string,
+      params: CreateParams<RecordType>,
+    ): Promise<CreateResult<RecordType & { id: RaRecord['id'] }>> => {
+      const baseUrl = resolveApiUrl(resource).replace(/\/+$/, '');
+      const response = await fetcher(baseUrl, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(serializeResourceRecord(resource, params.data)),
+      });
+      const body = (await readJson(response)) as IwsOneResponse;
+      assertSuccessfulResponse(response, body);
+      assertRecordMatchesId(
+        body.item,
+        (params.data as Readonly<Record<string, unknown>>).id,
+      );
+
+      return {
+        data: body.item as RecordType & { id: RaRecord['id'] },
+      };
+    },
+    update: async <RecordType extends RaRecord = RaRecord>(
+      resource: string,
+      params: UpdateParams<RecordType>,
+    ): Promise<UpdateResult<RecordType>> => {
+      const baseUrl = resolveApiUrl(resource).replace(/\/+$/, '');
+      const input = serializeResourceRecord(resource, {
+        ...params.previousData,
+        ...params.data,
+        id: params.id,
+      });
+      const response = await fetcher(
+        `${baseUrl}/${encodeURIComponent(String(params.id))}`,
+        {
+          method: 'PUT',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(input),
+        },
+      );
+      const body = (await readJson(response)) as IwsOneResponse;
+      assertSuccessfulResponse(response, body);
+      assertRecordMatchesId(body.item, params.id);
+
+      return { data: body.item as RecordType };
+    },
+  };
+};

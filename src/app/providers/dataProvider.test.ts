@@ -16,9 +16,9 @@ const createFreshProvider = () =>
   );
 
 describe('dataProvider filter normalization', () => {
-  it('routes only services to IBM i and keeps an unmigrated resource on FakeRest', async () => {
-    const iwsGetList = vi.fn(async () => ({
-      data: [{ id: 'A00', nom: 'Service IBM i' }],
+  it('routes services and fournisseurs to IBM i and keeps an unmigrated resource on FakeRest', async () => {
+    const iwsGetList = vi.fn(async (resource: string) => ({
+      data: [{ id: resource === 'services' ? 'A00' : 'FOU000001' }],
       total: 1,
     }));
     const iwsProvider = {
@@ -37,7 +37,7 @@ describe('dataProvider filter normalization', () => {
         filter: {},
       }),
     ).resolves.toEqual({
-      data: [{ id: 'A00', nom: 'Service IBM i' }],
+      data: [{ id: 'A00' }],
       total: 1,
     });
     await expect(
@@ -46,8 +46,25 @@ describe('dataProvider filter normalization', () => {
         sort: { field: 'nom', order: 'ASC' },
         filter: {},
       }),
-    ).resolves.toMatchObject({ total: 2 });
-    expect(iwsGetList).toHaveBeenCalledTimes(1);
+    ).resolves.toEqual({ data: [{ id: 'FOU000001' }], total: 1 });
+    await expect(
+      provider.getList('contacts', {
+        pagination: { page: 1, perPage: 25 },
+        sort: { field: 'nom', order: 'ASC' },
+        filter: {},
+      }),
+    ).resolves.toMatchObject({ total: 3 });
+    expect(iwsGetList).toHaveBeenCalledTimes(2);
+    expect(iwsGetList).toHaveBeenNthCalledWith(
+      1,
+      'services',
+      expect.any(Object),
+    );
+    expect(iwsGetList).toHaveBeenNthCalledWith(
+      2,
+      'fournisseurs',
+      expect.any(Object),
+    );
   });
 
   it('rejects service mutations before they reach the IWS adapter', () => {
@@ -64,6 +81,51 @@ describe('dataProvider filter normalization', () => {
       provider.create('services', { data: { id: 'A00' } }),
     ).toThrow(UnsupportedResourceOperationError);
     expect(iwsCreate).not.toHaveBeenCalled();
+  });
+
+  it('routes every allowed fournisseur operation to IWS and rejects the others', async () => {
+    const getList = vi.fn(async () => ({ data: [], total: 0 }));
+    const getOne = vi.fn(async (_resource: string, params: { id: string }) => ({
+      data: { id: params.id, nom: 'Fournitures Pro' },
+    }));
+    const create = vi.fn(async (_resource: string, params: { data: { id: string } }) => ({
+      data: params.data,
+    }));
+    const update = vi.fn(async (_resource: string, params: { data: { id: string } }) => ({
+      data: params.data,
+    }));
+    const getMany = vi.fn();
+    const provider = createMigratingDataProvider(
+      createFreshProvider(),
+      {
+        getList,
+        getOne,
+        create,
+        update,
+        getMany,
+        supportAbortSignal: true,
+      } as unknown as IwsDataProvider,
+    );
+
+    await provider.getList('fournisseurs', { filter: {} });
+    await provider.getOne('fournisseurs', { id: 'FOU000001' });
+    await provider.create('fournisseurs', {
+      data: { id: 'FOU000003', nom: 'Ateliers du Nord' },
+    });
+    await provider.update('fournisseurs', {
+      id: 'FOU000003',
+      data: { id: 'FOU000003', nom: 'Ateliers du Nord SAS' },
+      previousData: { id: 'FOU000003', nom: 'Ateliers du Nord' },
+    });
+
+    expect(getList).toHaveBeenCalledWith('fournisseurs', expect.any(Object));
+    expect(getOne).toHaveBeenCalledWith('fournisseurs', expect.any(Object));
+    expect(create).toHaveBeenCalledWith('fournisseurs', expect.any(Object));
+    expect(update).toHaveBeenCalledWith('fournisseurs', expect.any(Object));
+    expect(() =>
+      provider.getMany('fournisseurs', { ids: ['FOU000001'] }),
+    ).toThrow(UnsupportedResourceOperationError);
+    expect(getMany).not.toHaveBeenCalled();
   });
 
   it('rejects service read operations outside getList and getOne', () => {
@@ -126,7 +188,7 @@ describe('dataProvider filter normalization', () => {
   });
 
   it('does not hide records when the permanent search filter is empty', async () => {
-    const result = await dataProvider.getList('fournisseurs', {
+    const result = await dataProvider.getList('clients', {
       pagination: { page: 1, perPage: 25 },
       sort: { field: 'nom', order: 'ASC' },
       filter: { q: '' },
@@ -134,8 +196,8 @@ describe('dataProvider filter normalization', () => {
 
     expect(result.total).toBe(2);
     expect(result.data.map(record => record.nom)).toEqual([
-      'Fournitures Pro',
-      'Logis Transport',
+      'Dupont SA',
+      'Martin SARL',
     ]);
   });
 

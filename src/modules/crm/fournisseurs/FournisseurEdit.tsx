@@ -1,13 +1,10 @@
-import { Edit, SimpleForm, TextInput } from '@/components/admin';
+import { Edit, SimpleForm, type EditProps } from '@/components/admin';
+import { FournisseurFormFields } from './FournisseurFormFields';
 
-export const FournisseurEdit = () => (
-  <Edit>
+export const FournisseurEdit = (props: Pick<EditProps, 'id'>) => (
+  <Edit {...props} actions={false} mutationMode="pessimistic">
     <SimpleForm>
-      <TextInput source="nom" />
-      <TextInput source="adresse" />
-      <TextInput source="ville" />
-      <TextInput source="telephone" />
-      <TextInput source="email" />
+      <FournisseurFormFields edit />
     </SimpleForm>
   </Edit>
 );

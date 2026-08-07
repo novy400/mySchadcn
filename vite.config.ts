@@ -11,7 +11,7 @@ export default defineConfig({
   server: ibmIDevProxyTarget
     ? {
         proxy: {
-          "^/web/services/SERVIWS3(?:/|\\?|$)": {
+          "^/web/services/(?:SERVIWS3|FOURIWS1)(?:/|\\?|$)": {
             target: ibmIDevProxyTarget,
             changeOrigin: true,
           },

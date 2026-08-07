@@ -79,4 +79,15 @@ describe('IBM i resource contracts', () => {
       },
     });
   });
+
+  it('limits fournisseurs to its atomic LIST, GET, CREATE and UPDATE contract', () => {
+    expect(resourceContracts.fournisseurs).toEqual({
+      kind: 'entity',
+      identifier: 'id',
+      fields: ['id', 'nom', 'adresse', 'ville', 'telephone', 'email'],
+      capabilities: ['read', 'create', 'update'],
+      operations: ['getList', 'getOne', 'create', 'update'],
+      list: { filters: ['q', 'ville'], sortFields: ['nom'] },
+    });
+  });
 });

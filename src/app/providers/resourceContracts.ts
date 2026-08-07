@@ -128,6 +128,7 @@ export const resourceContracts = {
     identifier: 'id',
     fields: ['id', 'nom', 'adresse', 'ville', 'telephone', 'email'],
     capabilities: ['read', 'create', 'update'],
+    operations: ['getList', 'getOne', 'create', 'update'],
     list: { filters: ['q', 'ville'], sortFields: ['nom'] },
   },
   orders: {

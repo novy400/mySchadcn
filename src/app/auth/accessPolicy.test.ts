@@ -43,4 +43,15 @@ describe('politique d’accès CRM', () => {
     expect(canRoleAccess('agent', { resource: 'clients', action: 'delete' })).toBe(false);
     expect(canRoleAccess('responsable', { resource: 'clients', action: 'delete' })).toBe(false);
   });
+
+  it('autorise les lectures fournisseurs à tous et réserve CREATE/EDIT aux rôles mutables', () => {
+    expect(canRoleAccess('lecteur', { resource: 'fournisseurs', action: 'list' })).toBe(true);
+    expect(canRoleAccess('lecteur', { resource: 'fournisseurs', action: 'create' })).toBe(false);
+    expect(canRoleAccess('lecteur', { resource: 'fournisseurs', action: 'edit' })).toBe(false);
+    expect(canRoleAccess('agent', { resource: 'fournisseurs', action: 'create' })).toBe(true);
+    expect(canRoleAccess('agent', { resource: 'fournisseurs', action: 'edit' })).toBe(true);
+    expect(canRoleAccess('responsable', { resource: 'fournisseurs', action: 'create' })).toBe(true);
+    expect(canRoleAccess('responsable', { resource: 'fournisseurs', action: 'edit' })).toBe(true);
+    expect(canRoleAccess('responsable', { resource: 'fournisseurs', action: 'delete' })).toBe(false);
+  });
 });

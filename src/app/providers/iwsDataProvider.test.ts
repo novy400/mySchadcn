@@ -2,6 +2,177 @@ import { describe, expect, it, vi } from 'vitest';
 import { createIwsDataProvider } from './iwsDataProvider';
 
 describe('IWS DataProvider', () => {
+  it('resolves the fournisseurs collection URL independently from services', async () => {
+    const fetcher = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          items: [
+            {
+              id: 'FOU000001',
+              nom: 'Fournitures Pro',
+              adresse: '12 rue des Ateliers',
+              ville: 'Lille',
+              telephone: '0320123456',
+              email: 'contact@fourniturespro.fr',
+            },
+          ],
+          totalCount: 1,
+          errors: [],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    const provider = createIwsDataProvider({
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+        fournisseurs: 'https://ibmi.example/web/services/FOURIWS1',
+      },
+      fetcher,
+    });
+
+    const result = await provider.getList('fournisseurs', {
+      pagination: { page: 1, perPage: 25 },
+      sort: { field: 'nom', order: 'ASC' },
+      filter: { q: 'pro', ville: 'Lille' },
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://ibmi.example/web/services/FOURIWS1?page=1&perPage=25&sort=nom&order=ASC&q=pro&ville=Lille',
+      { headers: { Accept: 'application/json' }, signal: undefined },
+    );
+    expect(result).toEqual({
+      data: [
+        {
+          id: 'FOU000001',
+          nom: 'Fournitures Pro',
+          adresse: '12 rue des Ateliers',
+          ville: 'Lille',
+          telephone: '0320123456',
+          email: 'contact@fourniturespro.fr',
+        },
+      ],
+      total: 1,
+    });
+  });
+
+  it('creates a fournisseur with POST and adapts the persisted IWS item', async () => {
+    const fournisseur = {
+      id: 'FOU000003',
+      nom: 'Ateliers du Nord',
+      adresse: '5 rue du Port',
+      ville: 'Lille',
+      telephone: '0320998877',
+      email: 'contact@ateliers-nord.fr',
+    };
+    const fetcher = vi.fn(async () =>
+      new Response(JSON.stringify({ item: fournisseur, errors: [] }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const provider = createIwsDataProvider({
+      apiUrls: {
+        fournisseurs: 'https://ibmi.example/web/services/FOURIWS1',
+      },
+      fetcher,
+    });
+
+    const result = await provider.create('fournisseurs', {
+      data: fournisseur,
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://ibmi.example/web/services/FOURIWS1',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fournisseur),
+      },
+    );
+    expect(result).toEqual({ data: fournisseur });
+  });
+
+  it('rejects a created fournisseur whose identifier differs from the input', async () => {
+    const fetcher = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          item: { id: 'FOU999999', nom: 'Autre fournisseur' },
+          errors: [],
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    const provider = createIwsDataProvider({
+      apiUrls: {
+        fournisseurs: 'https://ibmi.example/web/services/FOURIWS1',
+      },
+      fetcher,
+    });
+
+    await expect(
+      provider.create('fournisseurs', {
+        data: { id: 'FOU000003', nom: 'Ateliers du Nord' },
+      }),
+    ).rejects.toMatchObject({
+      status: 500,
+      body: {
+        status: 500,
+        code: 'IWS_INVALID_RESPONSE',
+        message: 'Réponse IBM i invalide : identifiant incohérent',
+      },
+    });
+  });
+
+  it('updates a fournisseur with a complete PUT body and the route identifier', async () => {
+    const previousData = {
+      id: 'FOU000003',
+      nom: 'Ateliers du Nord',
+      adresse: '5 rue du Port',
+      ville: 'Lille',
+      telephone: '0320998877',
+      email: 'contact@ateliers-nord.fr',
+    };
+    const updated = { ...previousData, nom: 'Ateliers du Nord SAS' };
+    const fetcher = vi.fn(async () =>
+      new Response(JSON.stringify({ item: updated, errors: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const provider = createIwsDataProvider({
+      apiUrls: {
+        fournisseurs: 'https://ibmi.example/web/services/FOURIWS1',
+      },
+      fetcher,
+    });
+
+    const result = await provider.update('fournisseurs', {
+      id: 'FOU000003',
+      data: {
+        nom: 'Ateliers du Nord SAS',
+        id: 'IGNORED',
+        uiOnly: 'not sent to IBM i',
+      },
+      previousData,
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://ibmi.example/web/services/FOURIWS1/FOU000003',
+      {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updated),
+      },
+    );
+    expect(result).toEqual({ data: updated });
+  });
+
   it('serializes a service list request and adapts the IWS collection envelope', async () => {
     const fetcher = vi.fn(async () =>
       new Response(
@@ -22,7 +193,9 @@ describe('IWS DataProvider', () => {
       ),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3/',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3/',
+      },
       fetcher,
     });
 
@@ -72,7 +245,9 @@ describe('IWS DataProvider', () => {
       ),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+      },
       fetcher,
     });
 
@@ -97,15 +272,18 @@ describe('IWS DataProvider', () => {
     [400, 'Requête IBM i invalide'],
     [401, 'Authentification IBM i requise'],
     [403, 'Accès IBM i interdit'],
-    [404, 'Service IBM i introuvable'],
+    [404, 'Ressource IBM i introuvable'],
     [409, 'Conflit IBM i'],
+    [422, 'Validation IBM i échouée'],
     [500, 'Erreur interne IBM i'],
   ])(
     'converts an empty HTTP %i response into a deterministic React Admin error',
     async (status, message) => {
       const fetcher = vi.fn(async () => new Response(null, { status }));
       const provider = createIwsDataProvider({
-        apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+        apiUrls: {
+          services: 'https://ibmi.example/web/services/SERVIWS3',
+        },
         fetcher,
       });
 
@@ -143,7 +321,9 @@ describe('IWS DataProvider', () => {
       }),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+      },
       fetcher,
     });
 
@@ -175,7 +355,9 @@ describe('IWS DataProvider', () => {
       ),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+      },
       fetcher,
     });
 
@@ -199,7 +381,9 @@ describe('IWS DataProvider', () => {
       ),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+      },
       fetcher,
     });
 
@@ -223,7 +407,9 @@ describe('IWS DataProvider', () => {
       }),
     );
     const provider = createIwsDataProvider({
-      apiUrl: 'https://ibmi.example/web/services/SERVIWS3',
+      apiUrls: {
+        services: 'https://ibmi.example/web/services/SERVIWS3',
+      },
       fetcher,
     });
     const controller = new AbortController();

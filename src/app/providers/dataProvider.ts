@@ -140,7 +140,7 @@ export const createMigratingDataProvider = (
   createCompositeDataProvider({
     restProvider: iwsProvider,
     fallbackProvider,
-    restResources: ['services'],
+    restResources: ['services', 'fournisseurs'],
     supportAbortSignal: iwsProvider.supportAbortSignal,
   });
 
@@ -159,8 +159,13 @@ const projectionAwareDataProvider = createProjectionAwareDataProvider({
 });
 
 const iwsDataProvider = createIwsDataProvider({
-  apiUrl:
-    import.meta.env.VITE_IBM_I_API_URL || '/web/services/SERVIWS3',
+  apiUrls: {
+    services:
+      import.meta.env.VITE_IBM_I_API_URL || '/web/services/SERVIWS3',
+    fournisseurs:
+      import.meta.env.VITE_IBM_I_FOURNISSEURS_API_URL ||
+      '/web/services/FOURIWS1',
+  },
 });
 
 export const dataProvider: DataProvider = createMigratingDataProvider(
