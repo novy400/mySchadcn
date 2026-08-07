@@ -1,0 +1,8 @@
+STRPGMEXP  PGMLVL(*CURRENT) SIGNATURE('FOURNIS.0.0.1')
+  EXPORT SYMBOL('fournis_search')
+  EXPORT SYMBOL('fournis_getSupportedFields')
+  EXPORT SYMBOL('fournis_get')
+  EXPORT SYMBOL('fournis_create')
+  EXPORT SYMBOL('fournis_isValid')
+  EXPORT SYMBOL('fournis_update')
+ENDPGMEXP

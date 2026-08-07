@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "entity": "Fournis",
+  "resource": "fournisseurs",
+  "table": "FOURNIS",
+  "iwsObject": "FOURIWS",
+  "identifier": "id",
+  "capabilities": [
+    "list",
+    "get",
+    "create",
+    "update"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "column": "ID",
+      "type": {
+        "kind": "string",
+        "length": 10
+      },
+      "key": true,
+      "required": true,
+      "unique": false,
+      "searchable": true,
+      "sortable": false,
+      "filterOperators": []
+    },
+    {
+      "name": "nom",
+      "column": "NOM",
+      "type": {
+        "kind": "string",
+        "length": 100
+      },
+      "key": false,
+      "required": true,
+      "unique": false,
+      "searchable": true,
+      "sortable": true,
+      "filterOperators": []
+    },
+    {
+      "name": "adresse",
+      "column": "ADRESSE",
+      "type": {
+        "kind": "string",
+        "length": 160
+      },
+      "key": false,
+      "required": false,
+      "unique": false,
+      "searchable": true,
+      "sortable": false,
+      "filterOperators": []
+    },
+    {
+      "name": "ville",
+      "column": "VILLE",
+      "type": {
+        "kind": "string",
+        "length": 80
+      },
+      "key": false,
+      "required": false,
+      "unique": false,
+      "searchable": true,
+      "sortable": false,
+      "filterOperators": [
+        "eq",
+        "like"
+      ]
+    },
+    {
+      "name": "telephone",
+      "column": "TELEPHONE",
+      "type": {
+        "kind": "string",
+        "length": 20
+      },
+      "key": false,
+      "required": false,
+      "unique": false,
+      "searchable": true,
+      "sortable": false,
+      "filterOperators": []
+    },
+    {
+      "name": "email",
+      "column": "EMAIL",
+      "type": {
+        "kind": "string",
+        "length": 254
+      },
+      "key": false,
+      "required": false,
+      "unique": false,
+      "searchable": true,
+      "sortable": false,
+      "filterOperators": []
+    }
+  ],
+  "list": {
+    "fields": [
+      "id",
+      "nom",
+      "adresse",
+      "ville",
+      "telephone",
+      "email"
+    ],
+    "searchFields": [
+      "id",
+      "nom",
+      "adresse",
+      "ville",
+      "telephone",
+      "email"
+    ],
+    "filterFields": [
+      "ville"
+    ],
+    "sortFields": [
+      "nom"
+    ],
+    "defaultSort": {
+      "field": "id",
+      "order": "ASC"
+    }
+  }
+}

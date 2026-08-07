@@ -1,0 +1,61 @@
+**free
+/if defined(FOURNIS_IWS_H_DEFINED)
+/eof
+/endif
+/define FOURNIS_IWS_H_DEFINED
+/include 'cmagic.rpgleinc'
+/include 'global.rpgleinc'
+/include 'httpRest.rpgleinc'
+
+dcl-ds fournis_item_iws_t qualified template;
+  id varchar(10);
+  nom varchar(100);
+  adresse varchar(160);
+  ville varchar(80);
+  telephone varchar(20);
+  email varchar(254);
+end-ds;
+
+dcl-pr fournis_getlist_iws extproc(*dclcase);
+  items_LENGTH int(10);
+  items likeDS(fournis_item_iws_t) dim(HTTPREST_MAX_ITEMS);
+  totalCount like(CMAGIC_totalCount);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+dcl-ds fournis_detail_iws_t qualified template;
+  id varchar(10);
+  nom varchar(100);
+  adresse varchar(160);
+  ville varchar(80);
+  telephone varchar(20);
+  email varchar(254);
+end-ds;
+
+dcl-pr fournis_getone_iws extproc(*dclcase);
+  id varchar(10) const;
+  item likeDS(fournis_detail_iws_t);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+dcl-pr fournis_create_iws extproc(*dclcase);
+  input likeDS(fournis_detail_iws_t) const;
+  item likeDS(fournis_detail_iws_t);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;
+dcl-pr fournis_update_iws extproc(*dclcase);
+  id varchar(10) const;
+  input likeDS(fournis_detail_iws_t) const;
+  item likeDS(fournis_detail_iws_t);
+  errors_LENGTH int(10);
+  errors likeDS(errorItem) dim(HTTPREST_MAX_ERRORS);
+  httpStatus like(HTTPREST_httpStatus);
+  httpHeaders like(HTTPREST_httpHeader) dim(HTTPREST_nbHeaders);
+end-pr;

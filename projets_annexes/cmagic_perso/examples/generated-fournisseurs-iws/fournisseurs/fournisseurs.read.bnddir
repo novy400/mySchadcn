@@ -1,0 +1,5 @@
+/* Delete before recreation so removed entries cannot survive a rebuild. */
+!DLTOBJ OBJ(&O/&N) OBJTYPE(*BNDDIR)
+CRTBNDDIR BNDDIR(&O/&N)
+ADDBNDDIRE BNDDIR(&O/&N) +
+  OBJ((*LIBL/FOURNIS *SRVPGM))

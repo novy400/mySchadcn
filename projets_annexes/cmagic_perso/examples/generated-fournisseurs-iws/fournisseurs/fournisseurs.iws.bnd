@@ -1,0 +1,6 @@
+STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('FOURIWS.0.0.1')
+  EXPORT SYMBOL('fournis_getlist_iws')
+  EXPORT SYMBOL('fournis_getone_iws')
+  EXPORT SYMBOL('fournis_create_iws')
+  EXPORT SYMBOL('fournis_update_iws')
+ENDPGMEXP

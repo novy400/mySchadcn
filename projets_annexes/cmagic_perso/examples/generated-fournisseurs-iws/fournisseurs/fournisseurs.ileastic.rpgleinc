@@ -1,0 +1,10 @@
+**free
+/if defined(FOURNIS_ILEASTIC_H_DEFINED)
+/eof
+/endif
+/define FOURNIS_ILEASTIC_H_DEFINED
+/include 'ileastic/ileastic.rpgle'
+
+dcl-pr fournis_registerRoutes extproc(*dclcase);
+  config likeDS(IL_config);
+end-pr;
