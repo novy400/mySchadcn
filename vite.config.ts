@@ -1,11 +1,23 @@
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, loadEnv } from "vite"
+
+const ibmIDevProxyTarget = loadEnv("development", process.cwd(), "").IBM_I_DEV_PROXY_TARGET
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: ibmIDevProxyTarget
+    ? {
+        proxy: {
+          "^/web/services/SERVIWS3(?:/|\\?|$)": {
+            target: ibmIDevProxyTarget,
+            changeOrigin: true,
+          },
+        },
+      }
+    : undefined,
   build: {
     rolldownOptions: {
       output: {

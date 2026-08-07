@@ -218,6 +218,18 @@ La verticale IWS utilise l'URL publique de la ressource complète :
 VITE_IBM_I_API_URL=/web/services/SERVIWS3
 ```
 
+En développement local, Vite peut relayer cette URL relative vers le serveur IBM i sans
+modifier `httpd.conf`. Créer un fichier `.env.local`, ignoré par Git, avec la cible
+joignable depuis le poste :
+
+```bash
+IBM_I_DEV_PROXY_TARGET=http://cmspw7t:10074
+```
+
+Le proxy de [`vite.config.ts`](../../vite.config.ts) est volontairement limité au chemin
+`/web/services/SERVIWS3`. La variable n'a pas le préfixe `VITE_` : elle est lue uniquement
+par la configuration du serveur de développement et n'est pas exposée au code client.
+
 La valeur relative ci-dessus utilise la même origine que l'application déployée. Une URL
 publique absolue peut être fournie pour un autre environnement. Le fichier
 [`.env.example`](../../.env.example) documente la variable sans imposer d'hôte local.
