@@ -64,24 +64,50 @@ Cette version couvre la lecture, la création, la modification et la suppression
 Utiliser `curl` ou Bruno pour cette recette, pas directement le navigateur de
 `mySchadcn`.
 
+### Prévisualisation locale optionnelle dans Monaco
+
+Avant de figer les artefacts, l'IHM Monaco peut servir à ouvrir le modèle CMagic, vérifier
+la coloration et observer les diagnostics du serveur de langage. Depuis PowerShell :
+
+```powershell
+cd C:\Users\giyvovie\Documents\mesProjets\mySchadcn\projets_annexes\cmagic_perso
+npm run dev
+```
+
+Ouvrir ensuite <http://localhost:5173>, ou directement :
+
+- <http://localhost:5173/static/monacoClassic.html> pour la configuration Monarch ;
+- <http://localhost:5173/static/monacoExtended.html> pour la configuration TextMate.
+
+Pour tester les fichiers produits par le build Web :
+
+```powershell
+npm run bundle
+npm run bundle:serve
+```
+
+Le build est alors disponible sur <http://localhost:5175>. Cette prévisualisation valide
+l'éditeur et le serveur CMagic locaux ; elle ne remplace pas la recette HTTP IWS, qui doit
+toujours être exécutée avec `curl` ou Bruno.
+
 ## 2. Valeurs à noter avant de commencer
 
-| Paramètre | Exemple | Valeur du test |
-| --- | --- | --- |
-| Hôte IBM i | `cmspw7t` | `cmspw7t` |
-| Utilisateur de déploiement | `GIYVOVIE` | |
-| Racine du projet BOB/TOBi | `/home/user/projects/applicationTemplate` | |
-| Bibliothèque de test | `CMAGICTST` | |
-| Bibliothèque contenant `CIWS` | `CKOOLBIN` ou autre | |
-| Nom du serveur IWS | `CMAGICIWS` | |
-| Version IWS | `2.6` ou `3.0` | `2.6` |
-| Port HTTP du serveur IWS | `10074` | `10074` |
-| Profil d'exécution du service | `QWSERVICE` ou profil dédié | |
-| Nom public du service | `SERVICES` | `SERVIWS3` |
-| Racine de contexte | `/web/services` | `/web/services` |
-| Commit testé | commit de la tranche | à relever après le commit local de la tranche 8 ; base de lecture acceptée : `396d102` |
-| Version IBM i | `7.4`, `7.5` ou `7.6` | |
-| Version BOB/TOBi | sortie de `makei --version` | |
+| Paramètre                      | Exemple                                     | Valeur du test                                                                             |
+| ------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Hôte IBM i                     | `cmspw7t`                                 | `cmspw7t`                                                                                |
+| Utilisateur de déploiement     | `GIYVOVIE`                                |                                                                                            |
+| Racine du projet BOB/TOBi       | `/home/user/projects/applicationTemplate` |                                                                                            |
+| Bibliothèque de test           | `CMAGICTST`                               |                                                                                            |
+| Bibliothèque contenant`CIWS` | `CKOOLBIN` ou autre                       |                                                                                            |
+| Nom du serveur IWS              | `CMAGICIWS`                               |                                                                                            |
+| Version IWS                     | `2.6` ou `3.0`                          | `2.6`                                                                                    |
+| Port HTTP du serveur IWS        | `10074`                                   | `10074`                                                                                  |
+| Profil d'exécution du service  | `QWSERVICE` ou profil dédié             |                                                                                            |
+| Nom public du service           | `SERVICES`                                | `SERVIWS3`                                                                               |
+| Racine de contexte              | `/web/services`                           | `/web/services`                                                                          |
+| Commit testé                   | commit de la tranche                        | à relever après le commit local de la tranche 8 ; base de lecture acceptée :`396d102` |
+| Version IBM i                   | `7.4`, `7.5` ou `7.6`                 |                                                                                            |
+| Version BOB/TOBi                | sortie de`makei --version`                |                                                                                            |
 
 URL attendue si les exemples du tableau sont conservés :
 
@@ -405,59 +431,59 @@ Dans IBM Web Administration for i :
 
 Pour `service_getlist_iws`, configurer tous les paramètres comme sorties :
 
-| Paramètre | Usage | Traitement IWS |
-| --- | --- | --- |
-| `items_LENGTH` | Output | longueur du tableau `items` |
-| `items` | Output | corps JSON |
-| `totalCount` | Output | corps JSON |
-| `errors_LENGTH` | Output | longueur du tableau `errors` |
-| `errors` | Output | corps JSON |
-| `httpStatus` | Output | **HTTP response/status code** |
-| `httpHeaders` | Output | **HTTP response headers** |
+| Paramètre        | Usage  | Traitement IWS                      |
+| ----------------- | ------ | ----------------------------------- |
+| `items_LENGTH`  | Output | longueur du tableau`items`        |
+| `items`         | Output | corps JSON                          |
+| `totalCount`    | Output | corps JSON                          |
+| `errors_LENGTH` | Output | longueur du tableau`errors`       |
+| `errors`        | Output | corps JSON                          |
+| `httpStatus`    | Output | **HTTP response/status code** |
+| `httpHeaders`   | Output | **HTTP response headers**     |
 
 Pour `service_getone_iws`, configurer :
 
-| Paramètre | Usage | Traitement IWS |
-| --- | --- | --- |
-| `id` | Input | injecté depuis la variable `{id}` du chemin |
-| `item` | Output | corps JSON de détail |
-| `errors_LENGTH` | Output | longueur du tableau `errors` |
-| `errors` | Output | corps JSON |
-| `httpStatus` | Output | **HTTP response/status code** |
-| `httpHeaders` | Output | **HTTP response headers** |
+| Paramètre        | Usage  | Traitement IWS                                |
+| ----------------- | ------ | --------------------------------------------- |
+| `id`            | Input  | injecté depuis la variable`{id}` du chemin |
+| `item`          | Output | corps JSON de détail                         |
+| `errors_LENGTH` | Output | longueur du tableau`errors`                 |
+| `errors`        | Output | corps JSON                                    |
+| `httpStatus`    | Output | **HTTP response/status code**           |
+| `httpHeaders`   | Output | **HTTP response headers**               |
 
 Pour `service_create_iws`, configurer :
 
-| Paramètre | Usage | Traitement IWS |
-| --- | --- | --- |
-| `input` | Input | corps JSON de l'entité à créer |
-| `item` | Output | corps JSON de l'entité persistée puis relue |
-| `errors_LENGTH` | Output | longueur du tableau `errors` |
-| `errors` | Output | corps JSON |
-| `httpStatus` | Output | **HTTP response/status code** |
-| `httpHeaders` | Output | **HTTP response headers** |
+| Paramètre        | Usage  | Traitement IWS                                |
+| ----------------- | ------ | --------------------------------------------- |
+| `input`         | Input  | corps JSON de l'entité à créer             |
+| `item`          | Output | corps JSON de l'entité persistée puis relue |
+| `errors_LENGTH` | Output | longueur du tableau`errors`                 |
+| `errors`        | Output | corps JSON                                    |
+| `httpStatus`    | Output | **HTTP response/status code**           |
+| `httpHeaders`   | Output | **HTTP response headers**               |
 
 Pour `service_update_iws`, configurer :
 
-| Paramètre | Usage | Traitement IWS |
-| --- | --- | --- |
-| `id` | Input | injecté depuis la variable `{id}` du chemin |
-| `input` | Input | corps JSON complet de l'entité à modifier |
-| `item` | Output | corps JSON de l'entité persistée puis relue |
-| `errors_LENGTH` | Output | longueur du tableau `errors` |
-| `errors` | Output | corps JSON |
-| `httpStatus` | Output | **HTTP response/status code** |
-| `httpHeaders` | Output | **HTTP response headers** |
+| Paramètre        | Usage  | Traitement IWS                                |
+| ----------------- | ------ | --------------------------------------------- |
+| `id`            | Input  | injecté depuis la variable`{id}` du chemin |
+| `input`         | Input  | corps JSON complet de l'entité à modifier   |
+| `item`          | Output | corps JSON de l'entité persistée puis relue |
+| `errors_LENGTH` | Output | longueur du tableau`errors`                 |
+| `errors`        | Output | corps JSON                                    |
+| `httpStatus`    | Output | **HTTP response/status code**           |
+| `httpHeaders`   | Output | **HTTP response headers**               |
 
 Pour `service_delete_iws`, configurer :
 
-| Paramètre | Usage | Traitement IWS |
-| --- | --- | --- |
-| `id` | Input | injecté depuis la variable `{id}` du chemin |
-| `errors_LENGTH` | Output | longueur du tableau `errors` |
-| `errors` | Output | corps JSON d'erreur, vide au succès |
-| `httpStatus` | Output | **HTTP response/status code** |
-| `httpHeaders` | Output | **HTTP response headers** |
+| Paramètre        | Usage  | Traitement IWS                                |
+| ----------------- | ------ | --------------------------------------------- |
+| `id`            | Input  | injecté depuis la variable`{id}` du chemin |
+| `errors_LENGTH` | Output | longueur du tableau`errors`                 |
+| `errors`        | Output | corps JSON d'erreur, vide au succès          |
+| `httpStatus`    | Output | **HTTP response/status code**           |
+| `httpHeaders`   | Output | **HTTP response headers**               |
 
 Activer **Detect length fields** ou l'option équivalente. Le but est que
 `items_LENGTH` et `errors_LENGTH` pilotent la taille des tableaux sans apparaître dans
@@ -467,72 +493,72 @@ le JSON public.
 
 Pour `service_getlist_iws`, choisir :
 
-| Propriété | Valeur |
-| --- | --- |
-| Méthode HTTP | `GET` |
+| Propriété                      | Valeur            |
+| -------------------------------- | ----------------- |
+| Méthode HTTP                    | `GET`           |
 | URI path template de la méthode | `*NONE` ou vide |
-| Type de contenu entrant | `*ALL` |
-| Type de contenu produit | `JSON` |
-| Paramètre du statut HTTP | `httpStatus` |
-| Paramètre des en-têtes HTTP | `httpHeaders` |
-| Paramètres de sortie | enveloppés |
+| Type de contenu entrant          | `*ALL`          |
+| Type de contenu produit          | `JSON`          |
+| Paramètre du statut HTTP        | `httpStatus`    |
+| Paramètre des en-têtes HTTP    | `httpHeaders`   |
+| Paramètres de sortie            | enveloppés       |
 
 Il n'y a aucun paramètre d'entrée HTTP direct : les critères sont lus dans
 `QUERY_STRING` par `CIWS_initRestRequest`.
 
 Pour `service_getone_iws`, choisir :
 
-| Propriété | Valeur |
-| --- | --- |
-| Méthode HTTP | `GET` |
-| URI path template de la méthode | `/{id}` |
-| Type de contenu entrant | `*ALL` |
-| Type de contenu produit | `JSON` |
-| Paramètres d'entrée | non enveloppés |
-| Injection de `id` | variable de chemin `id` |
-| Paramètre du statut HTTP | `httpStatus` |
-| Paramètre des en-têtes HTTP | `httpHeaders` |
-| Paramètres de sortie | enveloppés |
+| Propriété                      | Valeur                   |
+| -------------------------------- | ------------------------ |
+| Méthode HTTP                    | `GET`                  |
+| URI path template de la méthode | `/{id}`                |
+| Type de contenu entrant          | `*ALL`                 |
+| Type de contenu produit          | `JSON`                 |
+| Paramètres d'entrée            | non enveloppés          |
+| Injection de`id`               | variable de chemin`id` |
+| Paramètre du statut HTTP        | `httpStatus`           |
+| Paramètre des en-têtes HTTP    | `httpHeaders`          |
+| Paramètres de sortie            | enveloppés              |
 
 Pour `service_create_iws`, choisir :
 
-| Propriété | Valeur |
-| --- | --- |
-| Méthode HTTP | `POST` |
-| URI path template de la méthode | `*NONE` ou vide |
-| Type de contenu entrant | `JSON` |
-| Type de contenu produit | `JSON` |
-| Paramètre `input` | corps de requête, non enveloppé |
-| Paramètre du statut HTTP | `httpStatus` |
-| Paramètre des en-têtes HTTP | `httpHeaders` |
-| Paramètres de sortie | enveloppés |
+| Propriété                      | Valeur                            |
+| -------------------------------- | --------------------------------- |
+| Méthode HTTP                    | `POST`                          |
+| URI path template de la méthode | `*NONE` ou vide                 |
+| Type de contenu entrant          | `JSON`                          |
+| Type de contenu produit          | `JSON`                          |
+| Paramètre`input`              | corps de requête, non enveloppé |
+| Paramètre du statut HTTP        | `httpStatus`                    |
+| Paramètre des en-têtes HTTP    | `httpHeaders`                   |
+| Paramètres de sortie            | enveloppés                       |
 
 Pour `service_update_iws`, choisir :
 
-| Propriété | Valeur |
-| --- | --- |
-| Méthode HTTP | `PUT` |
-| URI path template de la méthode | `/{id}` |
-| Type de contenu entrant | `JSON` |
-| Type de contenu produit | `JSON` |
-| Paramètre `id` | variable de chemin `id` |
-| Paramètre `input` | corps de requête, non enveloppé |
-| Paramètre du statut HTTP | `httpStatus` |
-| Paramètre des en-têtes HTTP | `httpHeaders` |
-| Paramètres de sortie | enveloppés |
+| Propriété                      | Valeur                            |
+| -------------------------------- | --------------------------------- |
+| Méthode HTTP                    | `PUT`                           |
+| URI path template de la méthode | `/{id}`                         |
+| Type de contenu entrant          | `JSON`                          |
+| Type de contenu produit          | `JSON`                          |
+| Paramètre`id`                 | variable de chemin`id`          |
+| Paramètre`input`              | corps de requête, non enveloppé |
+| Paramètre du statut HTTP        | `httpStatus`                    |
+| Paramètre des en-têtes HTTP    | `httpHeaders`                   |
+| Paramètres de sortie            | enveloppés                       |
 
 Pour `service_delete_iws`, choisir :
 
-| Propriété | Valeur |
-| --- | --- |
-| Méthode HTTP | `DELETE` |
-| URI path template de la méthode | `/{id}` |
-| Type de contenu entrant | `*ALL` |
-| Type de contenu produit | `JSON` |
-| Paramètre `id` | variable de chemin `id` |
-| Paramètre du statut HTTP | `httpStatus` |
-| Paramètre des en-têtes HTTP | `httpHeaders` |
-| Paramètres de sortie | enveloppés |
+| Propriété                      | Valeur                   |
+| -------------------------------- | ------------------------ |
+| Méthode HTTP                    | `DELETE`               |
+| URI path template de la méthode | `/{id}`                |
+| Type de contenu entrant          | `*ALL`                 |
+| Type de contenu produit          | `JSON`                 |
+| Paramètre`id`                 | variable de chemin`id` |
+| Paramètre du statut HTTP        | `httpStatus`           |
+| Paramètre des en-têtes HTTP    | `httpHeaders`          |
+| Paramètres de sortie            | enveloppés              |
 
 IWS permet d'exposer plusieurs procédures d'un même service program comme méthodes de
 la même ressource. Le chemin `/{id}` fait de `service_getone_iws` une sous-ressource,
@@ -986,64 +1012,64 @@ l'analyse des résultats.
 
 ## 11. Diagnostic rapide
 
-| Symptôme | Vérification prioritaire |
-| --- | --- |
-| `service_getlist_iws` absent du wizard | binder `services.iws.bnd`, export `SERVIWS`, PCML et `DSPSRVPGM` |
-| Le wizard demande un PCML IFS | compilation de `SERVIWS.MODULE` avec `pgminfo(*pcml:*module:*dclcase)` |
-| `CIWS` introuvable au build | objet `CIWS.SRVPGM`, liste de bibliothèques BOB et binding directory partagé `CKOOL` |
-| Symbole `service_search` non résolu | ordre de build, `SERVICE.SRVPGM` et contenu de `SERVICE.BNDDIR` |
-| HTTP `500` dès le premier appel | joblog IWS, droits du profil, liste de bibliothèques et table `DEPARTMENT` |
-| Pagination et filtres ignorés | `QUERY_STRING` non sélectionné ; corriger puis redéployer |
-| `items_LENGTH` apparaît dans le JSON | activer la détection des champs de longueur |
-| Le JSON contient 100 lignes vides | mapping `items_LENGTH/items` incorrect |
-| `httpStatus` apparaît dans le JSON ou les erreurs répondent `200` | désigner `httpStatus` comme code de réponse |
-| `httpHeaders` apparaît dans le JSON | désigner `httpHeaders` comme tableau d'en-têtes |
-| `X-Total-Count` absent | mapping des en-têtes, sortie RPG et capture des en-têtes avec `curl -D` |
-| Tableau vide alors que Db2 contient des lignes | profil IWS, `DB2SAMPLE` dans la liste et SQLSTATE dans le joblog |
-| `POST` répond `200` au lieu de `201` | mapping de `httpStatus` et sélection de `service_create_iws` |
-| Le corps de `POST` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
-| Une création avec champs facultatifs vides échoue sur une contrainte | vérifier la source régénérée avec `NULLIF`, la valeur de `idServiceAdmin` et le joblog SQL |
-| `PUT` répond `404` pour un identifiant modifié | vérifier le couple `CAT0001/id` : `CAT1005/id` doit rester une validation `400` |
-| Le corps de `PUT` reste vide dans `input` | paramètre `input` non mappé au corps JSON ou entrée enveloppée par erreur |
-| `DELETE` répond `200` au lieu de `204` | mapping de `httpStatus` et sélection de `service_delete_iws` |
-| `DELETE` d'un identifiant absent répond `400` | vérifier le couple `CAT0001/id`, qui doit produire `404` |
-| Une contrainte référentielle répond `500` | vérifier le SQLSTATE `23504`, qui doit devenir `409/CAT1002/conflict` |
-| Appel navigateur bloqué | CORS incomplet ; conserver les tests `curl` pour cette v0 |
+| Symptôme                                                               | Vérification prioritaire                                                                          |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `service_getlist_iws` absent du wizard                                | binder`services.iws.bnd`, export `SERVIWS`, PCML et `DSPSRVPGM`                              |
+| Le wizard demande un PCML IFS                                           | compilation de`SERVIWS.MODULE` avec `pgminfo(*pcml:*module:*dclcase)`                          |
+| `CIWS` introuvable au build                                           | objet`CIWS.SRVPGM`, liste de bibliothèques BOB et binding directory partagé `CKOOL`          |
+| Symbole`service_search` non résolu                                   | ordre de build,`SERVICE.SRVPGM` et contenu de `SERVICE.BNDDIR`                                 |
+| HTTP`500` dès le premier appel                                       | joblog IWS, droits du profil, liste de bibliothèques et table`DEPARTMENT`                       |
+| Pagination et filtres ignorés                                          | `QUERY_STRING` non sélectionné ; corriger puis redéployer                                     |
+| `items_LENGTH` apparaît dans le JSON                                 | activer la détection des champs de longueur                                                       |
+| Le JSON contient 100 lignes vides                                       | mapping`items_LENGTH/items` incorrect                                                            |
+| `httpStatus` apparaît dans le JSON ou les erreurs répondent `200` | désigner`httpStatus` comme code de réponse                                                     |
+| `httpHeaders` apparaît dans le JSON                                  | désigner`httpHeaders` comme tableau d'en-têtes                                                 |
+| `X-Total-Count` absent                                                | mapping des en-têtes, sortie RPG et capture des en-têtes avec`curl -D`                         |
+| Tableau vide alors que Db2 contient des lignes                          | profil IWS,`DB2SAMPLE` dans la liste et SQLSTATE dans le joblog                                  |
+| `POST` répond `200` au lieu de `201`                             | mapping de`httpStatus` et sélection de `service_create_iws`                                   |
+| Le corps de`POST` reste vide dans `input`                           | paramètre`input` non mappé au corps JSON ou entrée enveloppée par erreur                     |
+| Une création avec champs facultatifs vides échoue sur une contrainte  | vérifier la source régénérée avec`NULLIF`, la valeur de `idServiceAdmin` et le joblog SQL |
+| `PUT` répond `404` pour un identifiant modifié                    | vérifier le couple`CAT0001/id` : `CAT1005/id` doit rester une validation `400`              |
+| Le corps de`PUT` reste vide dans `input`                            | paramètre`input` non mappé au corps JSON ou entrée enveloppée par erreur                     |
+| `DELETE` répond `200` au lieu de `204`                           | mapping de`httpStatus` et sélection de `service_delete_iws`                                   |
+| `DELETE` d'un identifiant absent répond `400`                      | vérifier le couple`CAT0001/id`, qui doit produire `404`                                       |
+| Une contrainte référentielle répond`500`                           | vérifier le SQLSTATE`23504`, qui doit devenir `409/CAT1002/conflict`                          |
+| Appel navigateur bloqué                                                | CORS incomplet ; conserver les tests`curl` pour cette v0                                         |
 
 ## 12. Comparaison à remplir avec la recette ILEastic
 
-| Point | ILEastic | IWS | Décision ou suite |
-| --- | --- | --- | --- |
-| Build sans modification manuelle | | | |
-| Nombre d'objets spécifiques | 5 dans la recette actuelle | 6 générés + `CIWS` partagé | |
-| Démarrage | programme `SERVAPI` | serveur IWS administré | |
-| URL de liste | `/api/services` | `/web/services/SERVICES/` | |
-| Enveloppe nominale | `{ data, total }` | `{ items, totalCount, errors }` | |
-| Pagination et tri | | | |
-| Recherche et filtres | | | |
-| Statuts d'erreur | | | |
-| Corps des réponses `4xx` | | potentiellement vide par IWS | |
-| `X-Total-Count` | | | |
-| CORS | | | |
-| `GET` par identifiant | disponible si déclaré | accepté : `A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id` | distinction des appels documentée |
-| `CREATE` | non exposé dans cette tranche ILEastic | accepté : `201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001` | GO |
-| `UPDATE` | non exposé dans cette tranche ILEastic | accepté : `GET → PUT → GET` en `200`, valeur modifiée persistée ; cas négatifs non archivés | GO avec limite de preuve acceptée |
-| `DELETE` | non exposé dans cette tranche ILEastic | déployé et testé sur IBM i ; l'export HTML ne porte pas seul la preuve autonome du `204` | GO avec limite de preuve acceptée |
-| Simplicité de déploiement | | | |
-| Diagnostic et logs | | | |
+| Point                            | ILEastic                                | IWS                                                                                                   | Décision ou suite                 |
+| -------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Build sans modification manuelle |                                         |                                                                                                       |                                    |
+| Nombre d'objets spécifiques     | 5 dans la recette actuelle              | 6 générés +`CIWS` partagé                                                                       |                                    |
+| Démarrage                       | programme`SERVAPI`                    | serveur IWS administré                                                                               |                                    |
+| URL de liste                     | `/api/services`                       | `/web/services/SERVICES/`                                                                           |                                    |
+| Enveloppe nominale               | `{ data, total }`                     | `{ items, totalCount, errors }`                                                                     |                                    |
+| Pagination et tri                |                                         |                                                                                                       |                                    |
+| Recherche et filtres             |                                         |                                                                                                       |                                    |
+| Statuts d'erreur                 |                                         |                                                                                                       |                                    |
+| Corps des réponses`4xx`       |                                         | potentiellement vide par IWS                                                                          |                                    |
+| `X-Total-Count`                |                                         |                                                                                                       |                                    |
+| CORS                             |                                         |                                                                                                       |                                    |
+| `GET` par identifiant          | disponible si déclaré                 | accepté :`A00 → 200`, `ZZZ → 404`, `XXX → CAT0001/id`                                       | distinction des appels documentée |
+| `CREATE`                       | non exposé dans cette tranche ILEastic | accepté :`201`, relecture `200`, doublon `409/CAT1002`, validation `400/CAT1001`             | GO                                 |
+| `UPDATE`                       | non exposé dans cette tranche ILEastic | accepté :`GET → PUT → GET` en `200`, valeur modifiée persistée ; cas négatifs non archivés | GO avec limite de preuve acceptée |
+| `DELETE`                       | non exposé dans cette tranche ILEastic | déployé et testé sur IBM i ; l'export HTML ne porte pas seul la preuve autonome du`204`          | GO avec limite de preuve acceptée |
+| Simplicité de déploiement      |                                         |                                                                                                       |                                    |
+| Diagnostic et logs               |                                         |                                                                                                       |                                    |
 
 ## 13. Compte rendu
 
-| Porte | Résultat | Preuve ou première erreur |
-| --- | --- | --- |
-| 1. Artefacts figés | OK local tranche 8 | 128 tests, lint, build et 21 artefacts déterministes validés localement |
-| 2. Sources transférées | OK | projet de validation `cMagicIws` |
-| 3. Prérequis vérifiés | OK | compilation et exécution IWS abouties |
-| 4. Objets compilés | OK | `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` reconstruits ; 2 fichiers RPGUnit, 10 cas et 38 assertions réussis |
-| 5. Service IWS déployé | OK | URL `/web/services/SERVIWS3` active avec `service_create_iws` en `POST /` et `service_update_iws` en `PUT /{id}` pendant la recette |
-| 6. Contrat IWS sauvegardé | OK accepté | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés avec quatre procédures publiques ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel de CREATE |
-| 7. Requêtes HTTP exécutées | OK avec limite acceptée | le nominal UPDATE partagé pendant la session confirme `GET /ZC5 → 200`, `PUT /ZC5 → 200`, puis la relecture modifiée en `200` ; le dernier [export curl](./testCurl.html) mélange des cellules rejouées après reconstruction et d'anciennes sorties techniques `500` |
-| 8. Preuves conservées | OK | export curl, Swagger, PCML et [capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786023073339.png) archivés |
+| Porte                         | Résultat                | Preuve ou première erreur                                                                                                                                                                                                                                                        |
+| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Artefacts figés           | OK local tranche 8       | 128 tests, lint, build et 21 artefacts déterministes validés localement                                                                                                                                                                                                         |
+| 2. Sources transférées      | OK                       | projet de validation`cMagicIws`                                                                                                                                                                                                                                                 |
+| 3. Prérequis vérifiés      | OK                       | compilation et exécution IWS abouties                                                                                                                                                                                                                                            |
+| 4. Objets compilés           | OK                       | `SERVICE`, `SERVICE.BNDDIR`, `SERVIWS` et `SERVIWS.BNDDIR` reconstruits ; 2 fichiers RPGUnit, 10 cas et 38 assertions réussis                                                                                                                                            |
+| 5. Service IWS déployé      | OK                       | URL`/web/services/SERVIWS3` active avec `service_create_iws` en `POST /` et `service_update_iws` en `PUT /{id}` pendant la recette                                                                                                                                      |
+| 6. Contrat IWS sauvegardé    | OK accepté              | [Swagger IWS 2.6](./swagger.json) et [PCML](./SERVIWS3.pcml) archivés avec quatre procédures publiques ; leur succès statique reste `200`, tandis que `httpStatus` produit le `201` réel de CREATE                                                                        |
+| 7. Requêtes HTTP exécutées | OK avec limite acceptée | le nominal UPDATE partagé pendant la session confirme`GET /ZC5 → 200`, `PUT /ZC5 → 200`, puis la relecture modifiée en `200` ; le dernier [export curl](./testCurl.html) mélange des cellules rejouées après reconstruction et d'anciennes sorties techniques `500` |
+| 8. Preuves conservées        | OK                       | export curl, Swagger, PCML et[capture RPGUnit/compilation](./image/recette-ibmi-catalogue-iws/1786023073339.png) archivés                                                                                                                                                         |
 
 Conclusion de la session : **GO pour la tranche 8**. Le service IWS répond avec les
 helpers CIWS génériques, la validation de longueur est centralisée dans
@@ -1069,7 +1095,6 @@ Conclusion :
 - [OpenAPI public introduit avec IWS 3.0](https://www.ibm.com/support/pages/node/7248102)
 - [Métadonnée `QUERY_STRING` et mises à jour IWS](https://www.ibm.com/support/pages/system/files/inline-files/IWS-Updates-AUG2015.pdf)
 
-
 ## Compte rendu de la session de tests du 5 août 2026
 
 - `npm test`, `npm run build`, `generate-catalog` et contrôle du diff : OK ;
@@ -1079,7 +1104,6 @@ Conclusion :
   `service_getlist_iws` n'était pas résolu :
 
   ![Échec initial de l'édition de liens de TSERVIWS](./image-4.png)
-
 - contournement essayé pendant la session : ajout de `SERVIWS` dans
   `SERVICE.BNDDIR`, puis test RPGUnit réussi :
 
@@ -1160,6 +1184,7 @@ publiques. Leur réponse
 de succès statique reste annoncée à `200`, limite du contrat exporté par IWS 2.6, mais le
 mapping dynamique de `httpStatus` renvoie bien le `201` observé. La tranche 8 est
 **GO**.
+
 ## Compte rendu de la session de tests UPDATE du 6 août 2026
 
 La compilation de `SERVICE` et `SERVIWS` réussit sans modification manuelle. Les deux
@@ -1187,7 +1212,6 @@ reconstruction, mais la cellule `DELETE /ZC5` affiche encore une ancienne répon
 preuve autonome du statut `204`. Les tests réalisés après rebuild sont néanmoins confirmés
 et acceptés par le propriétaire du projet : cette limite documentaire est explicite et la
 tranche 10 est **GO**.
-
 
 ### Suivi non bloquant
 

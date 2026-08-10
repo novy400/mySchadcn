@@ -31,6 +31,30 @@ npm run test:vsix
 code --install-extension cmagic-0.0.3.vsix --force
 ```
 
+### Lancer l'IHM Monaco
+
+Depuis le répertoire `projets_annexes/cmagic_perso` :
+
+```powershell
+npm run dev
+```
+
+Vite démarre l'IHM sur <http://localhost:5173>. La page d'accueil donne accès aux deux
+configurations disponibles :
+
+- [Monaco classique avec coloration Monarch](http://localhost:5173/static/monacoClassic.html) ;
+- [Monaco étendu avec coloration TextMate](http://localhost:5173/static/monacoExtended.html).
+
+Pour vérifier le build de production :
+
+```powershell
+npm run bundle
+npm run bundle:serve
+```
+
+Le build est alors servi sur <http://localhost:5175>. Utiliser `Ctrl+C` dans le terminal
+pour arrêter le serveur de développement ou le serveur de production.
+
 ## 📋 Commandes de Génération
 
 ### Génération basique
