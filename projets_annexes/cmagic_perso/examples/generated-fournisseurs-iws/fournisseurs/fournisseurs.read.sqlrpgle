@@ -105,8 +105,6 @@ dcl-proc fournis_search export;
   dcl-ds lRequestedContext likeDS(CMAGIC_context) inz;
   dcl-ds lContext likeDS(CMAGIC_context) inz;
   dcl-ds lSupportedFields likeDS(CMAGIC_supportedFields) inz;
-  dcl-ds lRequestedFilter likeDS(CMAGIC_filter) inz;
-  dcl-ds lRequestedSort likeDS(CMAGIC_sort) inz;
   dcl-ds lRow likeDS(fournis_item_t) inz;
   dcl-s lSelect varchar(5000) inz;
   dcl-s lSelCount like(lSelect) inz;
@@ -119,27 +117,6 @@ dcl-proc fournis_search export;
   clear pTotalCount;
   clear pItems;
   clear pErrors;
-  for-each lRequestedSort in pContext.sort;
-    if %trim(lRequestedSort.field) = *blanks;
-      iter;
-    endif;
-    if %trim(lRequestedSort.field) <> 'nom';
-      fournis_reject_query(
-        pErrors : lRequestedSort.field : 'Sort field is not allowed');
-      return *off;
-    endif;
-  endfor;
-  for-each lRequestedFilter in pContext.filter;
-    if %trim(lRequestedFilter.field) = *blanks;
-      iter;
-    endif;
-    if %trim(lRequestedFilter.field) <> 'q' and
-      %trim(lRequestedFilter.field) <> 'ville';
-      fournis_reject_query(
-        pErrors : lRequestedFilter.field : 'Filter field is not allowed');
-      return *off;
-    endif;
-  endfor;
   lRequestedContext = pContext;
   if %trim(lRequestedContext.sort(1).field) = *blanks;
     lRequestedContext.sort(1).field = 'id';
@@ -161,9 +138,6 @@ dcl-proc fournis_search export;
     : lSelect : lWhere : lOrderBy : lErrors);
     pErrors = lErrors;
     return *off;
-  endif;
-  if %trim(lContext.sort(1).field) <> 'id';
-    lOrderBy = %trim(lOrderBy) + ', ID ASC';
   endif;
 
   lSelect += ' FROM FOURNIS';
