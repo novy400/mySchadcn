@@ -5,7 +5,10 @@ import {
     generateRpgReadModule,
     type CatalogSpec
 } from '../../src/catalog/index.js';
-import { compileServiceCatalog } from './test-utils.js';
+import {
+    compileFournisseurCatalog,
+    compileServiceCatalog
+} from './test-utils.js';
 
 describe('Catalogue RPG read generator', () => {
     test('delegates LIST query preparation to the shared CMagic procedures', async () => {
@@ -77,33 +80,31 @@ describe('Catalogue RPG read generator', () => {
         expect(source).not.toContain('Filter value exceeds maximum length');
     });
 
-    test('enforces LIST filter and sort whitelists with a stable identifier tiebreaker', async () => {
-        const service = await compileServiceCatalog();
-        const source = generateRpgReadModule({
-            ...service,
-            list: {
-                ...service.list!,
-                filterFields: ['site'],
-                sortFields: ['nom']
-            }
-        });
+    test('generates fournisseur search like the proven service search path', async () => {
+        const source = generateRpgReadModule(
+            await compileFournisseurCatalog()
+        );
 
-        expect(source).toContain('for-each lRequestedSort in pContext.sort;');
-        expect(source).toContain(
-            "if %trim(lRequestedSort.field) <> 'nom';"
+        expect(source).toContain('dcl-proc fournis_search export;');
+        expect(source).not.toContain(
+            'for-each lRequestedSort in pContext.sort;'
         );
-        expect(source).toContain('for-each lRequestedFilter in pContext.filter;');
-        expect(source).toContain(
-            "if %trim(lRequestedFilter.field) <> 'q' and"
+        expect(source).not.toContain(
+            'for-each lRequestedFilter in pContext.filter;'
         );
+        expect(source).not.toContain('Sort field is not allowed');
+        expect(source).not.toContain('Filter field is not allowed');
         expect(source).toContain(
-            "%trim(lRequestedFilter.field) <> 'site';"
-        );
-        expect(source).toContain(
-            "if %trim(lContext.sort(1).field) <> 'id';"
+            "lRequestedContext.sort(1).field = 'id';"
         );
         expect(source).toContain(
-            "lOrderBy = %trim(lOrderBy) + ', DEPTNO ASC';"
+            "lRequestedContext.sort(1).order = 'ASC';"
+        );
+        expect(source).not.toContain(
+            "lOrderBy = %trim(lOrderBy) + ', ID ASC';"
+        );
+        expect(source).toContain(
+            'cmagic_sanitizeContext(lRequestedContext : lSupportedFields'
         );
     });
 

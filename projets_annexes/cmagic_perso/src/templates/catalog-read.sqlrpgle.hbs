@@ -87,8 +87,6 @@ dcl-proc {{procedureSignatures.search.name}} export;
   dcl-ds lRequestedContext likeDS(CMAGIC_context) inz;
   dcl-ds lContext likeDS(CMAGIC_context) inz;
   dcl-ds lSupportedFields likeDS(CMAGIC_supportedFields) inz;
-  dcl-ds lRequestedFilter likeDS(CMAGIC_filter) inz;
-  dcl-ds lRequestedSort likeDS(CMAGIC_sort) inz;
   dcl-ds lRow likeDS({{entityName}}_item_t) inz;
   dcl-s lSelect varchar(5000) inz;
   dcl-s lSelCount like(lSelect) inz;
@@ -101,28 +99,6 @@ dcl-proc {{procedureSignatures.search.name}} export;
   clear pTotalCount;
   clear pItems;
   clear pErrors;
-  for-each lRequestedSort in pContext.sort;
-    if %trim(lRequestedSort.field) = *blanks;
-      iter;
-    endif;
-    if {{#each allowedSortFields}}{{#unless @first}}
-      and {{/unless}}%trim(lRequestedSort.field) <> '{{this}}'{{else}}*on{{/each}};
-      {{procedures.rejectQuery}}(
-        pErrors : lRequestedSort.field : 'Sort field is not allowed');
-      return *off;
-    endif;
-  endfor;
-  for-each lRequestedFilter in pContext.filter;
-    if %trim(lRequestedFilter.field) = *blanks;
-      iter;
-    endif;
-    if {{#if allowsSearch}}%trim(lRequestedFilter.field) <> 'q'{{else}}*on{{/if}}{{#each allowedFilterFields}} and
-      %trim(lRequestedFilter.field) <> '{{this}}'{{/each}};
-      {{procedures.rejectQuery}}(
-        pErrors : lRequestedFilter.field : 'Filter field is not allowed');
-      return *off;
-    endif;
-  endfor;
   lRequestedContext = pContext;
   if %trim(lRequestedContext.sort(1).field) = *blanks;
     lRequestedContext.sort(1).field = '{{defaultSortField}}';
@@ -144,9 +120,6 @@ dcl-proc {{procedureSignatures.search.name}} export;
     : lSelect : lWhere : lOrderBy : lErrors);
     pErrors = lErrors;
     return *off;
-  endif;
-  if %trim(lContext.sort(1).field) <> '{{id.name}}';
-    lOrderBy = %trim(lOrderBy) + ', {{id.column}} ASC';
   endif;
 
   lSelect += ' FROM {{table}}';

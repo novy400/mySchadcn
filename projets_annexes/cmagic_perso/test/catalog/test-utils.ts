@@ -37,3 +37,9 @@ export const compileIwsServiceCatalog = async (): Promise<CatalogSpec> =>
         'examples/service-catalogue-iws.cmagic',
         'IWS service catalogue'
     );
+
+export const compileFournisseurCatalog = async (): Promise<CatalogSpec> =>
+    compileCatalogFixture(
+        'examples/fournisseur-catalogue-iws.cmagic',
+        'Fournisseur catalogue'
+    );
