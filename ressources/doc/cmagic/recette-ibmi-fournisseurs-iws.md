@@ -151,8 +151,9 @@ générées : leurs zones manuelles doivent être complétées sur le projet IBM
 
 Couvrir au minimum :
 
-- LIST vide, pagination et tri `nom` avec deux lignes portant le même nom ;
-- rejet d'un tri sur `adresse` et d'un filtre sur `telephone` ;
+- LIST sans paramètre avec application du tri par défaut `id ASC`, pagination et tri
+  explicite `nom` ;
+- rejet par le sanitizer CMagic d'un champ de tri ou de filtre inconnu ;
 - recherche `q` et filtre `ville` ;
 - LIST et GET d'une ligne dont les quatre champs facultatifs valent SQL NULL, restitués
   comme chaînes vides ;
@@ -246,11 +247,15 @@ champs relus correspondent aux valeurs persistées.
 ### 6.3 Pagination, recherche, filtre et tri
 
 ```powershell
+Invoke-RestMethod $baseUrl
 Invoke-RestMethod "$baseUrl?page=1&perPage=5&sort=nom&order=DESC&q=recette"
 Invoke-RestMethod "$baseUrl?page=1&perPage=5&sort=nom&order=ASC&ville=Lille"
 ```
 
-Vérifier le filtrage, l'ordre par `nom` et la cohérence de `totalCount`.
+Vérifier que l'appel sans paramètre réussit avec le tri par défaut `id ASC`, puis contrôler
+le filtrage, l'ordre explicite par `nom` et la cohérence de `totalCount`. La préparation
+de la requête reste déléguée aux procédures génériques `cmagic_sanitizeContext` et
+`cmagic_computeSqlClauses`, comme pour `service_search`.
 
 Créer ensuite une ligne dont les champs facultatifs sont vides afin de valider la lecture
 des SQL NULL :
@@ -375,3 +380,28 @@ Conserver avec le compte rendu : date, bibliothèque, version/port IWS, code ret
 liste des objets, Swagger ou définition de service exportée, réponses HTTP expurgées et
 résultat du nettoyage SQL. Ne jamais archiver d'hôte privé, de profil, de jeton ou de mot
 de passe dans Git.
+
+## Problème signalé pendant la recette
+
+Le premier déploiement de `fournis_search` ajoutait deux boucles de prévalidation des tris
+et filtres avant la copie du contexte. Contrairement à `service_search`, un appel LIST sans
+paramètre échouait alors au lieu d'appliquer simplement le tri par défaut `id ASC`.
+
+Les contrôles en cause étaient les boucles parcourant `pContext.sort` et
+`pContext.filter`, avec un rejet spécifique des champs absents des listes du catalogue.
+Le comportement de `service_search`, sans cette prévalidation spécifique, a été retenu
+comme référence fonctionnelle.
+
+### Résolution et validation du 11 août 2026
+
+Le diagnostic a confirmé que ces deux boucles constituaient une prévalidation spécifique
+à `fournis_search`, absente du chemin `service_search` déjà validé. Elles ont été retirées
+du générateur CMagic, ainsi que le second tri forcé `ID ASC`. Le comportement conservé est :
+
+- copie du contexte reçu ;
+- ajout du tri par défaut `id ASC` uniquement lorsqu'aucun tri n'est fourni ;
+- validation et construction SQL par les procédures génériques CMagic.
+
+Après régénération, compilation et redéploiement sur IBM i, le propriétaire du projet
+confirme que l'appel LIST sans paramètre fonctionne correctement. La correction et ce
+scénario de recette sont validés. La tranche fournisseurs est **GO**.

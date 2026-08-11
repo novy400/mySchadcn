@@ -25,7 +25,7 @@ documentaire, par tranches petites et vérifiables.
 | 11 | Migrer le moteur CMagic de Langium 3.5 à Langium 4.3.1 | Terminé |
 | 12 | Brancher une première ressource en lecture sur le DataProvider IBM i | Terminé |
 | 13 | Ajouter LIST et SHOW pour le référentiel technique `services` | Terminé |
-| 14 | Basculer atomiquement `fournisseurs` vers IBM i | Implémentée localement — déploiement IBM i requis |
+| 14 | Basculer atomiquement `fournisseurs` vers IBM i | Terminé |
 
 ## Tranche 1 — Couverture des modules récents
 
@@ -659,8 +659,8 @@ IBM i. Le schéma ou la bibliothèque de déploiement reste une décision d'envi
 
 `id` et `nom` sont recherchables ; les quatre autres champs textuels le sont également
 pour conserver une recherche `q` cohérente avec les champs visibles. `ville` accepte les
-filtres `EQ` et `LIKE`, et seul `nom` est triable dans le contrat frontend initial. Le SQL
-ajoute `ID` comme dernier critère afin de rendre pagination et tri déterministes.
+filtres `EQ` et `LIKE`, et seul `nom` est triable dans le contrat frontend initial. En
+l'absence de tri, le service applique `id ASC`, comme la verticale `services` validée.
 
 Le catalogue CMagic utilise l'entité technique courte `Fournis`, ressource `fournisseurs`,
 adossée à `FOURNIS`, avec une vue LIST sur les six champs et les opérations LIST, GET,
@@ -668,34 +668,33 @@ CREATE et UPDATE. Le nom court respecte la limite IBM i de dix caractères sans 
 nom public de la ressource. Il produit également le DDL de création ; aucune modification manuelle
 de table ne doit diverger de cet artefact généré.
 
-### Contrat cible à valider avec IBM i
+### Contrat validé avec IBM i
 
-| Élément | Valeur retenue | Validation restante |
+| Élément | Valeur retenue | Résultat |
 | --- | --- | --- |
-| Ressource | `fournisseurs`, table neuve `FOURNIS` | schéma ou bibliothèque de déploiement |
-| Identifiant | `VARCHAR(10)`, stable, saisi au CREATE et immuable | règle de format métier |
-| Champs requis | `id`, `nom` | libellés d'erreur utilisateur |
-| Champs facultatifs | `adresse`, `ville`, `telephone`, `email` | chaîne vide ou valeur SQL nulle |
-| LIST | pagination, recherche `q`, filtre `ville`, tri `nom` | recette de performance et ordre secondaire `id` |
-| GET | `/{id}` | enregistrement absent → `404` |
-| CREATE | `POST`, six champs, réponse `201` | unicité et enveloppe `{ item, errors }` |
-| UPDATE | `PUT /{id}`, corps complet, réponse `200` | contrôle clé chemin/corps et concurrence |
-| Erreurs | `400`, `401`, `403`, `404`, `409`, `422`, `500` | codes stables, `nomZone`, `textUser`, corrélation |
-| Publication | `/web/services/FOURIWS1` sur la même origine | déploiement et publication IWS |
+| Ressource | `fournisseurs`, table neuve `FOURNIS` | déployée pour la recette |
+| Identifiant | `VARCHAR(10)`, stable, saisi au CREATE et immuable | validé |
+| Champs requis | `id`, `nom` | validé |
+| Champs facultatifs | `adresse`, `ville`, `telephone`, `email` | validé |
+| LIST | pagination, recherche `q`, filtre `ville`, tri `nom` | validé, défaut `id ASC` sans tri |
+| GET | `/{id}` | validé |
+| CREATE | `POST`, six champs, réponse `201` | validé |
+| UPDATE | `PUT /{id}`, corps complet, réponse `200` | validé |
+| Erreurs | `400`, `401`, `403`, `404`, `409`, `422`, `500` | validé selon la recette |
+| Publication | `/web/services/FOURIWS1` sur la même origine | validée |
 
-Le catalogue fournisseur et ses vingt et un artefacts sont maintenant versionnés sous
+Le catalogue fournisseur et ses vingt et un artefacts sont versionnés sous
 `projets_annexes/cmagic_perso/examples/generated-fournisseurs-iws`. L'objet généré est
-`FOURIWS` et l'URL cliente retenue est `/web/services/FOURIWS1`. Le smoke test du 7 août
-2026 atteint bien le proxy Vite, mais cette URL répond encore `404` sans enveloppe IWS :
-la table, les objets et le service restent donc à déployer avant la recette d'écriture.
+`FOURIWS` et l'URL cliente retenue est `/web/services/FOURIWS1`. La table, les objets et le
+service ont été déployés pour la recette IBM i, qui est désormais validée.
 
 ### Réalisation TDD et preuves locales
 
 1. Le catalogue CMagic `Fournis` et le schéma `FOURNIS` couvrent LIST, GET, CREATE et
    UPDATE. Deux générations successives ont produit les mêmes hashes pour les vingt et un
    artefacts, dont le DDL, OpenAPI, les sources RPG et les enveloppes RPGUnit.
-2. La suite CMagic passe avec 19 fichiers et 143 tests, puis lint et build. La compilation
-   et la recette IBM i restent à exécuter après choix de la bibliothèque de déploiement.
+2. La suite CMagic passe avec 19 fichiers et 143 tests, puis lint et build. La compilation,
+   le déploiement et la recette IBM i ont ensuite été réalisés par le propriétaire du projet.
 3. Au seam React Admin, les tests du registre et du DataProvider utilisent un
    `fetcher` simulé : URL par ressource, pagination, recherche, filtre, tri, POST, PUT,
    enveloppes, identifiants et erreurs de champ. Aucun test frontend ne contacte le réseau.
@@ -710,11 +709,11 @@ la table, les objets et le service restent donc à déployer avant la recette d'
 6. Les six suites ciblées passent avec 53 tests. `npm run check` est vert avec 43 fichiers
    et 125 tests, puis un build de production réussi ; les projections restent couvertes.
 
-La revue Standards/Spec a déclenché un test rouge puis une correction du générateur : le
-module RPG rejette désormais tout filtre/tri LIST absent du catalogue et ajoute la clé
-`ID ASC` comme départage stable après le tri `nom`. Le signalement sur les colonnes
-facultatives a été écarté après lecture du seam runtime : `CMAGIC.0.0.2` construit déjà le
-SELECT dynamique avec `IFNULL`. La recette IBM i couvre néanmoins explicitement ce cas.
+La recette IBM i a révélé qu'une prévalidation des tris et filtres, ajoutée dans le module
+RPG généré, faisait échouer `fournis_search` sans paramètre. La correction aligne ce chemin
+sur `service_search` : elle conserve uniquement le défaut `id ASC` en l'absence de tri,
+puis délègue la validation et la construction SQL au runtime CMagic. Un test au seam public
+du générateur couvre le catalogue fournisseurs et le retest IBM i est confirmé réussi.
 
 ### Bascule et retour arrière
 
@@ -730,30 +729,17 @@ première écriture IBM i. Après une création ou une modification réelle, le 
 doit geler les écritures et réconcilier les données ; le chemin normal devient alors la
 correction en avant sur IBM i.
 
-### Gates de réalisation
+### Décision de validation
 
-**NO GO pour le déploiement et les écritures réelles** tant que les points suivants ne
-sont pas fournis et validés :
-
-- schéma ou bibliothèque IBM i où créer la nouvelle table `FOURNIS` ;
-- règle d'attribution de `id`, avec confirmation du choix « clé saisie » ou décision
-  d'étendre CMagic pour une clé générée ;
-- publication de `FOURIWS` sous l'URL `/web/services/FOURIWS1` ;
-- contrat réel POST/PUT et erreurs, vérifié au seam HTTP public ;
-- jeu de données de recette, stratégie de nettoyage et autorisation d'écriture sur
-  l'environnement IBM i visé.
-
-**GO** après génération reproductible, tests RPGUnit, recette HTTP directe, tests frontend
-ciblés, `npm run check`, smoke test via le proxy Vite et vérification manuelle avec les trois
-rôles. La recette doit prouver pagination, recherche, filtre, tri, GET avant EDIT, CREATE,
-UPDATE, erreurs de validation, absence de DELETE, maintien de `services` en lecture seule,
-maintien des autres ressources sur FakeRest et absence de régression des projections.
+Le 11 août 2026, le propriétaire du projet confirme l'exécution de la recette IBM i et le
+succès du retest LIST sans paramètre après correction de `fournis_search`. Les validations
+locales restent vertes, le transport conserve LIST, GET, CREATE et UPDATE sans DELETE, et
+la bascule atomique de `fournisseurs` est acceptée : **GO** pour la tranche 14.
 
 ## Suite
 
-La tranche 14 est prête localement autour de la nouvelle table Db2 `FOURNIS`. La prochaine
-action est de choisir la bibliothèque IBM i, créer la table depuis le DDL généré, compiler
-`FOURNIS` et `FOURIWS`, publier `FOURIWS1`, puis exécuter la recette LIST/GET/CREATE/UPDATE.
-La bascule ne peut être déclarée **GO** tant que le smoke test, actuellement en `404`, ne
-répond pas avec l'enveloppe IWS attendue. La procédure opérateur complète est décrite dans
+Les quatorze tranches actuellement décrites sont terminées. La recette opérateur de la
+dernière tranche reste disponible dans
 [`recette-ibmi-fournisseurs-iws.md`](./cmagic/recette-ibmi-fournisseurs-iws.md).
+La prochaine évolution doit faire l'objet d'un nouveau cadrage avant d'ajouter une tranche
+au plan.
