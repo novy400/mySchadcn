@@ -74,10 +74,10 @@ cd C:\Users\giyvovie\Documents\mesProjets\mySchadcn\projets_annexes\cmagic_perso
 npm run dev
 ```
 
-Ouvrir ensuite <http://localhost:5173>, ou directement :
+Ouvrir ensuite [http://localhost:5173](http://localhost:5173), ou directement :
 
-- <http://localhost:5173/static/monacoClassic.html> pour la configuration Monarch ;
-- <http://localhost:5173/static/monacoExtended.html> pour la configuration TextMate.
+- [http://localhost:5173/static/monacoClassic.html](http://localhost:5173/static/monacoClassic.html) pour la configuration Monarch ;
+- [http://localhost:5173/static/monacoExtended.html](http://localhost:5173/static/monacoExtended.html) pour la configuration TextMate.
 
 Pour tester les fichiers produits par le build Web :
 
@@ -86,7 +86,7 @@ npm run bundle
 npm run bundle:serve
 ```
 
-Le build est alors disponible sur <http://localhost:5175>. Cette prévisualisation valide
+Le build est alors disponible sur [http://localhost:5175](http://localhost:5175). Cette prévisualisation valide
 l'éditeur et le serveur CMagic locaux ; elle ne remplace pas la recette HTTP IWS, qui doit
 toujours être exécutée avec `curl` ou Bruno.
 
