@@ -4,11 +4,9 @@ Cette procédure permet à l'opérateur IBM i de créer la nouvelle table `FOURN
 les objets générés, publier le service REST `FOURIWS1` et valider LIST, GET, CREATE et
 UPDATE. Elle ne prévoit aucune route DELETE.
 
-Les sources à utiliser sont celles du dépôt, sans correction manuelle :
+Les sources à utiliser sont celles du dépôt autonome `cmagic_perso`, sans correction manuelle :
 
-```text
-projets_annexes/cmagic_perso/examples/generated-fournisseurs-iws/
-```
+[`examples/generated-fournisseurs-iws/`](https://github.com/novy400/cmagic/tree/main/examples/generated-fournisseurs-iws)
 
 La recette générique du runtime et du serveur IWS reste décrite dans
 [`recette-ibmi-catalogue-iws.md`](./recette-ibmi-catalogue-iws.md). Le présent document ne
@@ -63,7 +61,7 @@ nullables avec `IFNULL` pendant LIST.
 ## 3. Créer la table neuve `FOURNIS`
 
 Le DDL de référence est
-[`fournisseurs.ddl.sql`](../../../projets_annexes/cmagic_perso/examples/generated-fournisseurs-iws/fournisseurs/fournisseurs.ddl.sql).
+[`fournisseurs.ddl.sql`](https://github.com/novy400/cmagic/blob/main/examples/generated-fournisseurs-iws/fournisseurs/fournisseurs.ddl.sql).
 Il crée les colonnes suivantes :
 
 | Colonne | Type | Contrainte |

@@ -20,7 +20,7 @@ Elle couvre désormais la lecture (`LIST` et `GET`) et les mutations verticales 
 
 ## Génération
 
-Depuis `projets_annexes/cmagic_perso` :
+Depuis la racine du dépôt autonome [`cmagic_perso`](https://github.com/novy400/cmagic) :
 
 ```powershell
 npm install

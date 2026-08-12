@@ -70,7 +70,7 @@ Avant de figer les artefacts, l'IHM Monaco peut servir à ouvrir le modèle CMag
 la coloration et observer les diagnostics du serveur de langage. Depuis PowerShell :
 
 ```powershell
-cd C:\Users\giyvovie\Documents\mesProjets\mySchadcn\projets_annexes\cmagic_perso
+cd C:\Users\giyvovie\Documents\mesProjets\cmagic_perso
 npm run dev
 ```
 
@@ -124,12 +124,12 @@ existe déjà sur le serveur choisi, utiliser un autre nom, par exemple
 Depuis PowerShell :
 
 ```powershell
-cd C:\Users\giyvovie\Documents\mesProjets\mySchadcn\projets_annexes\cmagic_perso
+cd C:\Users\giyvovie\Documents\mesProjets\cmagic_perso
 npm.cmd test
 npm.cmd run build
 node bin/cli.js generate-catalog examples/service-catalogue-iws.cmagic `
   --destination examples/generated-catalog-iws
-git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
+git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/cmagic_perso `
   diff --exit-code -- examples/service-catalogue-iws.cmagic `
   examples/generated-catalog-iws
 ```
@@ -179,9 +179,7 @@ correspondraient plus au commit annoncé.
 
 Transférer l'ensemble de :
 
-```text
-projets_annexes/cmagic_perso/examples/generated-catalog-iws/
-```
+[`cmagic_perso/examples/generated-catalog-iws/`](https://github.com/novy400/cmagic/tree/main/examples/generated-catalog-iws)
 
 vers un dossier dédié du projet IBM i, par exemple :
 

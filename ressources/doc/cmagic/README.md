@@ -38,7 +38,7 @@ Ce dossier relie le prototype `mySchadcn` à la démarche de modernisation IBM i
 | Catalogue | ressources CRM CRUD | ressources issues du domaine Flight400 |
 | Processus | statut éditable sur certaines ressources | transitions contrôlées par actions métier |
 | Saga | non implémentée | orchestration et compensations côté backend |
-| DSL `.cmagic` | prototype dans `projets_annexes/cmagic_perso` | validation et industrialisation IBM i |
+| DSL `.cmagic` | dépôt autonome [`cmagic_perso`](https://github.com/novy400/cmagic) | validation et industrialisation IBM i |
 
 Une proposition décrite dans ce dossier n'est donc pas automatiquement une fonctionnalité
 du prototype.

@@ -47,15 +47,15 @@ bibliothèque de production.
 
 ## Porte 1 — Préparer et figer les artefacts locaux
 
-Depuis PowerShell, dans le dépôt `mySchadcn` :
+Depuis PowerShell, dans le dépôt autonome `cmagic_perso` :
 
 ```powershell
-cd C:\Users\giyvovie\Documents\mesProjets\mySchadcn\projets_annexes\cmagic_perso
+cd C:\Users\giyvovie\Documents\mesProjets\cmagic_perso
 npm.cmd test
 npm.cmd run build
 node bin/cli.js generate-catalog examples/service-catalogue.cmagic `
   --destination examples/generated-catalog
-git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/mySchadcn `
+git -c safe.directory=C:/Users/giyvovie/Documents/mesProjets/cmagic_perso `
   diff --exit-code -- examples/service-catalogue.cmagic examples/generated-catalog
 ```
 

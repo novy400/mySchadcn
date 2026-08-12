@@ -1,7 +1,0 @@
-STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('SERVIWS.0.0.1')
-  EXPORT SYMBOL('service_getlist_iws')
-  EXPORT SYMBOL('service_getone_iws')
-  EXPORT SYMBOL('service_create_iws')
-  EXPORT SYMBOL('service_update_iws')
-  EXPORT SYMBOL('service_delete_iws')
-ENDPGMEXP

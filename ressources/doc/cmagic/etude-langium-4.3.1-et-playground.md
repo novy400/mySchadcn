@@ -26,7 +26,7 @@ saisie, la validation, l'import/export et la génération.
 
 ## État constaté dans le dépôt
 
-Le projet [`cmagic_perso`](../../../projets_annexes/cmagic_perso/package.json) déclare :
+Le projet [`cmagic_perso`](https://github.com/novy400/cmagic/blob/main/package.json) déclare :
 
 | Élément | Version déclarée / verrouillée |
 | --- | --- |
@@ -39,9 +39,9 @@ Le projet [`cmagic_perso`](../../../projets_annexes/cmagic_perso/package.json) d
 | `monaco-editor-wrapper` | `~4.0.2` / `4.0.2` |
 
 Le dépôt possède déjà les briques essentielles d'un éditeur Web : un
-[serveur Langium pour Web Worker](../../../projets_annexes/cmagic_perso/src/language/main-browser.ts),
-deux [configurations Monaco](../../../projets_annexes/cmagic_perso/src/setupExtended.ts) et
-une [construction Vite](../../../projets_annexes/cmagic_perso/vite.config.ts). Il n'est donc
+[serveur Langium pour Web Worker](https://github.com/novy400/cmagic/blob/main/src/language/main-browser.ts),
+deux [configurations Monaco](https://github.com/novy400/cmagic/blob/main/src/setupExtended.ts) et
+une [construction Vite](https://github.com/novy400/cmagic/blob/main/vite.config.ts). Il n'est donc
 pas nécessaire de repartir du code du Playground.
 
 L'audit statique du code CMagic n'a trouvé aucun usage direct de `PrecomputedScopes`,

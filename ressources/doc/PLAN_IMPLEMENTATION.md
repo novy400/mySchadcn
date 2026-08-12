@@ -683,8 +683,9 @@ de table ne doit diverger de cet artefact généré.
 | Erreurs | `400`, `401`, `403`, `404`, `409`, `422`, `500` | validé selon la recette |
 | Publication | `/web/services/FOURIWS1` sur la même origine | validée |
 
-Le catalogue fournisseur et ses vingt et un artefacts sont versionnés sous
-`projets_annexes/cmagic_perso/examples/generated-fournisseurs-iws`. L'objet généré est
+Le catalogue fournisseur et ses vingt et un artefacts sont versionnés dans le dépôt autonome
+[`cmagic_perso`](https://github.com/novy400/cmagic/tree/main/examples/generated-fournisseurs-iws),
+sous `examples/generated-fournisseurs-iws`. L'objet généré est
 `FOURIWS` et l'URL cliente retenue est `/web/services/FOURIWS1`. La table, les objets et le
 service ont été déployés pour la recette IBM i, qui est désormais validée.
 

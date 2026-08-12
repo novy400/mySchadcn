@@ -1,8 +1,0 @@
-{{! IBM Integrated Web Services application binding directory generated from CatalogSpec. }}
-/* Delete before recreation so removed entries cannot survive a rebuild. */
-!DLTOBJ OBJ(&O/&N) OBJTYPE(*BNDDIR)
-CRTBNDDIR BNDDIR(&O/&N)
-{{#each objectNames}}
-ADDBNDDIRE BNDDIR(&O/&N) +
-  OBJ((*LIBL/{{this}} *SRVPGM))
-{{/each}}
